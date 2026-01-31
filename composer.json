@@ -1,0 +1,30 @@
+{
+    "name": "web4all/cesi-stages",
+    "description": "Plateforme de recherche de stages pour les étudiants CESI",
+    "type": "project",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Web4All",
+            "email": "contact@web4all.fr"
+        }
+    ],
+    "require": {
+        "php": ">=7.4"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^9.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Core\\": "core/",
+            "Controllers\\": "src/controllers/",
+            "Models\\": "src/models/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/"
+        }
+    }
+}

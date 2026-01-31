@@ -1,0 +1,27 @@
+# ============================================
+# CesiStages - Configuration Apache (Public)
+# ============================================
+
+RewriteEngine On
+
+# Si le fichier ou dossier existe, ne pas réécrire
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+
+# Rediriger toutes les requêtes vers index.php
+RewriteRule ^(.*)$ index.php [QSA,L]
+
+# Protection des fichiers sensibles
+<FilesMatch "^\.">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Protection des fichiers de configuration
+<FilesMatch "\.(ini|log|sh|sql)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Encodage UTF-8
+AddDefaultCharset UTF-8
