@@ -123,6 +123,14 @@
                         </button>
                     </div>
 
+                    <?php if (defined('GOOGLE_OAUTH_ENABLED') && GOOGLE_OAUTH_ENABLED): ?>
+                        <div class="form-actions mb-3">
+                            <a href="<?= BASE_URL ?>/auth/google" class="btn btn-outline-danger btn-block w-100 py-3 font-weight-bold">
+                                <i class="fab fa-google mr-2"></i> S'inscrire / Se connecter avec Google
+                            </a>
+                        </div>
+                    <?php endif; ?>
+
                     <div class="text-center">
                         <p class="text-muted text-sm mb-0">
                             Déjà un compte ? 

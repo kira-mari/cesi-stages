@@ -5,7 +5,7 @@ Pour ne plus avoir l'alerte "Votre connexion n'est pas privée", il faut que vot
 ## Étape 1 : Télécharger mkcert
 1. Allez sur la page des releases de mkcert : [https://github.com/FiloSottile/mkcert/releases](https://github.com/FiloSottile/mkcert/releases)
 2. Téléchargez le fichier pour Windows (ex: `mkcert-v1.4.4-windows-amd64.exe`).
-3. Renommez le fichier téléchargé en `mkcert.exe` pour simplifier.
+3. Renommez le fichier téléchargé en `` pour simplifier.
 4. Placez ce fichier dans un dossier (par exemple `C:\xampp\certs\`).
 
 ## Étape 2 : Créer l'autorité de certification (CA)
