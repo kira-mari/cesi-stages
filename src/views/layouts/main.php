@@ -23,6 +23,7 @@
 
     <!-- CSS -->
     <link rel="stylesheet" href="<?= ASSETS_URL ?>/css/style.css?v=<?= time() ?>">
+    <link rel="stylesheet" href="<?= BASE_URL ?>/public/css/chatbot.css?v=<?= time() ?>">
     
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -77,5 +78,6 @@
 
     <!-- JavaScript -->
     <script src="<?= ASSETS_URL ?>/js/main.js"></script>
+    <script src="<?= BASE_URL ?>/public/js/chatbot.js"></script>
 </body>
 </html>
