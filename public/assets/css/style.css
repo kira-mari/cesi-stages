@@ -2490,3 +2490,37 @@ hr {
     gap: 0.25rem;
 }
 
+
+/* Fix for Floating Navbar Overlap */
+.main-content {
+    padding-top: 120px;
+    padding-bottom: 2rem;
+    min-height: 80vh;
+}
+
+@media (max-width: 768px) {
+    .main-content {
+        padding-top: 100px;
+    }
+}
+
+
+/* Remove top padding for home page if it uses a full-screen hero */
+/* Note: We need a way to identify the home page. 
+   Assuming the hero section comes first, we can adjust margins. 
+   Or better, let's adjust the .main-content rule to exclude pages with .hero */
+
+body:has(.hero) .main-content {
+    padding-top: 0 !important;
+}
+
+/* Fallback for browsers not supporting :has() */
+.home-page .main-content {
+    padding-top: 0 !important;
+}
+
+/* Ensure hero content is pushed down internally instead */
+.hero {
+    padding-top: 100px; /* Space for navbar */
+}
+

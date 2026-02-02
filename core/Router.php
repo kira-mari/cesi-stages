@@ -91,7 +91,8 @@ class Router
         }
 
         // Suppression du sous-dossier de l'URL si présent
-        $basePath = trim(parse_url(BASE_URL, PHP_URL_PATH), '/');
+        $path = parse_url(BASE_URL, PHP_URL_PATH) ?? '';
+        $basePath = trim($path, '/');
         if ($basePath && strpos($url, $basePath) === 0) {
             $url = substr($url, strlen($basePath));
             $url = trim($url, '/');

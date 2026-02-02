@@ -16,15 +16,33 @@ const APP_VERSION = '1.0.0';
 const APP_ENV = 'development'; // development, production
 
 // URLs
-const BASE_URL = 'http://localhost/cesi-stages';
-const ASSETS_URL = BASE_URL . '/assets';
+$protocol = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? 'https' : 'http';
+$host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+
+// Configuration spécifique pour les Virtual Hosts
+if ($host === 'cesi-site.local') {
+    define('BASE_URL', $protocol . '://cesi-site.local');
+    
+    // En développement local avec HTTPS, les navigateurs bloquent souvent les ressources d'un autre domaine (CORS/Certificat)
+    // On utilise donc le même domaine pour les assets en HTTPS pour éviter que le style saute
+    if ($protocol === 'https') {
+        define('ASSETS_URL', BASE_URL . '/assets');
+    } else {
+        define('ASSETS_URL', $protocol . '://cesi-static.local/assets');
+    }
+} 
+// Configuration par défaut (Localhost / IP)
+else {
+    define('BASE_URL', $protocol . '://' . $host . '/cesi-stages');
+    define('ASSETS_URL', BASE_URL . '/assets');
+}
 
 // Sécurité
 const SESSION_LIFETIME = 3600; // 1 heure
 const CSRF_TOKEN_NAME = 'csrf_token';
 
 // Pagination
-const ITEMS_PER_PAGE = 10;
+const ITEMS_PER_PAGE = 9;
 
 // Upload
 const UPLOAD_MAX_SIZE = 5 * 1024 * 1024; // 5 Mo
