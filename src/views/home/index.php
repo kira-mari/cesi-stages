@@ -137,9 +137,19 @@ $title = "Accueil";
         transform: none !important; 
     }
 }
+
+/* Mobile adjustments for hero separator */
+@media (max-width: 768px) {
+    .hero-separator svg {
+        height: 50px !important; /* Réduction drastique de la hauteur sur mobile */
+    }
+    .hero {
+        padding-bottom: 8rem !important; /* Réduction du padding sur mobile */
+    }
+}
 </style>
 
-<div class="hero position-relative overflow-hidden d-flex align-items-center" style="min-height: 90vh; padding-bottom: 8rem;">
+<div class="hero position-relative overflow-hidden d-flex align-items-center" style="min-height: 90vh; padding-bottom: 10rem;">
     <!-- Animated Background Layer -->
     <div class="hero-animated-bg">
         <div class="hero-blob"></div>
@@ -150,7 +160,7 @@ $title = "Accueil";
     </div>
 
     <!-- Wave Separator -->
-    <div style="position: absolute; bottom: -5px; left: 0; width: 100%; overflow: hidden; line-height: 0; z-index: 1;">
+    <div class="hero-separator" style="position: absolute; bottom: -1px; left: 0; width: 100%; overflow: hidden; line-height: 0; z-index: 1;">
         <svg data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none" style="position: relative; display: block; width: calc(100% + 1.3px); height: 120px;">
             <defs>
                 <mask id="book-mask">
