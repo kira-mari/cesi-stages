@@ -138,13 +138,78 @@ $title = "Accueil";
     }
 }
 
-/* Mobile adjustments for hero separator */
+/* Mobile adjustments for hero separator and layout */
 @media (max-width: 768px) {
-    .hero-separator svg {
-        height: 50px !important; /* Réduction drastique de la hauteur sur mobile */
-    }
     .hero {
-        padding-bottom: 8rem !important; /* Réduction du padding sur mobile */
+        min-height: auto !important; /* Allow content to dictate height */
+        padding-top: 7rem !important; /* Push content down from fixed navbar */
+        padding-bottom: 6rem !important;
+        align-items: flex-start !important; /* Prevent vertical centering issues */
+    }
+
+    .hero h1 {
+        font-size: 2.2rem !important; /* Scale down title */
+        margin-bottom: 1.5rem !important;
+    }
+
+    .hero .lead {
+        font-size: 1rem !important; /* Smaller font size */
+        padding: 0 1.5rem; /* More horizontal padding */
+        margin-bottom: 2rem !important; /* Reduce bottom spacing */
+        line-height: 1.5;
+    }
+
+    /* Enhance background for mobile - making it brighter/clearer */
+    .hero-animated-bg {
+        background: radial-gradient(circle at 50% 30%, rgb(30, 30, 50) 0%, rgb(10, 10, 18) 100%) !important;
+    }
+
+    /* Adjust blobs to be less intrusive but visible */
+    .hero-blob:nth-child(1) {
+        top: 0% !important;
+        left: 50% !important;
+        transform: translateX(-50%) !important;
+        width: 120vw !important;
+        height: 120vw !important;
+        opacity: 0.5 !important; /* Increased opacity for better visibility */
+        filter: blur(80px) !important; /* Reduced blur slightly for clarity */
+    }
+    
+    .hero-blob:nth-child(2) {
+        bottom: 0% !important;
+        right: -50% !important;
+        width: 100vw !important;
+        height: 100vw !important;
+        opacity: 0.4 !important; /* Increased opacity */
+        filter: blur(80px) !important;
+    }
+
+    /* Stack buttons on mobile */
+    .hero .d-flex.gap-3 {
+        flex-direction: column;
+        width: 100%;
+        padding: 0 1rem;
+    }
+
+    .hero .btn-lg {
+        width: 100%;
+        padding: 1rem !important;
+        font-size: 1rem !important;
+    }
+
+    /* Adjust logos */
+    .hero .opacity-50.grayscale {
+        flex-wrap: wrap;
+        gap: 1.5rem !important;
+        padding-top: 2rem !important;
+    }
+
+    .hero .fab {
+        font-size: 1.5rem !important;
+    }
+    
+    .hero-separator svg {
+        height: 40px !important;
     }
 }
 </style>

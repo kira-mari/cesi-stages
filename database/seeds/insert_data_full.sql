@@ -1,5 +1,5 @@
 -- ============================================
--- CesiStages - Données de test
+-- CesiStages - Données de test (Mise à jour)
 -- ============================================
 
 USE cesi_stages;
@@ -9,21 +9,21 @@ USE cesi_stages;
 -- ============================================
 
 -- Administrateur
-INSERT INTO users (nom, prenom, email, password, role) VALUES
-('Admin', 'CESI', 'admin@cesi.fr', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'admin');
+INSERT INTO users (nom, prenom, email, password, role, is_verified) VALUES
+('Admin', 'CESI', 'admin@cesi.fr', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'admin', 1);
 
 -- Pilotes
-INSERT INTO users (nom, prenom, email, password, role) VALUES
-('Dupont', 'Marie', 'pilote@cesi.fr', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'pilote'),
-('Martin', 'Jean', 'jean.martin@cesi.fr', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'pilote');
+INSERT INTO users (nom, prenom, email, password, role, is_verified) VALUES
+('Dupont', 'Marie', 'pilote@cesi.fr', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'pilote', 1),
+('Martin', 'Jean', 'jean.martin@cesi.fr', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'pilote', 1);
 
 -- Étudiants
-INSERT INTO users (nom, prenom, email, password, role) VALUES
-('Doe', 'John', 'etudiant@cesi.fr', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'etudiant'),
-('Smith', 'Alice', 'alice.smith@cesi.fr', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'etudiant'),
-('Bernard', 'Lucas', 'lucas.bernard@cesi.fr', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'etudiant'),
-('Petit', 'Emma', 'emma.petit@cesi.fr', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'etudiant'),
-('Robert', 'Hugo', 'hugo.robert@cesi.fr', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'etudiant');
+INSERT INTO users (nom, prenom, email, password, role, is_verified, age, telephone, adresse, bio) VALUES
+('Doe', 'John', 'etudiant@cesi.fr', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'etudiant', 1, 22, '0612345678', '1 rue de l''Exemple, Paris', 'Etudiant motivé en informatique.'),
+('Smith', 'Alice', 'alice.smith@cesi.fr', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'etudiant', 1, 21, '0698765432', '10 avenue des Champs, Lyon', 'Passionnée par la Data Science.'),
+('Bernard', 'Lucas', 'lucas.bernard@cesi.fr', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'etudiant', 1, 23, NULL, NULL, NULL),
+('Petit', 'Emma', 'emma.petit@cesi.fr', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'etudiant', 1, 20, NULL, NULL, NULL),
+('Robert', 'Hugo', 'hugo.robert@cesi.fr', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'etudiant', 1, 24, NULL, NULL, NULL);
 
 -- Note: Le mot de passe hashé correspond à "password"
 
@@ -97,37 +97,14 @@ INSERT INTO offres (entreprise_id, titre, description, competences, remuneration
 (7, 'Ingénieur IA', 
  'Stage en recherche et développement en intelligence artificielle.',
  '["Python", "TensorFlow", "PyTorch", "NLP", "Deep Learning"]',
- 1600.00, 6, '2025-03-01', '2025-08-31'),
-
-(8, 'Administrateur Réseau', 
- 'Stage en administration de réseaux et systèmes.',
- '["Réseaux", "Cisco", "Linux", "Windows Server", "Virtualisation"]',
- 1100.00, 4, '2025-04-01', '2025-07-31');
-
--- ============================================
--- Insertion des relations pilote-étudiant
--- ============================================
-INSERT INTO pilote_etudiant (pilote_id, etudiant_id) VALUES
-(2, 4), -- Marie Dupont gère John Doe
-(2, 5), -- Marie Dupont gère Alice Smith
-(2, 6), -- Marie Dupont gère Lucas Bernard
-(3, 7), -- Jean Martin gère Emma Petit
-(3, 8); -- Jean Martin gère Hugo Robert
-
--- ============================================
--- Insertion des évaluations
--- ============================================
-INSERT INTO evaluations (entreprise_id, user_id, note, commentaire) VALUES
-(1, 4, 5, 'Excellent environnement de travail, équipe très accueillante !'),
-(1, 5, 4, 'Bonne expérience, beaucoup appris sur le développement web.'),
-(2, 6, 5, 'Super équipe data, projets très intéressants.'),
-(3, 4, 4, 'Ambiance créative, beaucoup de liberté dans le design.'),
-(4, 5, 5, 'Technologies de pointe, excellent encadrement technique.'),
-(5, 6, 4, 'Formation en sécurité très complète.');
+ 1600.00, 6, '2025-03-01', '2025-08-31');
 
 -- ============================================
 -- Insertion des candidatures
 -- ============================================
+-- Note: les IDs des étudiants dépendent de l'ordre d'insertion
+-- Admin=1, Pilotes=2,3, Etudiants=4,5,6,7,8
+
 INSERT INTO candidatures (offre_id, etudiant_id, lettre_motivation, statut) VALUES
 (1, 4, 'Je suis très intéressé par cette offre de développeur web. Mes compétences en PHP et JavaScript correspondent parfaitement à vos besoins.', 'en_attente'),
 (2, 4, 'Passionné par le backend, je souhaite approfondir mes connaissances en Symfony.', 'en_attente'),

@@ -15,9 +15,11 @@
     padding: 0.8rem 1.75rem;
     z-index: 10002;
     box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.5);
-    
-    /* Animation d'entrée avec léger rebond */
-    animation: navSlideDown 1s cubic-bezier(0.34, 1.56, 0.64, 1);
+    /* Animation gérée par JS pour ne s'afficher qu'une seule fois */
+}
+
+.navbar-floating.animate-entry {
+    animation: navSlideDown 0.5s ease-out;
 }
 
 /* Classe ajoutée via JS après l'intro pour activer les transitions */
@@ -519,11 +521,21 @@ document.addEventListener('DOMContentLoaded', () => {
     let lastScrollTop = 0;
     const navbar = document.querySelector('.navbar-floating');
     
-    // Activer les transitions après l'animation d'entrée
-    setTimeout(() => {
+    // GESTION DE L'ANIMATION D'ENTRÉE (Une seule fois par session)
+    if (!sessionStorage.getItem('nav_animated')) {
+        // C'est la première visite, on joue l'animation
+        navbar.classList.add('animate-entry');
+        sessionStorage.setItem('nav_animated', 'true');
+        
+        // Après l'animation, on active les transitions de scroll normales
+        setTimeout(() => {
+            navbar.classList.remove('animate-entry');
+            navbar.classList.add('scrolling');
+        }, 1000);
+    } else {
+        // Déjà visité, pas d'animation d'entrée, on active direct le scroll behavior
         navbar.classList.add('scrolling');
-        navbar.style.animation = 'none';
-    }, 1000);
+    }
 
     window.addEventListener('scroll', () => {
         // Force l'activation si scroll avant la fin du timer

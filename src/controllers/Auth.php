@@ -3,6 +3,9 @@ namespace Controllers;
 
 use Core\Controller;
 use Models\User;
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
+use PHPMailer\PHPMailer\SMTP;
 
 /**
  * Contrôleur d'authentification
@@ -26,6 +29,7 @@ class Auth extends Controller
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $email = filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL);
             $password = $_POST['password'] ?? '';
+            $remember = isset($_POST['remember_me']);
 
             if (empty($email) || empty($password)) {
                 $errors[] = "Veuillez remplir tous les champs.";
@@ -34,12 +38,27 @@ class Auth extends Controller
                 $user = $userModel->findByEmail($email);
 
                 if ($user && password_verify($password, $user['password'])) {
+                    // Vérification du statut de vérification
+                    if ($user['is_verified'] == 0) {
+                        $_SESSION['verify_email'] = $email;
+                        $_SESSION['flash_warning'] = "Votre compte n'est pas encore vérifié. Veuillez entrer le code reçu par email.";
+                        $this->redirect('verify');
+                    }
+
                     // Connexion réussie
                     $_SESSION['user_id'] = $user['id'];
                     $_SESSION['user_email'] = $user['email'];
                     $_SESSION['user_role'] = $user['role'];
                     $_SESSION['user_nom'] = $user['nom'];
                     $_SESSION['user_prenom'] = $user['prenom'];
+
+                    // Gestion du "Se souvenir de moi"
+                    if ($remember) {
+                        $token = bin2hex(random_bytes(32));
+                        $userModel->updateRememberToken($user['id'], $token);
+                        // Cookie valable 30 jours
+                        setcookie('remember_me', $user['id'] . ':' . $token, time() + (86400 * 30), "/", "", false, true);
+                    }
 
                     // Régénération de l'ID de session pour la sécurité
                     session_regenerate_id(true);
@@ -163,13 +182,16 @@ class Auth extends Controller
         if (!$user) {
             // Création d'un compte utilisateur par défaut (rôle étudiant)
             $password = bin2hex(random_bytes(8));
-            $userId = $userModel->create([
+            $userData = [
                 'nom' => $nom ?: 'Google',
                 'prenom' => $prenom ?: 'User',
                 'email' => $email,
                 'password' => password_hash($password, PASSWORD_BCRYPT),
-                'role' => 'etudiant'
-            ]);
+                'role' => 'etudiant',
+                'is_verified' => 1 // Google users are verified by definition
+            ];
+            
+            $userId = $userModel->create($userData);
 
             if ($userId) {
                 $user = $userModel->findByEmail($email);
@@ -198,6 +220,9 @@ class Auth extends Controller
      */
     public function logout()
     {
+        // On récupère l'ID avant de détruire la session pour le nettoyage côté client
+        $userId = $_SESSION['user_id'] ?? null;
+
         // Suppression de toutes les variables de session
         $_SESSION = [];
 
@@ -212,11 +237,17 @@ class Auth extends Controller
             ]);
         }
 
+        // Suppression du cookie "Se souvenir de moi"
+        if (isset($_COOKIE['remember_me'])) {
+             setcookie('remember_me', '', time() - 3600, "/");
+        }
+
         // Destruction de la session
         session_destroy();
 
-        // Redirection vers la page d'accueil
-        header("Location: " . BASE_URL);
+        // Affichage de la vue de déconnexion (qui contient le JS de nettoyage)
+        // au lieu d'une redirection directe header()
+        require_once __DIR__ . '/../views/auth/logout.php';
         exit;
     }
 
@@ -269,20 +300,31 @@ class Auth extends Controller
                     if ($userModel->findByEmail($email)) {
                         $errors[] = "Cet email est déjà utilisé.";
                     } else {
-                        // Création de l'utilisateur
-                        $userId = $userModel->create([
+                        // Génération du code de vérification à 6 chiffres
+                        $verificationCode = (string) rand(100000, 999999);
+
+                        // Stockage temporaire des données d'inscription en session
+                        // On ne crée PAS l'utilisateur en base de données tout de suite
+                        $_SESSION['pending_registration'] = [
                             'nom' => $nom,
                             'prenom' => $prenom,
                             'email' => $email,
                             'password' => password_hash($password, PASSWORD_BCRYPT),
-                            'role' => $role
-                        ]);
+                            'role' => $role,
+                            'verification_code' => $verificationCode,
+                            'expires_at' => time() + (15 * 60), // 15 minutes
+                            'attempts' => 0
+                        ];
 
-                        if ($userId) {
-                            $_SESSION['flash_success'] = "Compte créé avec succès ! Connectez-vous.";
-                            $this->redirect('login');
+                        // Envoi de l'email
+                        if ($this->sendVerificationEmail($email, $prenom, $verificationCode)) {
+                            $_SESSION['verify_email'] = $email;
+                            $_SESSION['flash_success'] = "Veuillez entrer le code reçu par email pour finaliser votre inscription.";
+                            $this->redirect('verify');
                         } else {
-                            $errors[] = "Une erreur s'est produite lors de la création de l'utilisateur.";
+                            // Si l'envoi échoue, on annule tout
+                            unset($_SESSION['pending_registration']);
+                            $errors[] = "Erreur lors de l'envoi de l'email. Veuillez réessayer.";
                         }
                     }
                 }
@@ -295,6 +337,211 @@ class Auth extends Controller
             'success' => $success,
             'csrf_token' => $this->generateCsrfToken()
         ]);
+    }
+
+    /**
+     * Page de vérification du code
+     */
+    public function verify()
+    {
+        if (empty($_SESSION['verify_email']) || empty($_SESSION['pending_registration'])) {
+            $this->redirect('login');
+        }
+
+        $pendingUser = $_SESSION['pending_registration'];
+        $expiresAt = $pendingUser['expires_at'] ?? time();
+        $attempts = $pendingUser['attempts'] ?? 0;
+        
+        // Si expiré
+        if (time() > $expiresAt) {
+            $_SESSION['flash_error'] = "Le code a expiré. Veuillez en demander un nouveau.";
+        }
+
+        $this->render('auth/verify', [
+            'title' => 'Vérification du compte - ' . APP_NAME,
+            'csrf_token' => $this->generateCsrfToken(),
+            'expires_at' => $expiresAt,
+            'attempts' => $attempts
+        ]);
+    }
+
+    /**
+     * Traitement du code de vérification
+     */
+    public function verifyCode()
+    {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            $this->redirect('verify');
+        }
+
+        if (empty($_SESSION['verify_email']) || empty($_SESSION['pending_registration'])) {
+            $this->redirect('register');
+        }
+
+        $csrfToken = $_POST['csrf_token'] ?? '';
+        if (!$this->verifyCsrfToken($csrfToken)) {
+            $_SESSION['flash_error'] = "Token de sécurité invalide.";
+            $this->redirect('verify');
+        }
+
+        $code = $_POST['code'] ?? '';
+        $email = $_SESSION['verify_email'];
+        
+        // Référence pour pouvoir modifier directement dans la session
+        $pendingUser = &$_SESSION['pending_registration']; 
+
+        // Vérifier l'expiration
+        if (time() > $pendingUser['expires_at']) {
+            $_SESSION['flash_error'] = "Le code a expiré. Veuillez en demander un nouveau.";
+            $this->redirect('verify');
+        }
+
+        if ($pendingUser['verification_code'] === $code) {
+            // Code valide : création finale du compte
+            $userModel = new User();
+            
+            if ($userModel->findByEmail($email)) {
+                $_SESSION['flash_error'] = "Cet email est déjà utilisé par un compte actif.";
+                unset($_SESSION['pending_registration']);
+                unset($_SESSION['verify_email']);
+                $this->redirect('login');
+            }
+
+            $userModel->create([
+                'nom' => $pendingUser['nom'],
+                'prenom' => $pendingUser['prenom'],
+                'email' => $pendingUser['email'],
+                'password' => $pendingUser['password'], 
+                'role' => $pendingUser['role'],
+                'is_verified' => 1, 
+                'verification_code' => null
+            ]);
+
+            // Nettoyage session
+            unset($_SESSION['pending_registration']);
+            unset($_SESSION['verify_email']);
+            
+            $_SESSION['flash_success'] = "Compte créé et vérifié avec succès ! Vous pouvez maintenant vous connecter.";
+            $this->redirect('login');
+        } else {
+            // Code invalide
+            $pendingUser['attempts']++;
+            $remaining = 3 - $pendingUser['attempts'];
+            
+            if ($remaining <= 0) {
+                unset($_SESSION['pending_registration']);
+                unset($_SESSION['verify_email']);
+                $_SESSION['flash_error'] = "Nombre maximum de tentatives atteint. Veuillez recommencer l'inscription.";
+                $this->redirect('register');
+            }
+            
+            $_SESSION['flash_error'] = "Code incorrect. Il vous reste $remaining tentative(s).";
+            $this->redirect('verify');
+        }
+    }
+
+    /**
+     * Renvoyer le code de vérification
+     */
+    public function resendCode()
+    {
+        if (empty($_SESSION['verify_email']) || empty($_SESSION['pending_registration'])) {
+            $this->redirect('register');
+        }
+
+        $email = $_SESSION['verify_email'];
+        $pendingUser = &$_SESSION['pending_registration']; 
+
+        $newCode = (string) rand(100000, 999999);
+        $pendingUser['verification_code'] = $newCode;
+        $pendingUser['expires_at'] = time() + (15 * 60); // Reset timer
+        $pendingUser['attempts'] = 0; // Reset attempts
+
+        if ($this->sendVerificationEmail($email, $pendingUser['prenom'], $newCode)) {
+            $_SESSION['flash_success'] = "Un nouveau code a été envoyé.";
+        } else {
+            $_SESSION['flash_error'] = "Erreur lors de l'envoi de l'email.";
+        }
+        
+        $this->redirect('verify');
+    }
+
+    /**
+     * Helper pour envoyer l'email de vérification via Brevo
+     */
+    private function sendVerificationEmail($toEmail, $prenom, $code)
+    {
+        $mail = new PHPMailer(true);
+
+        try {
+            // Configuration serveur
+            $mail->isSMTP();
+            $mail->Host       = SMTP_HOST;
+            $mail->SMTPAuth   = true;
+            $mail->Username   = SMTP_USER;
+            $mail->Password   = SMTP_PASS;
+            $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+            $mail->Port       = SMTP_PORT;
+            $mail->CharSet    = 'UTF-8';
+
+            // Destinataires
+            $mail->setFrom(SMTP_FROM_EMAIL, SMTP_FROM_NAME);
+            $mail->addAddress($toEmail, $prenom);
+
+            // Contenu
+            $mail->isHTML(true);
+            $mail->Subject = 'Vérification de votre compte - CESI Stages';
+            
+            $styles = "
+                body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0; }
+                .container { max-width: 600px; margin: 20px auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+                .header { background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); padding: 30px; text-align: center; color: white; }
+                .logo { font-size: 24px; font-weight: bold; letter-spacing: 1px; }
+                .content { padding: 40px 30px; text-align: center; color: #333333; }
+                .h1 { color: #1e3c72; margin-top: 0; font-size: 24px; }
+                .code-box { background-color: #f8f9fa; border: 2px dashed #1e3c72; border-radius: 8px; font-size: 32px; font-weight: bold; letter-spacing: 5px; color: #1e3c72; padding: 20px; margin: 30px 0; display: inline-block; }
+                .text { line-height: 1.6; color: #555555; font-size: 16px; margin-bottom: 20px; }
+                .footer { background-color: #f8f9fa; padding: 20px; text-align: center; font-size: 12px; color: #888888; border-top: 1px solid #eeeeee; }
+                .link { color: #1e3c72; text-decoration: none; }
+            ";
+
+            $mail->Body = "
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <meta charset='UTF-8'>
+                    <style>$styles</style>
+                </head>
+                <body>
+                    <div class='container'>
+                        <div class='header'>
+                            <div class='logo'>CESI Stages</div>
+                        </div>
+                        <div class='content'>
+                            <h1 class='h1'>Bienvenue, $prenom !</h1>
+                            <p class='text'>Nous sommes ravis de vous compter parmi nous. Pour finaliser votre inscription et accéder à toutes nos offres de stage, veuillez utiliser le code de vérification ci-dessous :</p>
+                            
+                            <div class='code-box'>$code</div>
+                            
+                            <p class='text'>Ce code est valable pendant 15 minutes. Ne le partagez avec personne.</p>
+                        </div>
+                        <div class='footer'>
+                            <p>Ceci est un message automatique, merci de ne pas y répondre.</p>
+                            <p>&copy; " . date('Y') . " CESI Stages. Tous droits réservés.</p>
+                        </div>
+                    </div>
+                </body>
+                </html>
+            ";
+            
+            $mail->AltBody = "Bienvenue $prenom. Votre code de vérification est : $code. Merci de le saisir sur la page de vérification.";
+
+            $mail->send();
+            return true;
+        } catch (Exception $e) {
+            // Log l'erreur si nécessaire : error_log("Message could not be sent. Mailer Error: {$mail->ErrorInfo}");
+            return false;
+        }
     }
 
     /**
@@ -380,6 +627,227 @@ class Auth extends Controller
                  $_SESSION['flash_error'] = "Erreur lors de la mise à jour.";
                  $this->redirect('profile/edit');
             }
+        }
+    }
+
+    /**
+     * Page mot de passe oublié (saisie email)
+     */
+    public function forgotPassword()
+    {
+        $errors = [];
+        
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $email = filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL);
+            
+            if (empty($email)) {
+                $errors[] = "Veuillez entrer votre adresse email.";
+            } else {
+                $userModel = new User();
+                $user = $userModel->findByEmail($email);
+                
+                // Toujours afficher le même message pour éviter l'énumération
+                $_SESSION['flash_success'] = "Si cette adresse existe, un code de vérification vous a été envoyé.";
+                
+                if ($user) {
+                     $code = (string) rand(100000, 999999);
+                     
+                     // Stockage en session
+                     $_SESSION['reset_email'] = $email;
+                     $_SESSION['reset_code'] = $code;
+                     $_SESSION['reset_expires'] = time() + (5 * 60); // 5 minutes
+                     // Reset previous verified state
+                     unset($_SESSION['reset_verified']);
+                     
+                     // Envoi email
+                     $this->sendPasswordResetEmail($email, $code);
+                } else {
+                    // Simulation délai
+                    usleep(500000); 
+                }
+                
+                $this->redirect('forgot-password/verify');
+            }
+        }
+        
+        $this->render('auth/forgot-password', [
+            'title' => 'Mot de passe oublié - ' . APP_NAME,
+            'errors' => $errors,
+            'csrf_token' => $this->generateCsrfToken()
+        ]);
+    }
+    
+    /**
+     * Page de saisie du code de reset
+     */
+    public function verifyResetCodePage()
+    {
+        $this->render('auth/verify-reset', [
+            'title' => 'Vérification - ' . APP_NAME,
+            'errors' => [],
+            'csrf_token' => $this->generateCsrfToken()
+        ]);
+    }
+    
+    /**
+     * Traitement du code de reset
+     */
+    public function verifyResetCode()
+    {
+        $code = $_POST['code'] ?? '';
+        $errors = [];
+        
+        if (empty($code)) {
+            $errors[] = "Veuillez entrer le code.";
+        }
+        
+        // Vérification de session
+        if (!isset($_SESSION['reset_code']) || !isset($_SESSION['reset_expires'])) {
+            $errors[] = "Session expirée ou invalide. Veuillez recommencer.";
+        } elseif (time() > $_SESSION['reset_expires']) {
+            $errors[] = "Le code a expiré.";
+        } elseif ($code !== $_SESSION['reset_code']) {
+             $errors[] = "Code incorrect.";
+             $attempts = ($_SESSION['reset_attempts'] ?? 0) + 1;
+             $_SESSION['reset_attempts'] = $attempts;
+             if ($attempts > 3) {
+                 unset($_SESSION['reset_code']);
+                 $errors[] = "Trop de tentatives. Veuillez recommencer.";
+             }
+        }
+        
+        if (empty($errors)) {
+            $_SESSION['reset_verified'] = true;
+            $this->redirect('forgot-password/reset');
+        }
+        
+        $this->render('auth/verify-reset', [
+            'title' => 'Vérification - ' . APP_NAME,
+            'errors' => $errors,
+            'csrf_token' => $this->generateCsrfToken()
+        ]);
+    }
+    
+    /**
+     * Page de nouveau mot de passe
+     */
+    public function resetPasswordPage()
+    {
+        if (empty($_SESSION['reset_verified']) || $_SESSION['reset_verified'] !== true) {
+            $this->redirect('forgot-password');
+        }
+        
+        $this->render('auth/reset-password', [
+            'title' => 'Nouveau mot de passe - ' . APP_NAME,
+            'errors' => [],
+            'csrf_token' => $this->generateCsrfToken()
+        ]);
+    }
+    
+    /**
+     * Traitement du nouveau mot de passe
+     */
+    public function resetPassword()
+    {
+        if (empty($_SESSION['reset_verified']) || $_SESSION['reset_verified'] !== true) {
+            $this->redirect('forgot-password');
+        }
+        
+        $password = $_POST['password'] ?? '';
+        $confirm = $_POST['confirm_password'] ?? '';
+        $errors = [];
+        
+        if (strlen($password) < 8) {
+            $errors[] = "Le mot de passe doit faire 8 caractères min.";
+        }
+        if ($password !== $confirm) {
+            $errors[] = "Les mots de passe ne correspondent pas.";
+        }
+        
+        if (empty($errors)) {
+            $userModel = new User();
+            $user = $userModel->findByEmail($_SESSION['reset_email']);
+            
+            if ($user) {
+                $hash = password_hash($password, PASSWORD_BCRYPT);
+                
+                // On met à jour le mot de passe ET on valide le compte (car email vérifié par le code)
+                $userModel->update($user['id'], [
+                    'password' => $hash,
+                    'is_verified' => 1
+                ]);
+                
+                // Nettoyage
+                unset($_SESSION['reset_email']);
+                unset($_SESSION['reset_code']);
+                unset($_SESSION['reset_expires']);
+                unset($_SESSION['reset_verified']);
+                
+                $_SESSION['flash_success'] = "Mot de passe modifié avec succès. Connectez-vous.";
+                $this->redirect('login');
+            } else {
+                $errors[] = "Erreur utilisateur introuvable.";
+            }
+        }
+        
+        $this->render('auth/reset-password', [
+            'title' => 'Nouveau mot de passe - ' . APP_NAME,
+            'errors' => $errors,
+            'csrf_token' => $this->generateCsrfToken()
+        ]);
+    }
+
+    private function sendPasswordResetEmail($toEmail, $code)
+    {
+        $mail = new PHPMailer(true);
+
+        try {
+            // Configuration serveur
+            $mail->isSMTP();
+            $mail->Host       = SMTP_HOST; 
+            $mail->SMTPAuth   = true;
+            $mail->Username   = SMTP_USER;
+            $mail->Password   = SMTP_PASS;
+            $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+            $mail->Port       = SMTP_PORT;
+            $mail->CharSet    = 'UTF-8';
+
+            // Destinataires
+            $mail->setFrom(SMTP_FROM_EMAIL, SMTP_FROM_NAME);
+            $mail->addAddress($toEmail);
+
+            // Contenu
+            $mail->isHTML(true);
+            $mail->Subject = 'Réinitialisation mot de passe - CESI Stages';
+            
+            $styles = "
+                body { font-family: 'Segoe UI', sans-serif; background-color: #f4f4f4; }
+                .container { max-width: 600px; margin: 20px auto; background: #fff; border-radius: 8px; overflow: hidden; }
+                .header { background: #1e3c72; padding: 20px; color: white; text-align: center; }
+                .content { padding: 30px; text-align: center; color: #333; }
+                .code { background: #f8f9fa; border: 2px dashed #1e3c72; padding: 15px; font-size: 24px; letter-spacing: 5px; margin: 20px 0; display: inline-block; font-weight: bold; color: #1e3c72; }
+            ";
+            
+            $mail->Body = "
+                <!DOCTYPE html><html><head><meta charset='UTF-8'><style>$styles</style></head><body>
+                <div class='container'>
+                    <div class='header'><h1>CESI Stages</h1></div>
+                    <div class='content'>
+                        <h2>Réinitialisation de mot de passe</h2>
+                        <p>Vous avez demandé la réinitialisation de votre mot de passe. Voici votre code :</p>
+                        <div class='code'>$code</div>
+                        <p>Ce code expire dans 5 minutes.</p>
+                        <p>Si vous n'êtes pas à l'origine de cette demande, ignorez ce message.</p>
+                    </div>
+                </div>
+                </body></html>
+            ";
+            
+            $mail->send();
+            return true;
+        } catch (Exception $e) {
+            // error_log("Mail Error: {$mail->ErrorInfo}");
+            return false;
         }
     }
 }

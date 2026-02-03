@@ -15,6 +15,18 @@ $router->add('register', ['controller' => 'Auth', 'action' => 'register']);
 $router->add('profile', ['controller' => 'Auth', 'action' => 'profile']);
 $router->add('profile/edit', ['controller' => 'Auth', 'action' => 'editProfile']);
 $router->add('profile/update', ['controller' => 'Auth', 'action' => 'updateProfile']);
+// Verification
+$router->add('verify', ['controller' => 'Auth', 'action' => 'verify']);
+$router->add('verify/submit', ['controller' => 'Auth', 'action' => 'verifyCode']);
+$router->add('verify/resend', ['controller' => 'Auth', 'action' => 'resendCode']);
+
+// Password Reset
+$router->add('forgot-password', ['controller' => 'Auth', 'action' => 'forgotPassword']);
+$router->add('forgot-password/verify', ['controller' => 'Auth', 'action' => 'verifyResetCodePage']);
+$router->add('forgot-password/verify-code', ['controller' => 'Auth', 'action' => 'verifyResetCode']);
+$router->add('forgot-password/reset', ['controller' => 'Auth', 'action' => 'resetPasswordPage']);
+$router->add('forgot-password/update', ['controller' => 'Auth', 'action' => 'resetPassword']);
+
 // Google SSO
 $router->add('auth/google', ['controller' => 'Auth', 'action' => 'googleRedirect']);
 $router->add('auth/google-callback', ['controller' => 'Auth', 'action' => 'googleCallback']);

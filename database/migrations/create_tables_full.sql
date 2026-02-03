@@ -1,5 +1,5 @@
 -- ============================================
--- CesiStages - Script de création de la base de données
+-- CesiStages - Script de création de la base de données complet
 -- ============================================
 
 -- Création de la base de données
@@ -18,7 +18,14 @@ CREATE TABLE users (
     prenom VARCHAR(100) NOT NULL,
     email VARCHAR(255) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
+    age INT DEFAULT NULL,
+    telephone VARCHAR(20) DEFAULT NULL,
+    adresse TEXT DEFAULT NULL,
+    bio TEXT DEFAULT NULL,
     role ENUM('admin', 'pilote', 'etudiant') NOT NULL DEFAULT 'etudiant',
+    is_verified BOOLEAN DEFAULT 0,
+    verification_code VARCHAR(6) DEFAULT NULL,
+    remember_token VARCHAR(255) NULL DEFAULT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     INDEX idx_email (email),

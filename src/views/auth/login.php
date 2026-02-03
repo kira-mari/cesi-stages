@@ -49,13 +49,13 @@
 
             <div class="auth-options">
                 <label class="remember-me">
-                    <input type="checkbox" name="remember">
+                    <input type="checkbox" name="remember_me">
                     <span class="custom-checkbox">
                         <i class="fas fa-check" style="font-size: 0.7rem; color: white;"></i>
                     </span>
                     Se souvenir de moi
                 </label>
-                <a href="#" class="forgot-password">Mot de passe oublié ?</a>
+                <a href="<?= BASE_URL ?>/forgot-password" class="forgot-password">Mot de passe oublié ?</a>
             </div>
 
             <button type="submit" class="btn-auth-primary">

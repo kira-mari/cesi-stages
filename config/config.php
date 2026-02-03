@@ -60,6 +60,14 @@ if (!defined('GOOGLE_REDIRECT')) {
 const SESSION_LIFETIME = 3600; // 1 heure
 const CSRF_TOKEN_NAME = 'csrf_token';
 
+// Email (Brevo / SMTP)
+define('SMTP_HOST', $_ENV['SMTP_HOST'] ?? 'smtp-relay.brevo.com');
+define('SMTP_PORT', $_ENV['SMTP_PORT'] ?? 587);
+define('SMTP_USER', $_ENV['SMTP_USER'] ?? '');
+define('SMTP_PASS', $_ENV['SMTP_PASS'] ?? '');
+define('SMTP_FROM_EMAIL', $_ENV['SMTP_FROM_EMAIL'] ?? 'no-reply@cesistages.fr');
+define('SMTP_FROM_NAME', $_ENV['SMTP_FROM_NAME'] ?? 'CESI Stages');
+
 // Pagination
 const ITEMS_PER_PAGE = 9;
 

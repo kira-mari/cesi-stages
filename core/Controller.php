@@ -131,7 +131,45 @@ abstract class Controller
      */
     protected function isAuthenticated()
     {
-        return isset($_SESSION['user_id']) && !empty($_SESSION['user_id']);
+        // 1. Session active ?
+        if (isset($_SESSION['user_id']) && !empty($_SESSION['user_id'])) {
+            return true;
+        }
+        
+        // 2. Cookie "Se souvenir de moi" ?
+        if (isset($_COOKIE['remember_me'])) {
+            $parts = explode(':', $_COOKIE['remember_me']);
+            if (count($parts) === 2) {
+                list($userId, $token) = $parts;
+                
+                // Essai de reconnexion auto
+                if (class_exists('\Models\User')) {
+                    try {
+                        $userModel = new \Models\User();
+                        $user = $userModel->find($userId);
+                        
+                        // On vérifie que le token correspond
+                        // Note: nécessite la colonne remember_token (Migration 002)
+                        if ($user && isset($user['remember_token']) && $user['remember_token'] === $token) {
+                            $_SESSION['user_id'] = $user['id'];
+                            $_SESSION['user_email'] = $user['email'];
+                            $_SESSION['user_role'] = $user['role'];
+                            $_SESSION['user_nom'] = $user['nom'];
+                            $_SESSION['user_prenom'] = $user['prenom'];
+                            session_regenerate_id(true);
+                            return true;
+                        }
+                    } catch (\Exception $e) {
+                        // Erreur silencieuse
+                    }
+                }
+            }
+            
+            // Si le cookie est là mais invalide (token changé, user supprimé...), on le vire
+            setcookie('remember_me', '', time() - 3600, "/");
+        }
+
+        return false;
     }
 
     /**

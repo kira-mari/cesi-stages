@@ -510,6 +510,16 @@
                 this.style.height = 'auto';
             }
         });
+        
+        // Gérer la touche Entrée pour envoyer
+        input.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                // On déclenche l'événement submit du formulaire
+                const event = new Event('submit', { cancelable: true });
+                form.dispatchEvent(event);
+            }
+        });
 
         form.addEventListener('submit', function (e) {
             e.preventDefault();

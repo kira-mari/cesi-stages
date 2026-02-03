@@ -97,4 +97,36 @@ class User extends Model
         $stmt->execute([':pilote_id' => $piloteId]);
         return $stmt->fetchAll();
     }
+
+    /**
+     * Met à jour le jeton "Se souvenir de moi"
+     * 
+     * @param int $userId
+     * @param string|null $token
+     * @return bool
+     */
+    public function updateRememberToken($userId, $token)
+    {
+        // On suppose que la colonne remember_token existe (voir migration 002)
+        try {
+            $stmt = self::getDB()->prepare("UPDATE {$this->table} SET remember_token = :token WHERE id = :id");
+            return $stmt->execute([':token' => $token, ':id' => $userId]);
+        } catch (\PDOException $e) {
+            // Si la colonne n'existe pas encore, on ignore silencieusement ou on log
+            return false;
+        }
+    }
+
+    /**
+     * Met à jour le mot de passe d'un utilisateur
+     * 
+     * @param int $userId
+     * @param string $hashedPassword
+     * @return bool
+     */
+    public function updatePassword($userId, $hashedPassword)
+    {
+        $stmt = self::getDB()->prepare("UPDATE {$this->table} SET password = :password WHERE id = :id");
+        return $stmt->execute([':password' => $hashedPassword, ':id' => $userId]);
+    }
 }

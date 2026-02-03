@@ -1,175 +1,95 @@
-# CesiStages - Plateforme de Recherche de Stages
+<div align="center">
 
-## 📋 Description
+# CesiStages
+### Plateforme de Gestion de Stages - CESI
 
-CesiStages est une application web de gestion de recherche de stages développée pour les étudiants CESI. Elle permet de :
+![PHP](https://img.shields.io/badge/PHP-8.0%2B-777BB4?style=for-the-badge&logo=php&logoColor=white)
+![MySQL](https://img.shields.io/badge/MySQL-004351?style=for-the-badge&logo=mysql&logoColor=white)
+![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white)
+![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=for-the-badge&logo=css3&logoColor=white)
+![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)
+![Composer](https://img.shields.io/badge/Composer-885630?style=for-the-badge&logo=composer&logoColor=white)
 
-- Consulter et rechercher des offres de stage
-- Gérer les entreprises partenaires
-- Postuler à des offres avec CV et lettre de motivation
-- Gérer une wishlist d'offres favorites
-- Suivre les candidatures (étudiants et pilotes)
-- Consulter des statistiques sur les offres
+</div>
 
-## 🚀 Installation
+---
 
-### Prérequis
+## 📋 Contexte du Projet
 
-- PHP >= 7.4
-- MySQL >= 5.7 ou MariaDB >= 10.2
-- Apache avec mod_rewrite activé
-- Composer
+**CesiStages** est une solution web centralisée conçue pour simplifier le processus de recherche de stage au sein du campus CESI. 
 
-### Étapes d'installation
+Cette plateforme met en relation trois acteurs principaux :
+*   **Les Étudiants** : Pour rechercher des offres, gérer leur wishlist et postuler en ligne.
+*   **Les Entreprises** : Pour déposer des offres de stages et gagner en visibilité.
+*   **Les Pilotes de formation** : Pour suivre les candidatures, valider les entreprises et accompagner les étudiants.
 
-1. **Cloner le projet**
-   ```bash
-   git clone https://github.com/web4all/cesi-stages.git
-   cd cesi-stages
-   ```
+Le projet a été développé avec une architecture **MVC (Modèle-Vue-Contrôleur)** native, sans framework lourd, pour garantir légèreté et pédagogie.
 
-2. **Installer les dépendances**
-   ```bash
-   composer install
-   ```
+---
 
-3. **Configurer la base de données**
-   - Créer une base de données MySQL nommée `cesi_stages`
-   - Importer le fichier `database/migrations/001_create_tables.sql`
-   - Importer les données de test `database/seeds/001_insert_data.sql`
-
-4. **Configurer l'application**
-   - Modifier le fichier `config/config.php` avec vos paramètres de base de données
-   - Modifier la constante `BASE_URL` selon votre configuration
-
-5. **Configurer Apache**
-   - Activer le module rewrite : `a2enmod rewrite`
-   - Configurer un VirtualHost pointant vers le dossier `public/`
-   - Ou utiliser le fichier `.htaccess` fourni
-
-6. **Permissions**
-   ```bash
-   chmod 755 -R uploads/
-   chmod 755 -R logs/
-   ```
-
-## 🏗️ Architecture
-
-Le projet suit une architecture **MVC (Model-View-Controller)** :
-
-```
-cesi-stages/
-├── config/                 # Configuration
-│   ├── config.php         # Configuration générale
-│   └── routes.php         # Définition des routes
-├── core/                   # Classes de base
-│   ├── Router.php         # Routeur
-│   ├── Controller.php     # Contrôleur de base
-│   └── Model.php          # Modèle de base
-├── src/
-│   ├── controllers/       # Contrôleurs
-│   ├── models/            # Modèles
-│   └── views/             # Vues
-│       ├── layouts/       # Layouts
-│       ├── partials/      # Partials
-│       └── ...            # Pages
-├── public/                # Point d'entrée
-│   ├── index.php
-│   └── .htaccess
-├── assets/                # Ressources statiques
-│   ├── css/
-│   └── js/
-├── database/              # Scripts SQL
-│   ├── migrations/
-│   └── seeds/
-├── tests/                 # Tests unitaires
-└── docs/                  # Documentation
-```
-
-## 👥 Rôles et Permissions
-
-| Fonctionnalité | Administrateur | Pilote | Étudiant | Anonyme |
-|----------------|----------------|--------|----------|---------|
-| Authentification | ✅ | ✅ | ✅ | ✅ |
-| Voir offres | ✅ | ✅ | ✅ | ✅ |
-| Voir entreprises | ✅ | ✅ | ✅ | ✅ |
-| Créer entreprise | ✅ | ✅ | ❌ | ❌ |
-| Modifier entreprise | ✅ | ✅ | ❌ | ❌ |
-| Évaluer entreprise | ✅ | ✅ | ❌ | ❌ |
-| Créer offre | ✅ | ✅ | ❌ | ❌ |
-| Modifier offre | ✅ | ✅ | ❌ | ❌ |
-| Gérer pilotes | ✅ | ❌ | ❌ | ❌ |
-| Gérer étudiants | ✅ | ✅ | ❌ | ❌ |
-| Postuler | ❌ | ❌ | ✅ | ❌ |
-| Wishlist | ❌ | ❌ | ✅ | ❌ |
-| Voir statistiques | ✅ | ✅ | ✅ | ❌ |
-
-## 🔐 Comptes de démonstration
-
-| Rôle | Email | Mot de passe |
-|------|-------|--------------|
-| Administrateur | admin@cesi.fr | admin123 |
-| Pilote | pilote@cesi.fr | pilote123 |
-| Étudiant | etudiant@cesi.fr | etudiant123 |
-
-## 🧪 Tests
-
-Exécuter les tests unitaires avec PHPUnit :
+## 📥 Installation Rapide
 
 ```bash
-./vendor/bin/phpunit
+git clone https://github.com/web4all/cesi-stages.git
+cd cesi-stages
+composer install
 ```
 
-## 🛡️ Sécurité
+---
 
-- Protection contre les injections SQL (requêtes préparées)
-- Protection XSS (échappement des sorties)
-- Protection CSRF (tokens)
-- Mots de passe hashés (bcrypt)
-- Sessions sécurisées (regenerate_id)
-- Cookies sécurisés (httponly, secure, samesite)
+## 📚 Documentation Complète
 
-## 📝 Spécifications techniques
+Pour une mise en place complète (Base de données, Emails, HTTPS, etc.), merci de suivre notre guide pas à pas :
 
-- **Architecture** : MVC
-- **Langages** : PHP 7.4+, HTML5, CSS3, JavaScript
-- **Base de données** : MySQL/MariaDB
-- **Serveur** : Apache
-- **Tests** : PHPUnit
-- **Responsive** : Mobile-first
+1.  [**Prérequis & Installation**](docs/01_PREREQUIS_INSTALLATION.md)
+    *Installation de Git, Composer et initialisation de la BDD.*
 
-## 📊 Fonctionnalités
+2.  [**Configuration .env**](docs/02_CONFIGURATION_ENV.md)
+    *Sécurisation des identifiants et accès BDD.*
 
-### Gestion des entreprises
-- CRUD complet
-- Évaluation par les utilisateurs
-- Recherche et filtrage
+3.  [**Configuration Brevo (SMTP)**](docs/03_CONFIGURATION_BREVO.md)
+    *Envoi d'emails transactionnels.*
 
-### Gestion des offres
-- CRUD complet
-- Filtrage par compétences
-- Pagination
-- Statistiques
+4.  [**Configuration Google SSO**](docs/04_CONFIGURATION_GOOGLE.md)
+    *Connexion via compte Google.*
 
-### Gestion des candidatures
-- Postulation avec CV et LM
-- Suivi des candidatures
-- Consultation par les pilotes
+5.  [**Configuration VHosts**](docs/05_CONFIGURATION_VHOSTS.md)
+    *URL propre `http://cesi-site.local`.*
 
-### Wishlist
-- Ajout/retrait d'offres
-- Consultation personnelle
+6.  [**Configuration HTTPS**](docs/06_CONFIGURATION_HTTPS.md)
+    *Certificats SSL locaux.*
 
-### Tableau de bord
-- Statistiques selon le rôle
-- Actions rapides
-- Dernières offres
+7.  [**Démarrage & Tests**](docs/07_DEMARRAGE.md)
+    *Lancement et vérification.*
 
-## 📄 Licence
+---
 
-Ce projet est développé dans le cadre du cursus CESI. Tous droits réservés.
+## 🏗️ Architecture du Projet
 
-## 👨‍💻 Auteurs
+Le code source est organisé selon le patron de conception MVC pour séparer la logique, les données et l'affichage.
 
-- **Web4All** - Développement
-- **CESI** - Cahier des charges
+```mermaid
+graph TD;
+    User-->Router;
+    Router-->Controller;
+    Controller-->Model;
+    Model-->Database;
+    Controller-->View;
+    View-->User;
+```
+
+### Structure des dossiers
+
+```text
+cesi-stages/
+├── config/             # Configuration globale et Routes
+├── core/               # Noyau du framework maison (Router, Model, Controller)
+├── src/                
+│   ├── controllers/    # Logique métier (Auth, Offre, Etudiant...)
+│   ├── models/         # Interaction BDD (Requêtes SQL)
+│   └── views/          # Templates HTML/PHP
+├── public/             # Racine web (index.php, CSS, JS, Assets)
+├── database/           # Scripts SQL (Migrations et Seeds)
+├── docs/               # Documentation technique détaillée
+└── vendor/             # Dépendances Composer
+```
