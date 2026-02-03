@@ -35,6 +35,111 @@ class Offre extends Model
     }
 
     /**
+     * Récupère les offres par ville (en se basant sur l'adresse de l'entreprise)
+     *
+     * @param string $ville
+     * @param int $limit
+     * @return array
+     */
+    public function getByVille(string $ville, int $limit = 10): array
+    {
+        $sql = "SELECT o.*, 
+                       e.nom AS entreprise_nom, 
+                       e.adresse AS entreprise_adresse
+                FROM {$this->table} o
+                JOIN entreprises e ON o.entreprise_id = e.id
+                WHERE e.adresse LIKE :ville
+                ORDER BY o.created_at DESC
+                LIMIT :limit";
+
+        $stmt = self::getDB()->prepare($sql);
+        $stmt->bindValue(':ville', '%' . $ville . '%', PDO::PARAM_STR);
+        $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+        $stmt->execute();
+
+        return $stmt->fetchAll();
+    }
+
+    /**
+     * Récupère les offres par compétence (stockée en JSON)
+     *
+     * @param string $competence
+     * @param int $limit
+     * @return array
+     */
+    public function getByCompetence(string $competence, int $limit = 10): array
+    {
+        $sql = "SELECT o.*, 
+                       e.nom AS entreprise_nom, 
+                       e.adresse AS entreprise_adresse
+                FROM {$this->table} o
+                JOIN entreprises e ON o.entreprise_id = e.id
+                WHERE o.competences LIKE :competence
+                ORDER BY o.created_at DESC
+                LIMIT :limit";
+
+        $stmt = self::getDB()->prepare($sql);
+        // competences est un JSON de type ["PHP", "Symfony"] -> on cherche la valeur exacte dans le JSON
+        $stmt->bindValue(':competence', '%"' . $competence . '"%', PDO::PARAM_STR);
+        $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+        $stmt->execute();
+
+        return $stmt->fetchAll();
+    }
+
+    /**
+     * Récupère les offres par nom d'entreprise
+     *
+     * @param string $entrepriseNom
+     * @param int $limit
+     * @return array
+     */
+    public function getByEntreprise(string $entrepriseNom, int $limit = 10): array
+    {
+        $sql = "SELECT o.*, 
+                       e.nom AS entreprise_nom, 
+                       e.adresse AS entreprise_adresse
+                FROM {$this->table} o
+                JOIN entreprises e ON o.entreprise_id = e.id
+                WHERE e.nom LIKE :nom
+                ORDER BY o.created_at DESC
+                LIMIT :limit";
+
+        $stmt = self::getDB()->prepare($sql);
+        $stmt->bindValue(':nom', '%' . $entrepriseNom . '%', PDO::PARAM_STR);
+        $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+        $stmt->execute();
+
+        return $stmt->fetchAll();
+    }
+
+    /**
+     * Récupère les offres par durée (en mois)
+     *
+     * @param int $duree
+     * @param int $limit
+     * @return array
+     */
+    public function getByDuree(int $duree, int $limit = 10): array
+    {
+        $sql = "SELECT o.*, 
+                       e.nom AS entreprise_nom, 
+                       e.adresse AS entreprise_adresse
+                FROM {$this->table} o
+                JOIN entreprises e ON o.entreprise_id = e.id
+                WHERE o.duree = :duree
+                ORDER BY o.created_at DESC
+                LIMIT :limit";
+
+        $stmt = self::getDB()->prepare($sql);
+        $stmt->bindValue(':duree', $duree, PDO::PARAM_INT);
+        $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+        $stmt->execute();
+
+        return $stmt->fetchAll();
+    }
+
+    /**
      * Récupère une offre avec les informations de l'entreprise
      *
      * @param int $id
@@ -76,13 +181,13 @@ class Offre extends Model
     /**
      * Recherche avancée d'offres
      *
-     * @param string $search
-     * @param string $competence
+     * @param string $search Texte libre (titre, description, entreprise)
+     * @param string $ville  Ville (basée sur l'adresse de l'entreprise)
      * @return array
      */
-    public function searchAdvanced($search = '', $competence = '')
+    public function searchAdvanced($search = '', $ville = '')
     {
-        $sql = "SELECT o.*, e.nom as entreprise_nom 
+        $sql = "SELECT o.*, e.nom as entreprise_nom, e.adresse as entreprise_adresse
                 FROM {$this->table} o
                 JOIN entreprises e ON o.entreprise_id = e.id
                 WHERE 1=1";
@@ -93,9 +198,9 @@ class Offre extends Model
             $params[':search'] = '%' . $search . '%';
         }
 
-        if (!empty($competence)) {
-            $sql .= " AND o.competences LIKE :competence";
-            $params[':competence'] = '%"' . $competence . '"%';
+        if (!empty($ville)) {
+            $sql .= " AND e.adresse LIKE :ville";
+            $params[':ville'] = '%' . $ville . '%';
         }
 
         $sql .= " ORDER BY o.created_at DESC";

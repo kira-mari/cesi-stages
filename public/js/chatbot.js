@@ -5,6 +5,12 @@
 
 (function () {
     const CHATBOT_ENDPOINT = 'https://cesi-site.local/chatbot/ask';
+    // Clé d'historique unique par utilisateur
+    const getHistoryKey = () => {
+        const userId = window.CHATBOT_USER_ID || 'guest';
+        return `cesistages_chatbot_history_v1_user_${userId}`;
+    };
+    let chatbotHistory = [];
 
     /**
      * Crée le markup du widget si absent (injection non intrusive)
@@ -36,11 +42,6 @@
                     </button>
                 </div>
                 <div class="chatbot-messages" id="chatbotMessages" aria-live="polite">
-                    <div class="chatbot-message chatbot-message--bot">
-                        Bonjour 👋<br>
-                        Je peux vous aider à trouver une offre, comprendre un statut de candidature ou utiliser la plateforme.
-                        <div class="chatbot-message-meta">Bot · maintenant</div>
-                    </div>
                 </div>
                 <div class="chatbot-footer">
                     <form class="chatbot-form" id="chatbotForm">
@@ -71,7 +72,8 @@
     /**
      * Ajoute un message dans le flux
      */
-    function appendMessage(text, from = 'bot') {
+    function appendMessage(text, from = 'bot', options) {
+        const opts = options || {};
         const messagesEl = document.getElementById('chatbotMessages');
         if (!messagesEl) return;
 
@@ -83,6 +85,170 @@
 
         messagesEl.appendChild(msg);
         messagesEl.scrollTop = messagesEl.scrollHeight;
+
+        if (opts.store !== false) {
+            chatbotHistory.push({ type: from, text: text });
+            saveHistory();
+        }
+    }
+
+    /**
+     * Ajoute un message du bot avec éventuels liens vers des offres
+     * payload = { answer: string, offers?: [{title, url}] }
+     */
+    function appendBotAnswer(payload, options) {
+        const opts = options || {};
+        const messagesEl = document.getElementById('chatbotMessages');
+        if (!messagesEl || !payload) return;
+
+        const msg = document.createElement('div');
+        msg.className = 'chatbot-message chatbot-message--bot';
+
+        const textWrapper = document.createElement('div');
+        const safeAnswer = typeof payload.answer === 'string' ? payload.answer : '';
+        textWrapper.innerHTML = escapeHtml(safeAnswer).replace(/\n/g, '<br>');
+        msg.appendChild(textWrapper);
+
+        if (Array.isArray(payload.offers) && payload.offers.length > 0) {
+            const list = document.createElement('ul');
+            list.style.marginTop = '0.5rem';
+            list.style.paddingLeft = '1.1rem';
+
+            payload.offers.forEach(function (offer) {
+                if (!offer || !offer.url || !offer.title) return;
+                const li = document.createElement('li');
+                const a = document.createElement('a');
+                a.href = offer.url;
+                a.textContent = offer.title;
+                a.style.color = 'hsl(var(--primary))';
+                a.style.textDecoration = 'underline';
+                li.appendChild(a);
+                list.appendChild(li);
+            });
+
+            msg.appendChild(list);
+        }
+
+        // Afficher la liste des étudiants (pour les réponses admin sur les candidatures)
+        if (Array.isArray(payload.etudiants) && payload.etudiants.length > 0) {
+            const list = document.createElement('ul');
+            list.style.marginTop = '0.5rem';
+            list.style.paddingLeft = '1.1rem';
+            list.style.listStyle = 'disc';
+
+            payload.etudiants.forEach(function (etudiant) {
+                if (!etudiant || !etudiant.nom) return;
+                const li = document.createElement('li');
+                li.style.marginBottom = '0.25rem';
+                
+                const nomSpan = document.createElement('span');
+                nomSpan.textContent = etudiant.nom;
+                nomSpan.style.fontWeight = '500';
+                li.appendChild(nomSpan);
+
+                if (etudiant.email) {
+                    const emailSpan = document.createElement('span');
+                    emailSpan.textContent = ' (' + etudiant.email + ')';
+                    emailSpan.style.color = 'hsl(var(--muted-foreground))';
+                    emailSpan.style.fontSize = '0.9em';
+                    li.appendChild(emailSpan);
+                }
+
+                if (etudiant.statut) {
+                    const statutSpan = document.createElement('span');
+                    statutSpan.textContent = ' - ' + etudiant.statut;
+                    const statutColor = etudiant.statut === 'Acceptée' ? '#4ade80' : 
+                                       etudiant.statut === 'Refusée' ? '#f87171' : 
+                                       'hsl(var(--muted-foreground))';
+                    statutSpan.style.color = statutColor;
+                    statutSpan.style.fontSize = '0.9em';
+                    statutSpan.style.fontWeight = '500';
+                    li.appendChild(statutSpan);
+                }
+
+                list.appendChild(li);
+            });
+
+            msg.appendChild(list);
+        }
+
+        // Afficher un tableau des étudiants (pour les réponses admin sur tous les étudiants)
+        if (Array.isArray(payload.etudiants_table) && payload.etudiants_table.length > 0) {
+            const tableWrapper = document.createElement('div');
+            tableWrapper.style.marginTop = '1rem';
+            tableWrapper.style.overflowX = 'auto';
+            tableWrapper.style.maxHeight = '400px';
+            tableWrapper.style.overflowY = 'auto';
+
+            const table = document.createElement('table');
+            table.style.width = '100%';
+            table.style.borderCollapse = 'collapse';
+            table.style.fontSize = '0.875rem';
+            table.style.border = '1px solid hsl(var(--border))';
+            table.style.borderRadius = '0.5rem';
+            table.style.overflow = 'hidden';
+
+            // En-tête du tableau
+            const thead = document.createElement('thead');
+            thead.style.backgroundColor = 'hsl(var(--muted))';
+            const headerRow = document.createElement('tr');
+            
+            ['ID', 'Nom', 'Email', 'Date création'].forEach(function (headerText) {
+                const th = document.createElement('th');
+                th.textContent = headerText;
+                th.style.padding = '0.75rem';
+                th.style.textAlign = 'left';
+                th.style.borderBottom = '1px solid hsl(var(--border))';
+                th.style.fontWeight = '600';
+                headerRow.appendChild(th);
+            });
+            
+            thead.appendChild(headerRow);
+            table.appendChild(thead);
+
+            // Corps du tableau
+            const tbody = document.createElement('tbody');
+            payload.etudiants_table.forEach(function (etudiant, index) {
+                const row = document.createElement('tr');
+                row.style.borderBottom = index < payload.etudiants_table.length - 1 ? '1px solid hsl(var(--border))' : 'none';
+                row.style.backgroundColor = index % 2 === 0 ? 'transparent' : 'hsl(var(--muted) / 0.3)';
+
+                [etudiant.id || 'N/A', etudiant.nom || 'N/A', etudiant.email || 'N/A', etudiant.date_creation || 'N/A'].forEach(function (cellText) {
+                    const td = document.createElement('td');
+                    td.textContent = cellText;
+                    td.style.padding = '0.75rem';
+                    td.style.borderRight = '1px solid hsl(var(--border))';
+                    if (cellText === etudiant.email) {
+                        td.style.color = 'hsl(var(--primary))';
+                    }
+                    row.appendChild(td);
+                });
+
+                tbody.appendChild(row);
+            });
+            
+            table.appendChild(tbody);
+            tableWrapper.appendChild(table);
+            msg.appendChild(tableWrapper);
+        }
+
+        const meta = document.createElement('div');
+        meta.className = 'chatbot-message-meta';
+        meta.textContent = 'Bot · ' + formatTime(new Date());
+        msg.appendChild(meta);
+
+        messagesEl.appendChild(msg);
+        messagesEl.scrollTop = messagesEl.scrollHeight;
+
+        if (opts.store !== false) {
+            chatbotHistory.push({
+                type: 'bot',
+                payload: payload, // Sauvegarder le payload complet
+                text: safeAnswer, // Garder pour compatibilité
+                offers: Array.isArray(payload.offers) ? payload.offers : []
+            });
+            saveHistory();
+        }
     }
 
     /**
@@ -152,6 +318,42 @@
         });
     }
 
+    function saveHistory() {
+        try {
+            const historyKey = getHistoryKey();
+            localStorage.setItem(historyKey, JSON.stringify(chatbotHistory));
+        } catch (e) {
+            // ignore
+        }
+    }
+
+    function loadHistory() {
+        try {
+            const historyKey = getHistoryKey();
+            const raw = localStorage.getItem(historyKey);
+            if (!raw) return [];
+            const parsed = JSON.parse(raw);
+            return Array.isArray(parsed) ? parsed : [];
+        } catch (e) {
+            return [];
+        }
+    }
+    
+    // Fonction pour détecter le changement d'utilisateur et recharger l'historique
+    function checkUserChange() {
+        const currentUserId = window.CHATBOT_USER_ID || 'guest';
+        const lastUserId = window.CHATBOT_LAST_USER_ID;
+        
+        // Si l'utilisateur a changé, on va recharger l'historique dans initChatbot
+        // On sauvegarde juste l'ID actuel pour la prochaine vérification
+        if (lastUserId !== undefined && lastUserId !== currentUserId) {
+            // L'utilisateur a changé, on va recharger l'historique dans initChatbot
+            // Ne rien faire ici, laissez initChatbot gérer le chargement
+        }
+        
+        window.CHATBOT_LAST_USER_ID = currentUserId;
+    }
+
     /**
      * Envoi de la requête au backend
      */
@@ -186,8 +388,7 @@
                 showError('Une erreur est survenue lors de la réponse du chatbot.');
                 return;
             }
-
-            appendMessage(payload.answer, 'bot');
+            appendBotAnswer(payload);
         } catch (error) {
             hideTyping();
             showError("Impossible de joindre le serveur du chatbot.");
@@ -213,19 +414,84 @@
             return;
         }
 
+        // Vérifier le changement d'utilisateur et charger l'historique approprié
+        checkUserChange();
+        
+        // Charger l'historique de l'utilisateur actuel
+        chatbotHistory = loadHistory();
+        const messagesEl = document.getElementById('chatbotMessages');
+        if (messagesEl) {
+            // Toujours remplacer le contenu initial par l'historique
+            messagesEl.innerHTML = '';
+            
+            if (Array.isArray(chatbotHistory) && chatbotHistory.length > 0) {
+                // Charger l'historique existant
+                chatbotHistory.forEach(function (entry) {
+                    if (!entry) return;
+                    if (entry.type === 'user') {
+                        appendMessage(entry.text, 'user', { store: false });
+                    } else if (entry.type === 'bot') {
+                        appendBotAnswer(entry.payload || { answer: entry.text, offers: entry.offers || [], etudiants: entry.etudiants || [], etudiants_table: entry.etudiants_table || [] }, { store: false });
+                    }
+                });
+                messagesEl.scrollTop = messagesEl.scrollHeight;
+            } else {
+                // Si pas d'historique, initialiser avec le message d'accueil et le sauvegarder
+                chatbotHistory = [];
+                const welcomeAnswer = 'Bonjour 👋 Je suis l\'assistant CesiStages.\n\nVoici des exemples de questions que vous pouvez me poser :\n• « Je cherche un stage à Lyon »\n• « Stage de 6 mois »\n• « Comment postuler ? »\n\nDites « aide » pour voir plus d\'exemples !';
+                
+                // Ajouter le message d'accueil à l'historique
+                chatbotHistory.push({
+                    type: 'bot',
+                    payload: {
+                        answer: welcomeAnswer,
+                        needs_admin: false,
+                        offers: []
+                    }
+                });
+                
+                // Afficher le message d'accueil
+                appendBotAnswer({
+                    answer: welcomeAnswer,
+                    needs_admin: false,
+                    offers: []
+                }, { store: false }); // Ne pas sauvegarder deux fois
+                
+                // Sauvegarder l'historique
+                saveHistory();
+            }
+        }
+
         function openPanel() {
+            panel.classList.remove('is-closing');
             panel.classList.add('is-open');
+            panel.classList.add('is-opening');
             panel.setAttribute('aria-hidden', 'false');
             toggleBtn.style.opacity = '0';
             toggleBtn.style.pointerEvents = 'none';
+            toggleBtn.classList.add('is-opening');
+            setTimeout(() => toggleBtn.classList.remove('is-opening'), 3000);
+            setTimeout(() => panel.classList.remove('is-opening'), 3000);
             input.focus();
         }
 
         function closePanel() {
+            panel.classList.add('is-closing');
             panel.classList.remove('is-open');
-            panel.setAttribute('aria-hidden', 'true');
-            toggleBtn.style.opacity = '1';
-            toggleBtn.style.pointerEvents = 'auto';
+            
+            // À 70% de l'animation (quand la fenêtre atteint ~20% de taille), faire vibrer le bouton
+            setTimeout(() => {
+                toggleBtn.style.opacity = '1';
+                toggleBtn.style.pointerEvents = 'auto';
+                toggleBtn.classList.add('is-receiving');
+            }, 1750); // 70% de 2500ms
+            
+            // Fin de l'animation
+            setTimeout(() => {
+                panel.setAttribute('aria-hidden', 'true');
+                panel.classList.remove('is-closing');
+                toggleBtn.classList.remove('is-receiving');
+            }, 2500);
         }
 
         toggleBtn.addEventListener('click', openPanel);
@@ -240,10 +506,22 @@
             }
         });
 
-        // Auto-resize du textarea
-        input.addEventListener('input', function () {
-            this.style.height = 'auto';
-            this.style.height = this.scrollHeight + 'px';
+        // Auto-resize du textarea avec limite max-height
+        function autoResizeTextarea() {
+            input.style.height = 'auto';
+            const maxHeight = 100; // Correspond à max-height en CSS (100px)
+            const newHeight = Math.min(input.scrollHeight, maxHeight);
+            input.style.height = newHeight + 'px';
+            input.style.overflowY = input.scrollHeight > maxHeight ? 'auto' : 'hidden';
+        }
+
+        input.addEventListener('input', autoResizeTextarea);
+        
+        // Reset la hauteur au focus si vide
+        input.addEventListener('focus', function() {
+            if (!this.value.trim()) {
+                this.style.height = 'auto';
+            }
         });
 
         form.addEventListener('submit', function (e) {
@@ -256,6 +534,7 @@
             appendMessage(rawMessage, 'user');
             input.value = '';
             input.style.height = 'auto';
+            input.style.overflowY = 'hidden';
 
             sendMessageToBackend(rawMessage);
         });

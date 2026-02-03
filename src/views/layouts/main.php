@@ -23,7 +23,8 @@
 
     <!-- CSS -->
     <link rel="stylesheet" href="<?= ASSETS_URL ?>/css/style.css?v=<?= time() ?>">
-    <link rel="stylesheet" href="<?= BASE_URL ?>/public/css/chatbot.css?v=<?= time() ?>">
+    <!-- Chatbot CSS (dans le dossier public/css car le vhost pointe déjà sur public) -->
+    <link rel="stylesheet" href="<?= BASE_URL ?>/css/chatbot.css?v=<?= time() ?>">
     
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -78,6 +79,11 @@
 
     <!-- JavaScript -->
     <script src="<?= ASSETS_URL ?>/js/main.js"></script>
-    <script src="<?= BASE_URL ?>/public/js/chatbot.js"></script>
+    <!-- Variables globales pour le chatbot -->
+    <script>
+        window.CHATBOT_USER_ID = <?= isset($_SESSION['user_id']) ? (int)$_SESSION['user_id'] : 'null' ?>;
+    </script>
+    <!-- Chatbot JS (dans le dossier public/js car le vhost pointe déjà sur public) -->
+    <script src="<?= BASE_URL ?>/js/chatbot.js"></script>
 </body>
 </html>

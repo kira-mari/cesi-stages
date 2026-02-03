@@ -143,6 +143,27 @@ class Candidature extends Model
     }
 
     /**
+     * Récupère les candidatures d'une offre avec les détails des étudiants
+     *
+     * @param int $offreId
+     * @return array
+     */
+    public function getByOffreWithEtudiants($offreId)
+    {
+        $stmt = self::getDB()->prepare(
+            "SELECT c.*, u.id as etudiant_id, u.nom as etudiant_nom, u.prenom as etudiant_prenom, 
+                    u.email as etudiant_email, o.titre as offre_titre
+             FROM {$this->table} c
+             JOIN users u ON c.etudiant_id = u.id
+             JOIN offres o ON c.offre_id = o.id
+             WHERE c.offre_id = :offre_id
+             ORDER BY c.created_at DESC"
+        );
+        $stmt->execute([':offre_id' => $offreId]);
+        return $stmt->fetchAll();
+    }
+
+    /**
      * Vérifie si un étudiant a déjà postulé à une offre
      *
      * @param int $etudiantId
