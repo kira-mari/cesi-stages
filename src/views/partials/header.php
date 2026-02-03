@@ -4,7 +4,7 @@
     position: fixed;
     top: 24px;
     left: 50%;
-    transform: translateX(-50%) translateY(-20px);
+    transform: translateX(-50%) translateY(0); /* Changed initial state */
     width: 95%;
     max-width: 1000px;
     background: rgba(15, 15, 20, 0.7);
@@ -15,13 +15,39 @@
     padding: 0.8rem 1.75rem;
     z-index: 10002;
     box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.5);
-    animation: navSlideDown 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    
+    /* Animation d'entrée avec léger rebond */
+    animation: navSlideDown 1s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Classe ajoutée via JS après l'intro pour activer les transitions */
+.navbar-floating.scrolling {
+    transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1), 
+                opacity 0.4s ease,
+                background-color 0.4s ease,
+                box-shadow 0.4s ease;
+    will-change: transform, opacity;
+}
+
+.navbar-hidden {
+    /* Remonte plus haut, réduit légèrement ma taille et devient transparent */
+    transform: translateX(-50%) translateY(-140%) scale(0.96);
+    opacity: 0;
+    pointer-events: none;
+    box-shadow: none;
 }
 
 @keyframes navSlideDown {
-    from { opacity: 0; transform: translateX(-50%) translateY(-30px); }
-    to { opacity: 1; transform: translateX(-50%) translateY(0); }
+    from { 
+        opacity: 0; 
+        transform: translateX(-50%) translateY(-100%) scale(0.9); 
+    }
+    to { 
+        opacity: 1; 
+        transform: translateX(-50%) translateY(0) scale(1); 
+    }
 }
+
 
 /* Links */
 .nav-link-custom {
@@ -108,6 +134,18 @@
     box-shadow: 0 8px 25px rgba(99, 102, 241, 0.5);
     color: white;
 }
+
+@media (max-width: 768px) {
+    .btn-gradient {
+        padding: 0.4rem 1rem;
+        font-size: 0.9rem;
+    }
+
+    .header-login-btn {
+        display: none !important;
+    }
+}
+
 
 /* Mobile Menu */
 .mobile-menu-overlay {
@@ -328,7 +366,7 @@ function isNavLinkActive($uri, $base, $path) {
         <!-- Actions -->
         <div class="d-flex align-items-center gap-3">
             <?php if (!isset($_SESSION['user_id'])): ?>
-                <a href="<?= BASE_URL ?>/login" class="btn-gradient">
+                <a href="<?= BASE_URL ?>/login" class="btn-gradient header-login-btn">
                     <span>Se connecter</span>
                     <i class="fas fa-arrow-right small"></i>
                 </a>
@@ -418,7 +456,7 @@ function isNavLinkActive($uri, $base, $path) {
         <?php endif; ?>
 
         <?php if (!isset($_SESSION['user_id'])): ?>
-            <div class="d-flex gap-3 mt-4 w-100 px-3 mobile-nav-link border-0" style="opacity: 0; animation-delay: 0.5s;">
+            <div class="d-flex gap-3 mt-4 w-100 px-3 mobile-nav-link border-0">
                 <a href="<?= BASE_URL ?>/login" class="btn-gradient w-100 justify-content-center py-2">Se connecter</a>
             </div>
         <?php else: ?>
@@ -477,5 +515,32 @@ document.addEventListener('DOMContentLoaded', () => {
             link.addEventListener('click', toggleMenu);
         });
     }
+    // Scroll Hide/Show Logic
+    let lastScrollTop = 0;
+    const navbar = document.querySelector('.navbar-floating');
+    
+    // Activer les transitions après l'animation d'entrée
+    setTimeout(() => {
+        navbar.classList.add('scrolling');
+        navbar.style.animation = 'none';
+    }, 1000);
+
+    window.addEventListener('scroll', () => {
+        // Force l'activation si scroll avant la fin du timer
+        if (!navbar.classList.contains('scrolling')) {
+            navbar.classList.add('scrolling');
+            navbar.style.animation = 'none';
+        }
+
+        let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        if (scrollTop > lastScrollTop && scrollTop > 100) {
+            // Downscroll & not at very top
+            navbar.classList.add('navbar-hidden');
+        } else {
+            // Upscroll
+            navbar.classList.remove('navbar-hidden');
+        }
+        lastScrollTop = scrollTop <= 0 ? 0 : scrollTop; // For Mobile or negative scrolling
+    }, { passive: true });
 });
 </script>

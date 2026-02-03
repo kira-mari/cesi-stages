@@ -177,7 +177,7 @@ $title = "Accueil";
                         <a href="<?= BASE_URL ?>/register" class="btn btn-primary btn-lg px-5 py-3 rounded-pill fw-bold hover-scale shadow-lg shadow-primary/50">
                             Créer mon profil <i class="fas fa-magic ms-2 opacity-75"></i>
                         </a>
-                        <a href="<?= BASE_URL ?>/login" class="btn btn-outline-light btn-lg px-5 py-3 rounded-pill hover-scale">
+                        <a href="<?= BASE_URL ?>/login" class="btn btn-outline-light btn-lg px-5 py-3 rounded-pill hover-scale d-none d-md-inline-block">
                             Se connecter
                         </a>
                     <?php endif; ?>
