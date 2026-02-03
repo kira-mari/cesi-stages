@@ -19,6 +19,13 @@ const APP_ENV = 'development'; // development, production
 $protocol = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? 'https' : 'http';
 $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
 
+// Redirection automatique : localhost → cesi-site.local (pour cohérence du domaine)
+if ($host !== 'cesi-site.local' && strpos($host, 'localhost') !== false) {
+    $uri = str_replace('/cesi-stages', '', $_SERVER['REQUEST_URI']);
+    header('Location: ' . $protocol . '://cesi-site.local' . $uri);
+    exit;
+}
+
 // Configuration spécifique pour les Virtual Hosts
 if ($host === 'cesi-site.local') {
     define('BASE_URL', $protocol . '://cesi-site.local');
@@ -35,6 +42,15 @@ if ($host === 'cesi-site.local') {
 else {
     define('BASE_URL', $protocol . '://' . $host . '/cesi-stages');
     define('ASSETS_URL', BASE_URL . '/assets');
+}
+
+// Google OAuth (SSO)
+const GOOGLE_OAUTH_ENABLED = true; // mettre à true après configuration
+const GOOGLE_CLIENT_ID = getenv('GOOGLE_CLIENT_ID') ?: '';
+const GOOGLE_CLIENT_SECRET = getenv('GOOGLE_CLIENT_SECRET') ?: '';
+// Par défaut on utilise localhost pour le développement local
+if (!defined('GOOGLE_REDIRECT')) {
+    define('GOOGLE_REDIRECT', 'http://localhost/cesi-stages/auth/google-callback');
 }
 
 // Sécurité

@@ -60,6 +60,138 @@ class Auth extends Controller
     }
 
     /**
+     * Démarre le flux OAuth Google (redirection vers Google)
+     */
+    public function googleRedirect()
+    {
+        if (!GOOGLE_OAUTH_ENABLED) {
+            http_response_code(404);
+            echo 'Google SSO non configuré.';
+            exit;
+        }
+
+        $params = [
+            'client_id' => GOOGLE_CLIENT_ID,
+            'redirect_uri' => GOOGLE_REDIRECT,
+            'response_type' => 'code',
+            'scope' => 'openid email profile',
+            'access_type' => 'offline',
+            'prompt' => 'select_account'
+        ];
+
+        $url = 'https://accounts.google.com/o/oauth2/v2/auth?' . http_build_query($params);
+        header('Location: ' . $url);
+        exit;
+    }
+
+    /**
+     * Callback Google OAuth: échange le code, récupère les infos utilisateur
+     */
+    public function googleCallback()
+    {
+        if (!GOOGLE_OAUTH_ENABLED) {
+            http_response_code(404);
+            echo 'Google SSO non configuré.';
+            exit;
+        }
+
+        $code = $_GET['code'] ?? null;
+        if (!$code) {
+            $_SESSION['flash_error'] = 'Authentification Google annulée.';
+            $this->redirect('login');
+        }
+
+        // Échange du code contre un token
+        $tokenUrl = 'https://oauth2.googleapis.com/token';
+        $post = http_build_query([
+            'code' => $code,
+            'client_id' => GOOGLE_CLIENT_ID,
+            'client_secret' => GOOGLE_CLIENT_SECRET,
+            'redirect_uri' => GOOGLE_REDIRECT,
+            'grant_type' => 'authorization_code'
+        ]);
+
+        $opts = [
+            'http' => [
+                'method' => 'POST',
+                'header' => "Content-type: application/x-www-form-urlencoded\r\n",
+                'content' => $post,
+                'timeout' => 10
+            ]
+        ];
+
+        $response = @file_get_contents($tokenUrl, false, stream_context_create($opts));
+        if ($response === false) {
+            $_SESSION['flash_error'] = 'Erreur lors de la récupération du token Google.';
+            $this->redirect('login');
+        }
+
+        $data = json_decode($response, true);
+        if (empty($data['access_token'])) {
+            $_SESSION['flash_error'] = 'Token Google invalide.';
+            $this->redirect('login');
+        }
+
+        // Récupération des informations utilisateur
+        $opts = [
+            'http' => [
+                'method' => 'GET',
+                'header' => "Authorization: Bearer " . $data['access_token'] . "\r\n",
+                'timeout' => 10
+            ]
+        ];
+
+        $userInfo = @file_get_contents('https://www.googleapis.com/oauth2/v2/userinfo', false, stream_context_create($opts));
+        if ($userInfo === false) {
+            $_SESSION['flash_error'] = 'Impossible de récupérer les informations Google.';
+            $this->redirect('login');
+        }
+
+        $u = json_decode($userInfo, true);
+        $email = $u['email'] ?? null;
+        $prenom = $u['given_name'] ?? ($u['name'] ?? '');
+        $nom = $u['family_name'] ?? '';
+
+        if (!$email) {
+            $_SESSION['flash_error'] = 'Email Google introuvable.';
+            $this->redirect('login');
+        }
+
+        $userModel = new User();
+        $user = $userModel->findByEmail($email);
+
+        if (!$user) {
+            // Création d'un compte utilisateur par défaut (rôle étudiant)
+            $password = bin2hex(random_bytes(8));
+            $userId = $userModel->create([
+                'nom' => $nom ?: 'Google',
+                'prenom' => $prenom ?: 'User',
+                'email' => $email,
+                'password' => password_hash($password, PASSWORD_BCRYPT),
+                'role' => 'etudiant'
+            ]);
+
+            if ($userId) {
+                $user = $userModel->findByEmail($email);
+            }
+        }
+
+        if ($user) {
+            $_SESSION['user_id'] = $user['id'];
+            $_SESSION['user_email'] = $user['email'];
+            $_SESSION['user_role'] = $user['role'];
+            $_SESSION['user_nom'] = $user['nom'];
+            $_SESSION['user_prenom'] = $user['prenom'];
+            session_regenerate_id(true);
+            $_SESSION['flash_success'] = "Connexion via Google réussie. Bienvenue, " . ($user['prenom'] ?? '') . ".";
+            $this->redirect('dashboard');
+        }
+
+        $_SESSION['flash_error'] = 'Impossible de créer ou trouver l\'utilisateur.';
+        $this->redirect('login');
+    }
+
+    /**
      * Déconnexion
      *
      * @return void
