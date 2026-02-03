@@ -12,6 +12,8 @@ $router->add('', ['controller' => 'Home', 'action' => 'index']);
 $router->add('login', ['controller' => 'Auth', 'action' => 'login']);
 $router->add('logout', ['controller' => 'Auth', 'action' => 'logout']);
 $router->add('register', ['controller' => 'Auth', 'action' => 'register']);
+$router->add('validate-email', ['controller' => 'Auth', 'action' => 'validateEmail']);
+$router->add('auth/resend-validation-code', ['controller' => 'Auth', 'action' => 'resendValidationCode']);
 // Google SSO
 $router->add('auth/google', ['controller' => 'Auth', 'action' => 'googleRedirect']);
 $router->add('auth/google-callback', ['controller' => 'Auth', 'action' => 'googleCallback']);

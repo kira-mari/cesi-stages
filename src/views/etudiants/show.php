@@ -31,13 +31,11 @@
                                     <small><?= date('d/m/Y', strtotime($candidature['created_at'])) ?></small>
                                 </div>
                                 <p class="mb-1">Statut : 
-                                    <span class="badge bg-<?php 
-                                        echo match($candidature['statut']) {
-                                            'acceptee' => 'success',
-                                            'refusee' => 'danger',
-                                            default => 'secondary'
-                                        };
-                                    ?>">
+                                    <span class="badge bg-<?= match($candidature['statut']) {
+                                        'acceptee' => 'success',
+                                        'refusee' => 'danger',
+                                        default => 'secondary'
+                                    } ?>">
                                         <?= htmlspecialchars($candidature['statut']) ?>
                                     </span>
                                 </p>

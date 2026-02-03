@@ -1,0 +1,20 @@
+[2026-02-02 15:44:41] Email de validation envoyé à meeeeeeeeeeeelm12@gmail.com
+  Prénom: me
+  Code: 379116
+
+[2026-02-02 15:45:39] Email de validation envoyé à meeeeeeeeeeeelm12@gmail.com
+  Prénom: me
+  Code: 729613
+
+[2026-02-02 15:53:45] Email de validation envoyé à meeeeeeeeeeeelm12@gmail.com
+  Prénom: mohamed
+  Code: 749016
+
+[2026-02-02 16:05:20] Email de validation envoyé à meeeeeeeeeeeelm12@gmail.com
+  Prénom: mohamed
+  Code: 190350
+
+[2026-02-02 16:08:00] Email de validation envoyé à meeeeeeeeeeeelm12@gmail.com
+  Prénom: mohamed
+  Code: 729807
+

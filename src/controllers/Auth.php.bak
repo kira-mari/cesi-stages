@@ -4,7 +4,6 @@ namespace Controllers;
 use Core\Controller;
 use Core\Mailer;
 use Models\User;
-use Models\PendingRegistration;
 
 /**
  * Contrôleur d'authentification
@@ -224,7 +223,6 @@ class Auth extends Controller
 
     /**
      * Page d'inscription (Publique)
-     * Le compte n'est créé qu'après confirmation du code de validation
      *
      * @return void
      */
@@ -236,6 +234,7 @@ class Auth extends Controller
         }
 
         $errors = [];
+        $success = false;
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Vérification du token CSRF
@@ -248,6 +247,8 @@ class Auth extends Controller
                 $email = filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL);
                 $password = $_POST['password'] ?? '';
                 $confirm_password = $_POST['confirm_password'] ?? '';
+                // Par défaut, l'inscription publique crée un étudiant
+                $role = 'etudiant';
 
                 // Validation
                 if (empty($nom) || empty($prenom) || empty($email) || empty($password)) {
@@ -264,46 +265,42 @@ class Auth extends Controller
 
                 if (empty($errors)) {
                     $userModel = new User();
-                    $pendingModel = new PendingRegistration();
 
                     // Vérification si l'email existe déjà
                     if ($userModel->findByEmail($email)) {
                         $errors[] = "Cet email est déjà utilisé.";
-                    } elseif ($pendingModel->findByEmail($email)) {
-                        $errors[] = "Cet email est déjà en attente de validation.";
                     } else {
                         // Génération d'un code de validation
                         $validationCode = Mailer::generateValidationCode();
                         
-                        // Créer une inscription en attente (pas de compte User encore)
-                        $pendingId = $pendingModel->create([
+                        // Création de l'utilisateur
+                        $userId = $userModel->create([
                             'nom' => $nom,
                             'prenom' => $prenom,
                             'email' => $email,
                             'password' => password_hash($password, PASSWORD_BCRYPT),
+                            'role' => $role,
                             'validation_code' => $validationCode,
-                            'validation_expires_at' => date('Y-m-d H:i:s', strtotime('+30 minutes'))
+                            'validation_expires_at' => date('Y-m-d H:i:s', strtotime('+30 minutes')),
+                            'email_verified' => false
                         ]);
 
-                        if ($pendingId) {
+                        if ($userId) {
                             // Envoi du mail de validation
                             if (Mailer::sendValidationEmail($email, $prenom, $validationCode)) {
                                 // Redirection vers la page de validation
                                 $_SESSION['user_to_validate'] = [
-                                    'id' => $pendingId,
-                                    'is_pending' => true,
+                                    'id' => $userId,
                                     'email' => $email,
                                     'prenom' => $prenom
                                 ];
                                 $this->redirect('validate-email');
                             } else {
-                                // L'inscription est en attente mais l'email ne s'est pas envoyé
-                                $errors[] = "Inscription en attente mais impossible d'envoyer l'email de validation. Vérifiez votre configuration mail.";
-                                // Supprimer l'inscription en attente
-                                $pendingModel->delete($pendingId);
+                                // Le compte a été créé mais l'email ne s'est pas envoyé
+                                $errors[] = "Compte créé mais impossible d'envoyer l'email de validation. Vérifiez votre configuration mail.";
                             }
                         } else {
-                            $errors[] = "Une erreur s'est produite lors de la création de l'inscription en attente.";
+                            $errors[] = "Une erreur s'est produite lors de la création de l'utilisateur.";
                         }
                     }
                 }
@@ -313,13 +310,13 @@ class Auth extends Controller
         $this->render('auth/register', [
             'title' => 'Créer un compte - ' . APP_NAME,
             'errors' => $errors,
+            'success' => $success,
             'csrf_token' => $this->generateCsrfToken()
         ]);
     }
 
     /**
      * Page de validation d'email
-     * Crée le compte utilisateur après validation du code
      *
      * @return void
      */
@@ -344,52 +341,44 @@ class Auth extends Controller
                 if (empty($code) || strlen($code) !== 6 || !ctype_digit($code)) {
                     $errors[] = "Veuillez entrer un code à 6 chiffres valide.";
                 } else {
-                    $pendingModel = new PendingRegistration();
-                    $pending = $pendingModel->find($userToValidate['id']);
+                    $userModel = new User();
+                    $user = $userModel->find($userToValidate['id']);
 
-                    if (!$pending) {
-                        $errors[] = "Inscription introuvable.";
+                    if (!$user) {
+                        $errors[] = "Utilisateur introuvable.";
+                    } elseif ($user['email_verified']) {
+                        $_SESSION['flash_info'] = "Email déjà vérifié. Connectez-vous.";
+                        unset($_SESSION['user_to_validate']);
+                        $this->redirect('login');
                     } else {
                         // Vérifier expiration du code
-                        if (strtotime($pending['validation_expires_at']) < time()) {
+                        if (strtotime($user['validation_expires_at']) < time()) {
                             $errors[] = "Le code de validation a expiré. Inscrivez-vous à nouveau.";
-                            // Supprimer l'inscription expirée
-                            $pendingModel->delete($pending['id']);
-                            unset($_SESSION['user_to_validate']);
-                        } elseif ($pending['validation_code'] !== $code) {
+                        } elseif ($user['validation_code'] !== $code) {
                             // Incrémenter les tentatives
-                            $attempts = ($pending['validation_attempts'] ?? 0) + 1;
+                            $user['validation_attempts'] = ($user['validation_attempts'] ?? 0) + 1;
                             
-                            if ($attempts >= 3) {
+                            if ($user['validation_attempts'] >= 3) {
                                 $errors[] = "Trop de tentatives. Inscrivez-vous à nouveau.";
-                                // Supprimer l'inscription après 3 tentatives
-                                $pendingModel->delete($pending['id']);
+                                // Supprimer l'utilisateur après 3 tentatives
+                                $userModel->delete($user['id']);
                                 unset($_SESSION['user_to_validate']);
                             } else {
-                                $errors[] = "Code incorrect. (" . (3 - $attempts) . " tentatives restantes)";
-                                $pendingModel->update($pending['id'], ['validation_attempts' => $attempts]);
+                                $errors[] = "Code incorrect. (" . (3 - $user['validation_attempts']) . " tentatives restantes)";
+                                $userModel->update($user['id'], ['validation_attempts' => $user['validation_attempts']]);
                             }
                         } else {
-                            // Code correct : créer le compte utilisateur
-                            $userModel = new User();
-                            $userId = $userModel->create([
-                                'nom' => $pending['nom'],
-                                'prenom' => $pending['prenom'],
-                                'email' => $pending['email'],
-                                'password' => $pending['password'],
-                                'role' => 'etudiant',
-                                'email_verified' => true
+                            // Code correct : marquer l'email comme vérifié
+                            $userModel->update($user['id'], [
+                                'email_verified' => true,
+                                'validation_code' => null,
+                                'validation_expires_at' => null,
+                                'validation_attempts' => 0
                             ]);
 
-                            if ($userId) {
-                                // Supprimer l'inscription en attente
-                                $pendingModel->delete($pending['id']);
-                                unset($_SESSION['user_to_validate']);
-                                $_SESSION['flash_success'] = "Email vérifié ! Votre compte a été créé avec succès. Vous pouvez maintenant vous connecter.";
-                                $this->redirect('login');
-                            } else {
-                                $errors[] = "Erreur lors de la création du compte.";
-                            }
+                            unset($_SESSION['user_to_validate']);
+                            $_SESSION['flash_success'] = "Email vérifié avec succès ! Vous pouvez maintenant vous connecter.";
+                            $this->redirect('login');
                         }
                     }
                 }
@@ -418,21 +407,21 @@ class Auth extends Controller
         }
 
         $userToValidate = $_SESSION['user_to_validate'];
-        $pendingModel = new PendingRegistration();
-        $pending = $pendingModel->find($userToValidate['id']);
+        $userModel = new User();
+        $user = $userModel->find($userToValidate['id']);
 
-        if ($pending) {
+        if ($user && !$user['email_verified']) {
             // Générer un nouveau code
             $validationCode = Mailer::generateValidationCode();
             
-            $pendingModel->update($pending['id'], [
+            $userModel->update($user['id'], [
                 'validation_code' => $validationCode,
                 'validation_expires_at' => date('Y-m-d H:i:s', strtotime('+30 minutes')),
                 'validation_attempts' => 0
             ]);
 
             // Envoyer le nouvel email
-            if (Mailer::sendValidationEmail($pending['email'], $pending['prenom'], $validationCode)) {
+            if (Mailer::sendValidationEmail($user['email'], $user['prenom'], $validationCode)) {
                 $_SESSION['flash_success'] = "Un nouveau code a été envoyé à votre email.";
             } else {
                 $_SESSION['flash_error'] = "Impossible d'envoyer le code. Vérifiez votre configuration mail.";
