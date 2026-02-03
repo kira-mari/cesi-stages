@@ -6,5 +6,4 @@ Thumbs.db
 /vendor/
 /config.php
 uploads/cvs/
-.env.local
 .env

@@ -4,11 +4,11 @@
  */
 
 // Configuration de la base de données
-const DB_HOST = 'localhost';
-const DB_NAME = 'cesi_stages';
-const DB_USER = 'root';
-const DB_PASS = '';
-const DB_CHARSET = 'utf8mb4';
+define('DB_HOST', $_ENV['DB_HOST'] ?? 'localhost');
+define('DB_NAME', $_ENV['DB_NAME'] ?? 'cesi_stages');
+define('DB_USER', $_ENV['DB_USER'] ?? 'root');
+define('DB_PASS', $_ENV['DB_PASS'] ?? '');
+define('DB_CHARSET', $_ENV['DB_CHARSET'] ?? 'utf8mb4');
 
 // Configuration de l'application
 const APP_NAME = 'CesiStages';
@@ -46,8 +46,8 @@ else {
 
 // Google OAuth (SSO)
 define('GOOGLE_OAUTH_ENABLED', true); // mettre à true après configuration
-define('GOOGLE_CLIENT_ID', getenv('GOOGLE_CLIENT_ID') ?: '');
-define('GOOGLE_CLIENT_SECRET', getenv('GOOGLE_CLIENT_SECRET') ?: '');
+define('GOOGLE_CLIENT_ID', $_ENV['GOOGLE_CLIENT_ID'] ?? '');
+define('GOOGLE_CLIENT_SECRET', $_ENV['GOOGLE_CLIENT_SECRET'] ?? '');
 // Par défaut on utilise localhost pour le développement local
 if (!defined('GOOGLE_REDIRECT')) {
     define('GOOGLE_REDIRECT', 'http://localhost/cesi-stages/auth/google-callback');

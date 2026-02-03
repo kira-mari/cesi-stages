@@ -13,6 +13,10 @@ define('PUBLIC_PATH', __DIR__);
 // Chargement de l'autoloader
 require_once ROOT_PATH . '/vendor/autoload.php';
 
+// Chargement des variables d'environnement
+$dotenv = Dotenv\Dotenv::createImmutable(ROOT_PATH);
+$dotenv->safeLoad();
+
 // Chargement de la configuration
 require_once CONFIG_PATH . '/config.php';
 
