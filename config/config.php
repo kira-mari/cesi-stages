@@ -45,9 +45,9 @@ else {
 }
 
 // Google OAuth (SSO)
-const GOOGLE_OAUTH_ENABLED = true; // mettre à true après configuration
-const GOOGLE_CLIENT_ID = getenv('GOOGLE_CLIENT_ID') ?: '';
-const GOOGLE_CLIENT_SECRET = getenv('GOOGLE_CLIENT_SECRET') ?: '';
+define('GOOGLE_OAUTH_ENABLED', true); // mettre à true après configuration
+define('GOOGLE_CLIENT_ID', getenv('GOOGLE_CLIENT_ID') ?: '');
+define('GOOGLE_CLIENT_SECRET', getenv('GOOGLE_CLIENT_SECRET') ?: '');
 // Par défaut on utilise localhost pour le développement local
 if (!defined('GOOGLE_REDIRECT')) {
     define('GOOGLE_REDIRECT', 'http://localhost/cesi-stages/auth/google-callback');
