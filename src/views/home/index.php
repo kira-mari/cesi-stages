@@ -1,3 +1,6 @@
+<?php
+$title = "Accueil";
+?>
 
 <!-- Animated Styles -->
 <style>
@@ -99,6 +102,41 @@
 }
 
 @keyframes blink { 50% { opacity: 0; } }
+
+/* Floating Offer Cards */
+.floating-offer {
+    position: fixed;
+    pointer-events: none;
+    z-index: 1000;
+    opacity: 0;
+    transform: scale(0.8);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    width: 200px;
+    background: rgba(30, 30, 40, 0.95);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 12px;
+    box-shadow: 0 10px 40px -10px rgba(0,0,0,0.5);
+}
+
+.floating-offer.active {
+    opacity: 1;
+    transform: scale(1);
+}
+/* Force disable hover lift on mobile */
+@media (max-width: 991px) {
+    .hover-lift:hover {
+        transform: none !important;
+        box-shadow: none !important;
+    }
+    .group-hover\:-translate-y-2 {
+        transform: none !important;
+    }
+    .feature-card:hover { 
+        transform: none !important; 
+    }
+}
 </style>
 
 <div class="hero position-relative overflow-hidden d-flex align-items-center" style="min-height: 90vh;">
@@ -160,101 +198,102 @@
     </div>
 </div>
 
-<!-- Features Vertical Layout -->
+<!-- Features Section (Updated) -->
 <div class="py-5 position-relative z-2">
     <div class="container py-5">
         
         <!-- Section Header -->
         <div class="text-center mb-5 pb-3 animate-on-scroll">
             <span class="d-inline-block py-1 px-3 rounded-pill bg-white/10 border border-white/20 text-white mb-3 backdrop-blur-sm" style="background: rgba(255,255,255,0.05);">
-                <span class="text-primary me-2">●</span> Fonctionnalités
+                <span class="text-primary me-2">●</span> Avantages
             </span>
-            <h2 class="display-4 fw-bold text-white mb-3">Une plateforme <span class="text-transparent bg-clip-text" style="background: linear-gradient(to right, #6366f1, #06b6d4); -webkit-background-clip: text; color: transparent;">tout-en-un</span></h2>
+            <h2 class="display-4 fw-bold text-white mb-3">L'écosystème <span class="text-transparent bg-clip-text" style="background: linear-gradient(to right, #6366f1, #06b6d4); -webkit-background-clip: text; color: transparent;">CesiStages</span></h2>
             <p class="lead text-muted mx-auto" style="max-width: 600px;">
-                CesiStages regroupe tous les outils dont vous avez besoin pour trouver votre stage et lancer votre carrière.
+                Tous les outils nécessaires pour que votre stage soit une réussite, de la recherche à l'évaluation finale.
             </p>
         </div>
 
         <div class="row g-4">
-            <!-- Feature 1: Intelligent Search (Big Card) -->
+            <!-- Feature 1: Offres & Entreprises (Big Card) -->
             <div class="col-lg-6 animate-on-scroll">
-                <div class="card glass-card h-100 p-0 border-0 overflow-hidden shadow-2xl group hover-lift">
+                <div id="feature-offers" class="card glass-card h-100 p-0 border-0 overflow-hidden shadow-2xl group hover-lift position-relative">
                     <div class="p-5 pb-0 position-relative z-1">
-                        <div class="mb-4 bg-primary bg-opacity-20 d-inline-flex p-3 rounded-circle text-primary border border-primary border-opacity-20">
-                            <i class="fas fa-brain fa-2x"></i>
+                        <div class="mb-4 bg-primary bg-opacity-20 d-inline-flex p-3 rounded-circle text-primary border border-primary border-opacity-20 shadow-primary-sm">
+                            <i class="fas fa-briefcase fa-2x"></i>
                         </div>
-                        <h3 class="h2 text-white fw-bold mb-3">Recherche IA</h3>
+                        <h3 class="h2 text-white fw-bold mb-3">Offres Exclusives</h3>
                         <p class="text-muted mb-4" style="font-size: 1.1rem;">
-                            Notre algorithme prédictif analyse votre profil pour vous connecter avec les entreprises qui recherchent vos talents.
+                            Accédez à un réseau d'entreprises partenaires du CESI. Des offres ciblées pour votre cursus (A2, A3, Mastère).
                         </p>
                         <ul class="list-unstyled text-muted mb-0">
-                            <li class="mb-2"><i class="fas fa-check text-primary me-2"></i> Matching par compétences</li>
-                            <li class="mb-2"><i class="fas fa-check text-primary me-2"></i> Alertes temps réel</li>
+                            <li class="mb-2"><i class="fas fa-check text-primary me-2"></i> Stages pré-validés par les pilotes</li>
+                            <li class="mb-2"><i class="fas fa-check text-primary me-2"></i> Candidature simplifiée en 1 clic</li>
                         </ul>
                     </div>
                     
                     <!-- Visual Bottom -->
-                    <div class="mt-4 ms-5 position-relative">
-                        <div class="p-4 rounded-top-4 bg-dark border border-white border-opacity-10 shadow-lg transform-gpu translate-y-4 group-hover:translate-y-2 transition-transform duration-500" style="background: rgba(20, 20, 30, 0.9);">
+                    <div class="mt-5 px-4 pb-4 position-relative">
+                        <div class="p-4 rounded-4 border border-white border-opacity-10 shadow-lg transform-gpu group-hover:-translate-y-2 transition-transform duration-500" style="background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(5px);">
                             <!-- Mockup UI -->
                             <div class="d-flex align-items-center gap-3 mb-4">
-                                <div class="bg-gradient-to-br from-primary to-purple p-2 rounded-3">
-                                    <i class="fas fa-code text-white"></i>
+                                <div class="bg-gradient-to-br from-primary to-purple p-2 rounded-3 text-white shadow-sm">
+                                    <i class="fas fa-building"></i>
                                 </div>
                                 <div>
-                                    <div class="h6 text-white mb-0">Développeur Fullstack</div>
-                                    <div class="small text-muted">98% de compatibilité</div>
+                                    <div class="h6 text-white mb-0">Capgemini</div>
+                                    <div class="small text-muted">Partenaire Gold</div>
                                 </div>
-                                <span class="badge bg-success ms-auto">Match</span>
+                                <span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-25 ms-auto rounded-pill px-3">Vérifié</span>
                             </div>
                             <!-- Tags -->
                             <div class="d-flex gap-2">
-                                <span class="badge bg-dark border border-secondary text-secondary">PHP 8</span>
-                                <span class="badge bg-dark border border-secondary text-secondary">Symfony</span>
-                                <span class="badge bg-dark border border-secondary text-secondary">MySQL</span>
+                                <span class="badge bg-white bg-opacity-5 border border-white border-opacity-10 text-muted px-3 py-2 rounded-pill font-monospace">DevOps</span>
+                                <span class="badge bg-white bg-opacity-5 border border-white border-opacity-10 text-muted px-3 py-2 rounded-pill font-monospace">Cloud</span>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Feature 2: Dashboard (Big Card) -->
+            <!-- Feature 2: Suivi Pédagogique (Big Card) -->
             <div class="col-lg-6 animate-on-scroll delay-100">
-                <div class="card glass-card h-100 p-0 border-0 overflow-hidden shadow-2xl group hover-lift">
+                <div id="feature-suivi" class="card glass-card h-100 p-0 border-0 overflow-hidden shadow-2xl group hover-lift position-relative">
                     <div class="p-5 pb-0 position-relative z-1">
-                        <div class="mb-4 bg-info bg-opacity-20 d-inline-flex p-3 rounded-circle text-info border border-info border-opacity-20">
-                            <i class="fas fa-chart-pie fa-2x"></i>
+                        <div class="mb-4 bg-info bg-opacity-20 d-inline-flex p-3 rounded-circle text-info border border-info border-opacity-20 shadow-info-sm">
+                            <i class="fas fa-user-graduate fa-2x"></i>
                         </div>
-                        <h3 class="h2 text-white fw-bold mb-3">Suivi Centralisé</h3>
+                        <h3 class="h2 text-white fw-bold mb-3">Suivi Pédagogique</h3>
                         <p class="text-muted mb-4" style="font-size: 1.1rem;">
-                            Gardez le contrôle sur votre avenir. Tableaux de bord, statistiques et suivi des candidatures en un seul endroit.
+                            Un lien direct avec votre pilote de promotion pour valider vos choix et suivre votre avancement.
                         </p>
                          <ul class="list-unstyled text-muted mb-0">
-                            <li class="mb-2"><i class="fas fa-check text-info me-2"></i> Statut des candidatures</li>
-                            <li class="mb-2"><i class="fas fa-check text-info me-2"></i> Gestion des entretiens</li>
+                            <li class="mb-2"><i class="fas fa-check text-info me-2"></i> Validation des fiches de poste</li>
+                            <li class="mb-2"><i class="fas fa-check text-info me-2"></i> Évaluation des compétences</li>
                         </ul>
                     </div>
                     
                     <!-- Visual Bottom -->
-                    <div class="mt-4 me-5 position-relative">
-                        <div class="p-4 rounded-top-end-4 bg-dark border border-white border-opacity-10 shadow-lg transform-gpu translate-y-4 group-hover:translate-y-2 transition-transform duration-500 float-end w-100" style="background: rgba(20, 20, 30, 0.9); border-top-left-radius: 1.5rem;">
+                    <div class="mt-5 px-4 pb-4 position-relative">
+                        <div class="p-4 rounded-4 border border-white border-opacity-10 shadow-lg transform-gpu group-hover:-translate-y-2 transition-transform duration-500" style="background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(5px);">
                              <!-- Mockup UI -->
-                            <div class="row g-3 mb-3">
-                                <div class="col-6">
-                                    <div class="p-3 rounded-3 bg-white bg-opacity-5 text-center">
-                                        <div class="h3 text-white mb-0">12</div>
-                                        <div class="small text-muted uppercase">Envoyées</div>
+                            <div class="d-flex align-items-center justify-content-between mb-3">
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="position-relative">
+                                        <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center text-white fw-bold" style="width:40px;height:40px;">JD</div>
+                                        <span class="position-absolute bottom-0 end-0 p-1 bg-success border border-dark rounded-circle"></span>
+                                    </div>
+                                    <div>
+                                        <div class="small text-white fw-medium">M. Dupont (Pilote)</div>
+                                        <div class="text-xs text-muted">En ligne</div>
                                     </div>
                                 </div>
-                                <div class="col-6">
-                                    <div class="p-3 rounded-3 bg-info bg-opacity-10 text-center">
-                                        <div class="h3 text-info mb-0">3</div>
-                                        <div class="small text-info uppercase">Entretiens</div>
-                                    </div>
+                                <div class="bg-success bg-opacity-25 text-success rounded-pill px-3 py-1 small border border-success border-opacity-25">
+                                    Stage validé
                                 </div>
                             </div>
-                            <div class="d-flex align-items-center gap-2 text-white small">
-                                <i class="fas fa-sync fa-spin text-muted"></i> Synchronisation...
+                            <div class="d-flex align-items-center gap-2 text-white small p-2 rounded bg-white bg-opacity-5 border border-white border-opacity-5">
+                                <i class="fas fa-bell text-warning"></i> 
+                                <span class="text-muted">Nouvelle évaluation disponible</span>
                             </div>
                         </div>
                     </div>
@@ -266,10 +305,10 @@
                 <div class="card glass-card h-100 p-4 border-0 hover-lift">
                     <div class="card-body">
                          <div class="mb-3 text-warning">
-                            <i class="fas fa-bolt fa-2x"></i>
+                            <i class="fas fa-file-signature fa-2x"></i>
                         </div>
-                        <h4 class="text-white fw-bold">Rapidité</h4>
-                        <p class="text-muted small mb-0">Postulez en un clic grâce à votre profil unifié. Plus besoin de remplir 50 formulaires.</p>
+                        <h4 class="text-white fw-bold">Conventions</h4>
+                        <p class="text-muted small mb-0">Numérisation complète de vos conventions de stage. Signatures électroniques sécurisées.</p>
                     </div>
                 </div>
             </div>
@@ -279,10 +318,10 @@
                 <div class="card glass-card h-100 p-4 border-0 hover-lift">
                     <div class="card-body">
                          <div class="mb-3 text-success">
-                            <i class="fas fa-shield-alt fa-2x"></i>
+                            <i class="fas fa-history fa-2x"></i>
                         </div>
-                        <h4 class="text-white fw-bold">Fiabilité</h4>
-                        <p class="text-muted small mb-0">Toutes les entreprises sont vérifiées par le CESI pour garantir des stages de qualité.</p>
+                        <h4 class="text-white fw-bold">Historique</h4>
+                        <p class="text-muted small mb-0">Retrouvez toutes vos anciennes candidatures et l'historique de vos échanges avec les recruteurs.</p>
                     </div>
                 </div>
             </div>
@@ -292,10 +331,10 @@
                 <div class="card glass-card h-100 p-4 border-0 hover-lift">
                     <div class="card-body">
                          <div class="mb-3 text-purple">
-                            <i class="fas fa-mobile-alt fa-2x"></i>
+                            <i class="fas fa-comments fa-2x"></i>
                         </div>
-                        <h4 class="text-white fw-bold">Mobile First</h4>
-                        <p class="text-muted small mb-0">Accédez à vos offres et répondez aux recruteurs directement depuis votre smartphone.</p>
+                        <h4 class="text-white fw-bold">Chatbot IA</h4>
+                        <p class="text-muted small mb-0">Une question sur votre convention ou une offre ? Notre assistant IA est là pour vous 24/7.</p>
                     </div>
                 </div>
             </div>
@@ -324,6 +363,84 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.animate-on-scroll').forEach(el => {
         observer.observe(el);
     });
+
+    // Feature Offers Hover Effect
+    const createHoverEffect = (cardId, items) => {
+        const card = document.getElementById(cardId);
+        if (!card) return;
+
+        // Create floaters container if not exists
+        let floatersContainer = document.querySelector('.floaters-container');
+        if (!floatersContainer) {
+            floatersContainer = document.createElement('div');
+            floatersContainer.className = 'floaters-container';
+            document.body.appendChild(floatersContainer);
+        }
+
+        // Create elements
+        const floaters = items.map((item, index) => {
+            const el = document.createElement('div');
+            el.className = 'floating-offer';
+            // Add dynamic transition for "trail" effect
+            // Each card follows with a slightly longer delay
+            el.style.transition = `opacity 0.3s ease, transform 0.3s ease, left ${0.2 + (index * 0.15)}s cubic-bezier(0.2, 0.8, 0.2, 1), top ${0.2 + (index * 0.15)}s cubic-bezier(0.2, 0.8, 0.2, 1)`;
+            
+            el.innerHTML = `
+                <div class="d-flex align-items-center gap-2">
+                    <div class="bg-white bg-opacity-10 p-2 rounded">
+                        <i class="fas ${item.icon} ${item.color}"></i>
+                    </div>
+                    <div>
+                        <div class="fw-bold text-white small">${item.title}</div>
+                        <div class="text-muted" style="font-size: 0.75rem">${item.subtitle}</div>
+                    </div>
+                </div>
+            `;
+            floatersContainer.appendChild(el);
+            return el;
+        });
+
+        // Mouse Move Handler
+        card.addEventListener('mousemove', (e) => {
+             floaters.forEach((el, index) => {
+                el.classList.add('active');
+                
+                // Calculate position with offsets
+                // Stagger positions around cursor
+                const angle = (index / floaters.length) * Math.PI * 2;
+                const radius = 100; // Distance from cursor
+                
+                const offsetX = Math.cos(angle) * (radius + (index * 10));
+                const offsetY = Math.sin(angle) * (radius + (index * 10));
+
+                const x = e.clientX + 20 + (index * 10);
+                const y = e.clientY - 50 + (index * 60);
+
+                el.style.left = `${x}px`;
+                el.style.top = `${y}px`;
+            });
+        });
+
+         // Mouse Leave Handler
+        card.addEventListener('mouseleave', () => {
+             floaters.forEach(el => {
+                el.classList.remove('active');
+            });
+        });
+    };
+
+    // Initialize Hover Effects
+    createHoverEffect('feature-offers', [
+        { title: "Dev Fullstack", subtitle: "Thales", icon: "fa-code", color: "text-info" },
+        { title: "Data Analyst", subtitle: "Airbus", icon: "fa-chart-line", color: "text-warning" },
+        { title: "Cyber Sec", subtitle: "Orange", icon: "fa-shield-alt", color: "text-danger" }
+    ]);
+
+    createHoverEffect('feature-suivi', [
+        { title: "Livret de stage", subtitle: "Validé à 100%", icon: "fa-book", color: "text-success" },
+        { title: "Rendez-vous", subtitle: "Mardi 14h00", icon: "fa-calendar-alt", color: "text-info" },
+        { title: "Validation", subtitle: "Fiche de poste", icon: "fa-check-circle", color: "text-primary" }
+    ]);
 });
 </script>
 

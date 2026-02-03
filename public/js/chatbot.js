@@ -49,7 +49,7 @@
                             class="chatbot-input"
                             id="chatbotInput"
                             rows="1"
-                            placeholder="Posez votre question sur les stages, les offres, la plateforme..."
+                            placeholder="Posez votre question..."
                         ></textarea>
                         <button class="chatbot-send-btn" id="chatbotSendBtn" type="submit" aria-label="Envoyer">
                             <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -62,7 +62,8 @@
             </div>
 
             <button class="chatbot-toggle-btn" id="chatbotToggleBtn" type="button" aria-label="Ouvrir le chatbot">
-                <i class="fa-solid fa-comments"></i>
+                <i class="fa-solid fa-comments chatbot-icon-open"></i>
+                <i class="fa-solid fa-xmark chatbot-icon-close"></i>
             </button>
         `;
 
@@ -462,46 +463,32 @@
             }
         }
 
-        function openPanel() {
-            panel.classList.remove('is-closing');
-            panel.classList.add('is-open');
-            panel.classList.add('is-opening');
-            panel.setAttribute('aria-hidden', 'false');
-            toggleBtn.style.opacity = '0';
-            toggleBtn.style.pointerEvents = 'none';
-            toggleBtn.classList.add('is-opening');
-            setTimeout(() => toggleBtn.classList.remove('is-opening'), 3000);
-            setTimeout(() => panel.classList.remove('is-opening'), 3000);
-            input.focus();
+        function togglePanel() {
+            const widget = document.querySelector('.chatbot-widget');
+            const isActive = widget.classList.toggle('active');
+            
+            panel.setAttribute('aria-hidden', !isActive);
+            
+            if (isActive) {
+                input.focus();
+            }
         }
 
         function closePanel() {
-            panel.classList.add('is-closing');
-            panel.classList.remove('is-open');
-            
-            // À 70% de l'animation (quand la fenêtre atteint ~20% de taille), faire vibrer le bouton
-            setTimeout(() => {
-                toggleBtn.style.opacity = '1';
-                toggleBtn.style.pointerEvents = 'auto';
-                toggleBtn.classList.add('is-receiving');
-            }, 1750); // 70% de 2500ms
-            
-            // Fin de l'animation
-            setTimeout(() => {
-                panel.setAttribute('aria-hidden', 'true');
-                panel.classList.remove('is-closing');
-                toggleBtn.classList.remove('is-receiving');
-            }, 2500);
+            const widget = document.querySelector('.chatbot-widget');
+            widget.classList.remove('active');
+            panel.setAttribute('aria-hidden', 'true');
         }
 
-        toggleBtn.addEventListener('click', openPanel);
+        toggleBtn.addEventListener('click', togglePanel);
         if (closeBtn) {
             closeBtn.addEventListener('click', closePanel);
         }
 
         // Fermer avec Echap
         document.addEventListener('keydown', function (e) {
-            if (e.key === 'Escape' && panel.classList.contains('is-open')) {
+            const widget = document.querySelector('.chatbot-widget');
+            if (e.key === 'Escape' && widget.classList.contains('active')) {
                 closePanel();
             }
         });
