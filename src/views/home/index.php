@@ -139,7 +139,7 @@ $title = "Accueil";
 }
 </style>
 
-<div class="hero position-relative overflow-hidden d-flex align-items-center" style="min-height: 90vh;">
+<div class="hero position-relative overflow-hidden d-flex align-items-center" style="min-height: 90vh; padding-bottom: 8rem;">
     <!-- Animated Background Layer -->
     <div class="hero-animated-bg">
         <div class="hero-blob"></div>
@@ -147,6 +147,19 @@ $title = "Accueil";
         <div class="hero-blob"></div>
         <!-- Grid Pattern Overlay -->
         <div style="position: absolute; inset:0; background-image: linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px); background-size: 50px 50px; opacity: 0.2; mask-image: radial-gradient(circle at center, black 0%, transparent 80%); -webkit-mask-image: radial-gradient(circle at center, black 0%, transparent 80%);"></div>
+    </div>
+
+    <!-- Wave Separator -->
+    <div style="position: absolute; bottom: -5px; left: 0; width: 100%; overflow: hidden; line-height: 0; z-index: 1;">
+        <svg data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none" style="position: relative; display: block; width: calc(100% + 1.3px); height: 120px;">
+            <defs>
+                <mask id="book-mask">
+                    <rect width="100%" height="100%" fill="white" />
+                    <path d="M602.45,3.86h0S572.9,116.24,281.94,120H923C632,116.24,602.45,3.86,602.45,3.86Z" fill="black" transform="rotate(180 600 60)" />
+                </mask>
+            </defs>
+            <rect width="100%" height="100%" style="fill: hsl(var(--background));" mask="url(#book-mask)" />
+        </svg>
     </div>
 
     <!-- Main Content -->
