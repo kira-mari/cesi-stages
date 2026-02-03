@@ -20,8 +20,11 @@ $protocol = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? 'https' :
 $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
 
 // Redirection automatique : localhost → cesi-site.local (pour cohérence du domaine)
-if ($host !== 'cesi-site.local' && strpos($host, 'localhost') !== false) {
-    $uri = str_replace('/cesi-stages', '', $_SERVER['REQUEST_URI']);
+// Uniquement si on n'est pas en ligne de commande (CLI)
+if (php_sapi_name() !== 'cli' && $host !== 'cesi-site.local' && strpos($host, 'localhost') !== false) {
+    // Vérification de l'existence de REQUEST_URI pour éviter les erreurs
+    $requestUri = $_SERVER['REQUEST_URI'] ?? '/';
+    $uri = str_replace('/cesi-stages', '', $requestUri);
     header('Location: ' . $protocol . '://cesi-site.local' . $uri);
     exit;
 }

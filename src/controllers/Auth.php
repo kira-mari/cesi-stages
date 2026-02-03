@@ -296,4 +296,90 @@ class Auth extends Controller
             'csrf_token' => $this->generateCsrfToken()
         ]);
     }
+
+    /**
+     * Page de profil utilisateur
+     */
+    public function profile()
+    {
+        // Vérification si l'utilisateur est connecté
+        if (!$this->isAuthenticated()) {
+            $this->redirect('login');
+        }
+
+        $userModel = new User();
+        $user = $userModel->find($_SESSION['user_id']);
+
+        if (!$user) {
+            // Si l'utilisateur n'existe pas en base, on le déconnecte
+            session_destroy();
+            $this->redirect('login');
+        }
+
+        $this->render('auth/profile', [
+            'title' => 'Mon Profil - ' . APP_NAME,
+            'user' => $user
+        ]);
+    }
+
+    /**
+     * Affiche le formulaire d'édition du profil
+     */
+    public function editProfile()
+    {
+        if (!$this->isAuthenticated()) {
+            $this->redirect('login');
+        }
+
+        $userModel = new User();
+        $user = $userModel->find($_SESSION['user_id']);
+
+        $this->render('auth/edit-profile', [
+            'title' => 'Modifier mon profil - ' . APP_NAME,
+            'user' => $user,
+            'csrf_token' => $this->generateCsrfToken()
+        ]);
+    }
+
+    /**
+     * Traite la mise à jour du profil
+     */
+    public function updateProfile()
+    {
+        if (!$this->isAuthenticated()) {
+            $this->redirect('login');
+        }
+
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            // Vérification CSRF
+            if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
+                die("Erreur de sécurité CSRF");
+            }
+
+            $userModel = new User();
+            $data = [
+                'nom' => htmlspecialchars($_POST['nom']),
+                'prenom' => htmlspecialchars($_POST['prenom']),
+                'telephone' => htmlspecialchars($_POST['telephone']),
+                'age' => !empty($_POST['age']) ? intval($_POST['age']) : null,
+                'adresse' => htmlspecialchars($_POST['adresse']),
+                'bio' => htmlspecialchars($_POST['bio'])
+            ];
+
+            // Mise à jour (le mot de passe n'est pas modifié ici pour simplifier)
+            // Pour modifier le mot de passe, il faudrait une méthode dédiée
+            
+            if ($userModel->update($_SESSION['user_id'], $data)) {
+                // Mise à jour de la session
+                $_SESSION['user_nom'] = $data['nom'];
+                $_SESSION['user_prenom'] = $data['prenom'];
+                
+                $_SESSION['flash_success'] = "Profil mis à jour avec succès.";
+                $this->redirect('profile');
+            } else {
+                 $_SESSION['flash_error'] = "Erreur lors de la mise à jour.";
+                 $this->redirect('profile/edit');
+            }
+        }
+    }
 }

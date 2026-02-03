@@ -289,12 +289,20 @@ code, pre {
     line-height: 1.5;
     text-align: center;
     white-space: nowrap;
-    transition: all 0.2s;
+    transition: all 0.2s ease;
     cursor: pointer;
     border: 1px solid transparent;
     font-family: 'Inter', sans-serif;
-    text-decoration: none !important; /* Bootstrap override */
+    text-decoration: none !important;
+    position: relative; /* Ensure it stacks correctly */
+    z-index: 1; /* Lift above potential overlaps */
+    user-select: none; /* Prevent text selection flickering */
 }
+/* Fix for button inner elements interfering with clicks */
+.btn > * {
+    pointer-events: none;
+}
+
 
 /* Force override Bootstrap colors */
 .btn-primary {

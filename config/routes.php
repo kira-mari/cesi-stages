@@ -12,6 +12,9 @@ $router->add('', ['controller' => 'Home', 'action' => 'index']);
 $router->add('login', ['controller' => 'Auth', 'action' => 'login']);
 $router->add('logout', ['controller' => 'Auth', 'action' => 'logout']);
 $router->add('register', ['controller' => 'Auth', 'action' => 'register']);
+$router->add('profile', ['controller' => 'Auth', 'action' => 'profile']);
+$router->add('profile/edit', ['controller' => 'Auth', 'action' => 'editProfile']);
+$router->add('profile/update', ['controller' => 'Auth', 'action' => 'updateProfile']);
 // Google SSO
 $router->add('auth/google', ['controller' => 'Auth', 'action' => 'googleRedirect']);
 $router->add('auth/google-callback', ['controller' => 'Auth', 'action' => 'googleCallback']);
