@@ -1,114 +1,311 @@
-<div class="row">
-    <div class="col-md-8">
-        <div class="card mb-4">
-            <div class="card-body">
-                <h1 class="card-title"><?= htmlspecialchars($entreprise['nom']) ?></h1>
-                <p class="text-muted"><?= htmlspecialchars($entreprise['secteur']) ?></p>
-                <hr>
-                <h5>Description</h5>
-                <p class="card-text"><?= nl2br(htmlspecialchars($entreprise['description'])) ?></p>
-                
-                <div class="mt-4">
-                    <h5>Coordonnées</h5>
-                    <p>
-                        <strong>Email :</strong> <?= htmlspecialchars($entreprise['email']) ?><br>
-                        <strong>Téléphone :</strong> <?= htmlspecialchars($entreprise['telephone']) ?><br>
-                        <strong>Adresse :</strong> <?= htmlspecialchars($entreprise['adresse']) ?>
-                    </p>
+<div class="container py-4 mb-5">
+    <!-- Company Info Card -->
+    <div class="card mb-5 border-0 shadow-sm" style="background: linear-gradient(145deg, hsl(var(--card)), rgba(20, 20, 35, 0.6)); border-top: 4px solid hsl(var(--primary));">
+        <div class="card-body p-4">
+            <div class="d-flex justify-content-between align-items-start mb-3">
+                <div>
+                    <span class="badge bg-primary text-white mb-2 shadow-sm" style="font-weight: 500; letter-spacing: 0.5px;"><?= htmlspecialchars($entreprise['secteur']) ?></span>
+                    <h1 class="display-5 fw-bold mb-1 text-white"><?= htmlspecialchars($entreprise['nom']) ?></h1>
+                    <p class="text-white-50"><i class="fas fa-map-marker-alt me-2 text-primary"></i><?= htmlspecialchars($entreprise['adresse']) ?></p>
                 </div>
-            </div>
-        </div>
-
-        <div class="card mb-4">
-            <div class="card-header">
-                <h3>Offres de stage</h3>
-            </div>
-            <div class="card-body">
-                <?php if (empty($offres)): ?>
-                    <p class="text-muted">Aucune offre disponible pour le moment.</p>
-                <?php else: ?>
-                    <div class="list-group">
-                        <?php foreach ($offres as $offre): ?>
-                            <a href="<?= BASE_URL ?>/offres/show/<?= $offre['id'] ?>" class="list-group-item list-group-item-action">
-                                <div class="d-flex w-100 justify-content-between">
-                                    <h5 class="mb-1"><?= htmlspecialchars($offre['titre']) ?></h5>
-                                    <small><?= date('d/m/Y', strtotime($offre['created_at'])) ?></small>
-                                </div>
-                                <p class="mb-1"><?= substr(htmlspecialchars($offre['description']), 0, 100) ?>...</p>
-                            </a>
-                        <?php endforeach; ?>
+                <?php if (isset($_SESSION['user_role']) && in_array($_SESSION['user_role'], ['admin', 'pilote'])): ?>
+                    <div class="dropdown">
+                        <button class="btn btn-icon btn-outline-secondary border-0" type="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-ellipsis-h fa-lg"></i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0">
+                            <li><a class="dropdown-item" href="<?= BASE_URL ?>/entreprises/edit/<?= $entreprise['id'] ?>"><i class="fas fa-edit me-2"></i>Modifier</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-danger" href="<?= BASE_URL ?>/entreprises/delete/<?= $entreprise['id'] ?>" onclick="return confirm('Confirmer la suppression ?')"><i class="fas fa-trash-alt me-2"></i>Supprimer</a></li>
+                        </ul>
                     </div>
                 <?php endif; ?>
+            </div>
+
+            <div class="row mt-5">
+                <div class="col-md-7 pe-md-5">
+                    <h5 class="text-primary mb-3 text-uppercase fw-bold small letter-spacing-1">À propos de l'entreprise</h5>
+                    <p class="text-muted" style="line-height: 1.8; font-size: 0.95rem;">
+                        <?= nl2br(htmlspecialchars($entreprise['description'])) ?>
+                    </p>
+                </div>
+                <div class="col-md-5 border-start border-secondary ps-md-4 mt-4 mt-md-0 dash-border">
+                    <h5 class="text-primary mb-3 text-uppercase fw-bold small letter-spacing-1">Coordonnées</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-4">
+                            <small class="d-block text-uppercase fw-bold text-white-50 fs-7 mb-1">Email</small>
+                            <a href="mailto:<?= htmlspecialchars($entreprise['email']) ?>" class="text-white text-decoration-none d-flex align-items-center gap-2 hover-primary transition-color">
+                                <div class="icon-box-sm bg-secondary bg-opacity-25 rounded-circle p-2">
+                                    <i class="fas fa-envelope text-primary small"></i>
+                                </div>
+                                <?= htmlspecialchars($entreprise['email']) ?>
+                            </a>
+                        </li>
+                        <li>
+                            <small class="d-block text-uppercase fw-bold text-white-50 fs-7 mb-1">Téléphone</small>
+                            <div class="d-flex align-items-center gap-2 text-white">
+                                <div class="icon-box-sm bg-secondary bg-opacity-25 rounded-circle p-2">
+                                    <i class="fas fa-phone text-primary small"></i>
+                                </div>
+                                <?= htmlspecialchars($entreprise['telephone']) ?>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
             </div>
         </div>
     </div>
 
-    <div class="col-md-4">
-        <div class="card mb-4">
-            <div class="card-header">
-                <h3>Évaluations</h3>
-            </div>
-            <div class="card-body">
-                <div class="text-center mb-3">
-                    <h2 class="display-4"><?= number_format($moyenneEvaluations, 1) ?>/5</h2>
-                    <div class="ratings">
-                        <?php for($i = 1; $i <= 5; $i++): ?>
-                            <span class="fa fa-star <?= $i <= round($moyenneEvaluations) ? 'checked' : '' ?>"></span>
-                        <?php endfor; ?>
-                    </div>
-                </div>
-
-                <?php if (empty($evaluations)): ?>
-                    <p class="text-muted text-center">Aucune évaluation.</p>
-                <?php else: ?>
-                    <div class="evaluations-list">
-                        <?php foreach ($evaluations as $eval): ?>
-                            <div class="border-bottom pb-2 mb-2">
-                                <div class="d-flex justify-content-between">
-                                    <strong>Note : <?= $eval['note'] ?>/5</strong>
-                                    <small class="text-muted"><?= date('d/m/Y', strtotime($eval['created_at'])) ?></small>
-                                </div>
-                                <p class="mb-0"><?= htmlspecialchars($eval['commentaire']) ?></p>
-                            </div>
-                        <?php endforeach; ?>
-                    </div>
-                <?php endif; ?>
-
-                <?php if (isset($_SESSION['user_role']) && in_array($_SESSION['user_role'], ['admin', 'pilote', 'etudiant'])): ?>
-                    <hr>
-                    <h5>Donner votre avis</h5>
-                    <form action="<?= BASE_URL ?>/entreprises/evaluate/<?= $entreprise['id'] ?>" method="post">
-                        <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?? '' ?>">
-                        <div class="form-group mb-2">
-                            <label>Note</label>
-                            <select name="note" class="form-control" required>
-                                <option value="5">5 - Excellent</option>
-                                <option value="4">4 - Très bien</option>
-                                <option value="3">3 - Bien</option>
-                                <option value="2">2 - Moyen</option>
-                                <option value="1">1 - Mauvais</option>
-                            </select>
-                        </div>
-                        <div class="form-group mb-2">
-                            <label>Commentaire</label>
-                            <textarea name="commentaire" class="form-control" rows="3" required></textarea>
-                        </div>
-                        <button type="submit" class="btn btn-primary btn-sm btn-block">Envoyer</button>
-                    </form>
-                <?php endif; ?>
-            </div>
+    <!-- Offers Section -->
+    <div class="mb-5">
+        <div class="d-flex align-items-center justify-content-between mb-4">
+            <h3 class="mb-0 fw-bold">Offres de stage</h3>
+            <span class="badge bg-secondary rounded-pill"><?= count($offres) ?></span>
         </div>
-
-        <?php if (isset($_SESSION['user_role']) && in_array($_SESSION['user_role'], ['admin', 'pilote'])): ?>
-            <div class="card">
-                <div class="card-header">
-                    <h3>Administration</h3>
-                </div>
+        
+        <?php if (empty($offres)): ?>
+            <div class="card p-5 text-center border-dashed">
                 <div class="card-body">
-                    <a href="<?= BASE_URL ?>/entreprises/edit/<?= $entreprise['id'] ?>" class="btn btn-warning btn-block mb-2">Modifier</a>
-                    <a href="<?= BASE_URL ?>/entreprises/delete/<?= $entreprise['id'] ?>" class="btn btn-danger btn-block" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette entreprise ?');">Supprimer</a>
+                    <div class="bg-secondary bg-opacity-10 rounded-circle d-inline-flex p-3 mb-3">
+                        <i class="fas fa-briefcase fa-2x text-muted"></i>
+                    </div>
+                    <p class="text-muted mb-0">Aucune offre disponible pour le moment.</p>
                 </div>
+            </div>
+        <?php else: ?>
+            <div class="row g-3">
+                <?php foreach ($offres as $offre): ?>
+                    <div class="col-md-6">
+                        <a href="<?= BASE_URL ?>/offres/show/<?= $offre['id'] ?>" class="card text-decoration-none card-hover-effect border-0 bg-card-secondary h-100">
+                            <div class="card-body p-4">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <div>
+                                        <h5 class="card-title mb-1 text-white fw-bold"><?= htmlspecialchars($offre['titre']) ?></h5>
+                                        <p class="card-text text-muted small mb-0">
+                                            <?= substr(htmlspecialchars($offre['description']), 0, 150) ?>...
+                                        </p>
+                                    </div>
+                                    <span class="badge bg-dark border border-secondary text-white-50 fw-normal ms-2">
+                                        <?= date('d/m/Y', strtotime($offre['created_at'])) ?>
+                                    </span>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                <?php endforeach; ?>
             </div>
         <?php endif; ?>
     </div>
+
+    <!-- Unified Evaluation Section -->
+    <div class="card border-0 shadow-sm overflow-hidden" style="background: linear-gradient(145deg, hsl(var(--card)), rgba(20, 20, 35, 0.6));">
+        <div class="card-header bg-transparent border-bottom border-secondary p-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <h3 class="mb-0 fw-bold text-white"><i class="fas fa-star text-warning me-2"></i>Avis et Évaluations</h3>
+                
+                <?php if (isset($_SESSION['user_role']) && in_array($_SESSION['user_role'], ['admin', 'pilote', 'etudiant'])): ?>
+                    <button type="button" class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm" id="toggleReviewForm">
+                        <i class="fas fa-pen-nib me-2"></i>Donner mon avis
+                    </button>
+                <?php endif; ?>
+            </div>
+        </div>
+        
+        <div class="card-body p-4">
+            <!-- Review Form (Hidden by default, slides down) -->
+            <div id="reviewFormContainer" style="display: none; overflow: hidden; transition: all 0.3s ease-in-out;">
+                <div class="bg-dark bg-opacity-25 border border-primary border-opacity-25 rounded-3 p-4 mb-5">
+                    <form action="<?= BASE_URL ?>/entreprises/evaluate/<?= $entreprise['id'] ?>" method="post">
+                        <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?? '' ?>">
+                        <h5 class="fw-bold mb-3 text-white">Partagez votre expérience</h5>
+                        
+                        <div class="row g-4">
+                            <div class="col-md-4">
+                                <label class="form-label text-uppercase text-muted fw-bold small mb-2">Votre note</label>
+                                <div class="rating-input d-flex flex-row-reverse justify-content-end gap-2">
+                                    <input type="radio" id="s_star5" name="note" value="5" class="d-none" required /><label for="s_star5" title="Excellent"><i class="fas fa-star"></i></label>
+                                    <input type="radio" id="s_star4" name="note" value="4" class="d-none" /><label for="s_star4" title="Très bien"><i class="fas fa-star"></i></label>
+                                    <input type="radio" id="s_star3" name="note" value="3" class="d-none" /><label for="s_star3" title="Bien"><i class="fas fa-star"></i></label>
+                                    <input type="radio" id="s_star2" name="note" value="2" class="d-none" /><label for="s_star2" title="Moyen"><i class="fas fa-star"></i></label>
+                                    <input type="radio" id="s_star1" name="note" value="1" class="d-none" /><label for="s_star1" title="Mauvais"><i class="fas fa-star"></i></label>
+                                </div>
+                            </div>
+                            <div class="col-md-8">
+                                <label class="form-label text-uppercase text-muted fw-bold small mb-2">Votre commentaire</label>
+                                <textarea name="commentaire" class="form-control border-secondary text-white" style="background-color: rgba(255, 255, 255, 0.08);" rows="3" placeholder="Qu'avez-vous pensé de l'ambiance, des missions, de l'équipe ?" required></textarea>
+                            </div>
+                            <div class="col-12 text-end mt-3">
+                                <button type="button" class="btn btn-link text-muted me-2 text-decoration-none" id="cancelReview">Annuler</button>
+                                <button type="submit" class="btn btn-primary px-4 fw-bold">Publier</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Stats & List -->
+            <div class="row g-4">
+                <!-- Global Stats (Left) -->
+                <div class="col-md-4 col-lg-3 text-center">
+                    <div class="p-4 bg-dark bg-opacity-25 rounded-3 border border-secondary mb-3">
+                        <div class="display-1 fw-bold text-white mb-0"><?= number_format($moyenneEvaluations, 1) ?></div>
+                        <div class="text-warning fs-4 mb-2">
+                            <?php 
+                            $score = round($moyenneEvaluations);
+                            for($i = 1; $i <= 5; $i++) {
+                                echo $i <= $score ? '<i class="fas fa-star"></i>' : '<i class="far fa-star opacity-25"></i>';
+                            }
+                            ?>
+                        </div>
+                        <p class="text-white-50 text-uppercase fw-bold letter-spacing-1 small mb-0"><?= count($evaluations) ?> avis</p>
+                    </div>
+                </div>
+
+                <!-- Reviews List (Right) -->
+                <div class="col-md-8 col-lg-9">
+                    <?php if (empty($evaluations)): ?>
+                        <div class="d-flex flex-column align-items-center justify-content-center bg-card-secondary rounded-3 border border-dashed p-5 text-muted">
+                            <i class="far fa-comment-dots fa-3x mb-3 opacity-25"></i>
+                            <p class="mb-0 fw-medium">Aucun avis pour le moment.</p>
+                            <p class="small mb-0">Soyez le premier à partager votre expérience !</p>
+                        </div>
+                    <?php else: ?>
+                        <div class="d-flex flex-column gap-3">
+                            <?php foreach ($evaluations as $eval): ?>
+                                <div class="card bg-transparent border border-secondary p-3">
+                                    <div class="d-flex justify-content-between mb-2 align-items-center">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <div class="icon-box-sm bg-secondary bg-opacity-10 text-primary rounded-circle small">
+                                                <i class="fas fa-user"></i>
+                                            </div>
+                                            <span class="text-white fw-bold small">
+                                                <?= htmlspecialchars(($eval['user_prenom'] ?? '') . ' ' . ($eval['user_nom'] ?? '')) ?>
+                                            </span>
+                                            <div class="text-warning small ms-1">
+                                                <?php for($i=1; $i<=5; $i++) echo $i <= $eval['note'] ? '<i class="fas fa-star"></i>' : '<i class="far fa-star opacity-25"></i>'; ?>
+                                            </div>
+                                        </div>
+                                        <small class="text-muted opacity-75" style="font-size: 0.8rem;"><?= date('d/m/Y', strtotime($eval['created_at'])) ?></small>
+                                    </div>
+                                    <p class="mb-0 text-white-50 ps-1" style="font-size: 0.95rem; line-height: 1.6;">
+                                        "<?= htmlspecialchars($eval['commentaire']) ?>"
+                                    </p>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                    <?php endif; ?>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const toggleBtn = document.getElementById('toggleReviewForm');
+    const cancelBtn = document.getElementById('cancelReview');
+    const formContainer = document.getElementById('reviewFormContainer');
+    
+    if (toggleBtn && formContainer) {
+        toggleBtn.addEventListener('click', function() {
+            if (formContainer.style.display === 'none') {
+                // Show with slide down effect
+                formContainer.style.display = 'block';
+                formContainer.style.height = 'auto'; // Get actual height
+                const height = formContainer.clientHeight + 'px';
+                formContainer.style.height = '0px';
+                
+                // Force reflow
+                void formContainer.offsetWidth; 
+                
+                formContainer.style.height = height;
+                
+                // Reset height after transition
+                setTimeout(() => {
+                    formContainer.style.height = 'auto';
+                }, 300);
+                
+                toggleBtn.classList.add('d-none'); // Hide button while form is open
+            }
+        });
+    }
+    
+    if (cancelBtn && formContainer) {
+        cancelBtn.addEventListener('click', function() {
+            // Slide up
+            formContainer.style.height = formContainer.clientHeight + 'px';
+            void formContainer.offsetWidth; // Force reflow
+            formContainer.style.height = '0px';
+            
+            setTimeout(() => {
+                formContainer.style.display = 'none';
+                if(toggleBtn) toggleBtn.classList.remove('d-none'); // Show button again
+            }, 300);
+        });
+    }
+});
+</script>
+
+<style>
+/* ... existing styles ... */
+
+
+<style>
+/* Local styles for this view */
+.fs-7 { font-size: 0.75rem; }
+.letter-spacing-1 { letter-spacing: 1px; }
+
+.card-hover-effect { 
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s; 
+}
+.card-hover-effect:hover { 
+    transform: translateY(-3px); 
+    box-shadow: 0 10px 20px rgba(0,0,0,0.2); 
+    background-color: hsl(var(--card) / 0.8) !important;
+}
+
+.bg-card-secondary {
+    background-color: rgba(255, 255, 255, 0.03);
+}
+
+.icon-box-sm {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.border-dashed {
+    border-style: dashed !important;
+    border-width: 2px !important;
+    border-color: hsl(var(--border)) !important;
+}
+
+.progress-ring__circle {
+    transition: stroke-dashoffset 0.35s;
+    transform: rotate(-90deg);
+    transform-origin: 50% 50%;
+}
+
+/* Star Rating Input */
+.rating-input label {
+    cursor: pointer;
+    color: hsl(var(--muted-foreground));
+    font-size: 1.5rem;
+    transition: color 0.2s;
+}
+.rating-input label:hover,
+.rating-input label:hover ~ label,
+.rating-input input:checked ~ label {
+    color: #fbbf24;
+}
+
+.dash-border {
+    border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+@media (max-width: 768px) {
+    .border-start { border-left: none !important; }
+}
+</style>

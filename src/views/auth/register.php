@@ -1,24 +1,16 @@
 <?php
 // On inclut le CSS spécifique auth
 ?>
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <title>Inscription | CesiStages</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="<?= BASE_URL ?>/css/auth-modern.css">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-</head>
-<body>
+<link rel="stylesheet" href="<?= BASE_URL ?>/css/auth-modern.css">
 
-<div class="auth-container">
-    <div class="auth-card" style="max-width: 500px;">
-        <div class="auth-header">
-            <div class="auth-icon">
-                <i class="fas fa-user-plus"></i>
-            </div>
+<!-- Overlay qui recouvre tout le site (header/footer inclus) -->
+<div class="auth-overlay">
+    <div class="auth-container">
+        <div class="auth-card" style="max-width: 500px;">
+            <div class="auth-header">
+                <div class="auth-icon">
+                    <i class="fas fa-user-plus"></i>
+                </div>
             <h1 class="auth-title">Créer un compte</h1>
             <p class="auth-subtitle">Rejoignez-nous pour accéder aux offres de stage</p>
         </div>
@@ -221,5 +213,5 @@ function checkPasswordMatch() {
 }
 </script>
 
-</body>
-</html>
+    </div>
+</div>

@@ -22,7 +22,7 @@ class Offre extends Model
     {
         $offset = ($page - 1) * $perPage;
         $stmt = self::getDB()->prepare(
-            "SELECT o.*, e.nom as entreprise_nom, e.email as entreprise_email
+            "SELECT o.*, e.nom as entreprise_nom, e.email as entreprise_email, e.adresse as entreprise_adresse
              FROM {$this->table} o
              JOIN entreprises e ON o.entreprise_id = e.id
              ORDER BY o.created_at DESC
@@ -167,7 +167,7 @@ class Offre extends Model
     public function getRecentes($limit = 5)
     {
         $stmt = self::getDB()->prepare(
-            "SELECT o.*, e.nom as entreprise_nom
+            "SELECT o.*, e.nom as entreprise_nom, e.adresse as entreprise_adresse
              FROM {$this->table} o
              JOIN entreprises e ON o.entreprise_id = e.id
              ORDER BY o.created_at DESC
@@ -182,10 +182,10 @@ class Offre extends Model
      * Recherche avancée d'offres
      *
      * @param string $search Texte libre (titre, description, entreprise)
-     * @param string $ville  Ville (basée sur l'adresse de l'entreprise)
+     * @param string $competence Compétence requise
      * @return array
      */
-    public function searchAdvanced($search = '', $ville = '')
+    public function searchAdvanced($search = '', $competence = '')
     {
         $sql = "SELECT o.*, e.nom as entreprise_nom, e.adresse as entreprise_adresse
                 FROM {$this->table} o
@@ -198,9 +198,9 @@ class Offre extends Model
             $params[':search'] = '%' . $search . '%';
         }
 
-        if (!empty($ville)) {
-            $sql .= " AND e.adresse LIKE :ville";
-            $params[':ville'] = '%' . $ville . '%';
+        if (!empty($competence)) {
+            $sql .= " AND o.competences LIKE :competence";
+            $params[':competence'] = '%"' . $competence . '"%';
         }
 
         $sql .= " ORDER BY o.created_at DESC";

@@ -14,6 +14,83 @@
     --strength-strong: #10b981; /* Green */
 }
 
+/* Light Theme Variables */
+[data-theme="light"] {
+    --auth-bg-dark: #f0f2f5;
+    --auth-card-bg: rgba(255, 255, 255, 0.85); /* Frosty white */
+    --auth-input-bg: rgba(0, 0, 0, 0.04);
+    --auth-border: rgba(0, 0, 0, 0.1);
+    --auth-primary: #111827;
+    --auth-primary-text: #ffffff;
+    --auth-accent: #6d28d9; /* Deep Purple */
+    --auth-accent-glow: rgba(109, 40, 217, 0.2);
+}
+
+/* Light Theme Overrides - Body Background */
+[data-theme="light"] body {
+    background-color: #f8fafc;
+    background-image: 
+        radial-gradient(circle at top left, rgba(99, 102, 241, 0.1), transparent 50%),
+        radial-gradient(circle at bottom right, rgba(236, 72, 153, 0.1), transparent 50%);
+}
+
+/* Light Theme Overrides - Text Colors */
+[data-theme="light"] .auth-title { color: #111827; }
+[data-theme="light"] .auth-subtitle { color: #4b5563; }
+[data-theme="light"] .auth-label { color: #374151; }
+[data-theme="light"] .auth-input { color: #111827; }
+
+[data-theme="light"] .input-icon { color: #6b7280; }
+[data-theme="light"] .auth-input:focus + .input-icon,
+[data-theme="light"] .auth-input:focus ~ .input-icon { color: var(--auth-accent); }
+
+[data-theme="light"] .toggle-password { color: #6b7280; }
+[data-theme="light"] .toggle-password:hover { color: #111827; }
+
+[data-theme="light"] .remember-me { color: #4b5563; }
+[data-theme="light"] .custom-checkbox { 
+    border-color: rgba(0, 0, 0, 0.2); 
+    background: rgba(0,0,0,0.02);
+}
+[data-theme="light"] .custom-checkbox i { color: white !important; }
+
+[data-theme="light"] .btn-auth-primary {
+    background: var(--auth-accent);
+    color: white;
+}
+[data-theme="light"] .btn-auth-primary:hover {
+    box-shadow: 0 10px 20px -5px rgba(109, 40, 217, 0.4);
+}
+
+[data-theme="light"] .divider { color: #9ca3af; }
+[data-theme="light"] .divider::before,
+[data-theme="light"] .divider::after { border-bottom-color: rgba(0, 0, 0, 0.1); }
+
+[data-theme="light"] .btn-auth-google {
+    background: white;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    color: #374151;
+    border-color: rgba(0,0,0,0.1);
+}
+[data-theme="light"] .btn-auth-google:hover {
+    background: #f9fafb;
+}
+
+[data-theme="light"] .auth-footer { color: #6b7280; }
+[data-theme="light"] .auth-link { color: var(--auth-accent); }
+
+
+/* Ensure overlay is positioned correctly below header */
+.auth-overlay {
+    position: relative;
+    width: 100%;
+    min-height: 80vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1; 
+}
+
 body {
     background-color: #05050a;
     background-image: 
@@ -26,6 +103,7 @@ body {
 }
 
 .auth-container {
+    width: 100%;
     min-height: calc(100vh - 80px); /* Adjust for header */
     display: flex;
     align-items: center;
@@ -33,7 +111,7 @@ body {
     padding: 1rem;
     padding-bottom: 10vh; /* Push content up slightly */
     position: relative;
-    z-index: 10;
+    z-index: 2;
 }
 
 /* Glass Card */

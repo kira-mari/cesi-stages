@@ -35,11 +35,11 @@
                         <div class="grid-2-cols mb-4 py-3 border-top border-bottom">
                             <div>
                                 <p class="mb-2 text-muted"><i class="fas fa-map-marker-alt width-20"></i> Lieu</p>
-                                <p class="font-weight-bold"><?= htmlspecialchars($offre['entreprise_ville'] ?? 'Non précisé') ?></p>
+                                <p class="font-weight-bold"><?= htmlspecialchars($offre['entreprise_adresse'] ?? 'Non précisé') ?></p>
                             </div>
                             <div>
                                 <p class="mb-2 text-muted"><i class="far fa-clock width-20"></i> Durée</p>
-                                <p class="font-weight-bold"><?= $offre['duree'] ?> semaines</p>
+                                <p class="font-weight-bold"><?= $offre['duree'] ?> mois</p>
                             </div>
                             <div>
                                 <p class="mb-2 text-muted"><i class="fas fa-coins width-20"></i> Rémunération</p>

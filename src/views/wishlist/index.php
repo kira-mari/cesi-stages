@@ -64,7 +64,7 @@
                                     <i class="fas fa-map-marker-alt me-2"></i><?= htmlspecialchars($offre['adresse'] ?? 'Non précisé') ?>
                                 </span>
                                 <span class="badge bg-dark border border-secondary text-secondary rounded-pill px-3 py-2">
-                                    <i class="far fa-clock me-2"></i><?= htmlspecialchars($offre['duree']) ?> sem.
+                                    <i class="far fa-clock me-2"></i><?= htmlspecialchars($offre['duree']) ?> mois
                                 </span>
                                 <span class="badge bg-dark border border-secondary text-secondary rounded-pill px-3 py-2">
                                     <i class="fas fa-euro-sign me-2"></i><?= htmlspecialchars($offre['remuneration']) ?>/mois

@@ -4,7 +4,8 @@
     position: fixed;
     top: 24px;
     left: 50%;
-    transform: translateX(-50%) translateY(0); /* Changed initial state */
+     transform: translateX(-50%) translateY(-150%); /* Hidden initially to prevent FOUC */
+    opacity: 0;
     width: 95%;
     max-width: 1000px;
     background: rgba(15, 15, 20, 0.7);
@@ -15,11 +16,53 @@
     padding: 0.8rem 1.75rem;
     z-index: 10002;
     box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.5);
+    transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
     /* Animation gérée par JS pour ne s'afficher qu'une seule fois */
 }
 
+/* Light Mode Overrides for Navbar */
+[data-theme="light"] .navbar-floating {
+    background: rgba(255, 255, 255, 0.75);
+    border-color: rgba(99, 102, 241, 0.15); /* Slight Indigo border */
+    box-shadow: 0 10px 40px -10px rgba(99, 102, 241, 0.15); /* Tinted shadow */
+}
+
+[data-theme="light"] .nav-link-custom {
+    color: rgba(0, 0, 0, 0.65);
+}
+
+[data-theme="light"] .nav-link-custom:hover, 
+[data-theme="light"] .nav-link-custom.active {
+    color: #4f46e5; /* Primary color */
+    background: rgba(99, 102, 241, 0.1);
+}
+
+[data-theme="light"] .logo-text {
+    background: linear-gradient(135deg, #4f46e5 0%, #9333ea 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+[data-theme="light"] .hamburger-line {
+    background-color: #1e1e2e;
+}
+
+[data-theme="light"] #avatarBtn {
+    color: #1e1e2e !important;
+}
+
+[data-theme="light"] #avatarBtn img {
+    border-color: rgba(0,0,0,0.1) !important;
+}
+
+/* State when navbar is fully visible (added by JS) */
+.navbar-floating.visible {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+}
+
 .navbar-floating.animate-entry {
-    animation: navSlideDown 0.5s ease-out;
+    animation: navSlideDown 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards; /* Smoother & ensure it stays */
 }
 
 /* Classe ajoutée via JS après l'intro pour activer les transitions */
@@ -31,7 +74,7 @@
     will-change: transform, opacity;
 }
 
-.navbar-hidden {
+.navbar-floating.navbar-hidden {
     /* Remonte plus haut, réduit légèrement ma taille et devient transparent */
     transform: translateX(-50%) translateY(-140%) scale(0.96);
     opacity: 0;
@@ -53,7 +96,7 @@
 
 /* Links */
 .nav-link-custom {
-    color: rgba(255, 255, 255, 0.65);
+    color: rgba(255, 255, 255, 0.9); /* More visible by default */
     font-weight: 500;
     padding: 0.6rem 1.2rem;
     border-radius: 30px;
@@ -65,7 +108,7 @@
 
 .nav-link-custom:hover, .nav-link-custom.active {
     color: white;
-    background: rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.15);
 }
 
 /* Logo */
@@ -315,6 +358,75 @@
         transform: translateX(-50%);
     }
 }
+/* Theme Toggle Button */
+.theme-toggle-btn {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: var(--foreground, #fff);
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    transition: background-color 0.3s ease;
+}
+
+.theme-toggle-btn:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.sun-and-moon > :is(.moon, .sun, .sun-beams) {
+    transform-origin: center center;
+}
+
+.sun-and-moon > :is(.moon, .sun) {
+    fill: currentColor;
+}
+
+.sun-and-moon > .sun-beams {
+    stroke: currentColor;
+    stroke-width: 2px;
+}
+
+/* Dark Mode (Default) State - Show Moon */
+/* Moon means beams are invisible, and mask creates crescent */
+.sun-and-moon > .sun-beams {
+    opacity: 0;
+    transform: rotate(0deg);
+    transition: transform 0.5s ease, opacity 0.5s ease;
+}
+
+.sun-and-moon > .moon > circle {
+    transform: translateX(-7px);
+    transition: transform 0.25s ease-out;
+}
+
+.sun-and-moon > .sun {
+    transform: scale(1);
+    transition: transform 0.5s ease;
+}
+
+/* Light Mode State - Show Sun */
+[data-theme="light"] .theme-toggle-btn {
+    color: var(--foreground); 
+}
+
+[data-theme="light"] .sun-and-moon > .sun-beams {
+    opacity: 1;
+    transform: rotate(90deg);
+}
+
+[data-theme="light"] .sun-and-moon > .moon > circle {
+    transform: translateX(30px); /* Move mask completely out of way */
+}
+
+[data-theme="light"] .sun-and-moon > .sun {
+    transform: scale(1);
+}
+
 </style>
 
 <?php 
@@ -345,10 +457,10 @@ function isNavLinkActive($uri, $base, $path) {
         <nav class="desktop-nav">
             <ul class="d-flex align-items-center gap-3 list-unstyled m-0">
                 <?php if (!isset($_SESSION['user_id'])): ?>
-                    <li><a href="<?= BASE_URL ?>" class="nav-link-custom fw-bold text-white <?= isNavLinkActive($currentUri, $basePath, '') ? 'active' : '' ?>">Accueil</a></li>
+                    <li><a href="<?= BASE_URL ?>" class="nav-link-custom fw-bold <?= isNavLinkActive($currentUri, $basePath, '') ? 'active' : '' ?>">Accueil</a></li>
                 <?php endif; ?>
-                <li><a href="<?= BASE_URL ?>/offres" class="nav-link-custom fw-bold text-white <?= isNavLinkActive($currentUri, $basePath, '/offres') ? 'active' : '' ?>">Offres</a></li>
-                <li><a href="<?= BASE_URL ?>/entreprises" class="nav-link-custom fw-bold text-white <?= isNavLinkActive($currentUri, $basePath, '/entreprises') ? 'active' : '' ?>">Entreprises</a></li>
+                <li><a href="<?= BASE_URL ?>/offres" class="nav-link-custom fw-bold <?= isNavLinkActive($currentUri, $basePath, '/offres') ? 'active' : '' ?>">Offres</a></li>
+                <li><a href="<?= BASE_URL ?>/entreprises" class="nav-link-custom fw-bold <?= isNavLinkActive($currentUri, $basePath, '/entreprises') ? 'active' : '' ?>">Entreprises</a></li>
                 
                 <?php if (isset($_SESSION['user_role'])): ?>
                     <?php if ($_SESSION['user_role'] === 'etudiant'): ?>
@@ -367,6 +479,27 @@ function isNavLinkActive($uri, $base, $path) {
         
         <!-- Actions -->
         <div class="d-flex align-items-center gap-3">
+            <!-- Theme Toggle -->
+            <button class="theme-toggle-btn" id="themeToggle" aria-label="Toggle Theme">
+                <svg class="sun-and-moon" aria-hidden="true" width="24" height="24" viewBox="0 0 24 24">
+                    <mask class="moon" id="moon-mask">
+                        <rect x="0" y="0" width="100%" height="100%" fill="white" />
+                        <circle cx="24" cy="10" r="6" fill="black" />
+                    </mask>
+                    <circle class="sun" cx="12" cy="12" r="6" mask="url(#moon-mask)" fill="currentColor" />
+                    <g class="sun-beams" stroke="currentColor">
+                        <line x1="12" y1="1" x2="12" y2="3" />
+                        <line x1="12" y1="21" x2="12" y2="23" />
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+                        <line x1="1" y1="12" x2="3" y2="12" />
+                        <line x1="21" y1="12" x2="23" y2="12" />
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+                    </g>
+                </svg>
+            </button>
+
             <?php if (!isset($_SESSION['user_id'])): ?>
                 <a href="<?= BASE_URL ?>/login" class="btn-gradient header-login-btn">
                     <span>Se connecter</span>
@@ -475,7 +608,34 @@ function isNavLinkActive($uri, $base, $path) {
 </div>
 
 <script>
+    // Theme Init (Inline to prevent flash)
+    (function() {
+        const storedTheme = localStorage.getItem('theme');
+        if (storedTheme === 'light') {
+            document.documentElement.setAttribute('data-theme', 'light');
+        }
+    })();
+
 document.addEventListener('DOMContentLoaded', () => {
+    // Theme Toggle Logic
+    const themeToggleBtn = document.getElementById('themeToggle');
+    const root = document.documentElement;
+
+    if (themeToggleBtn) {
+        themeToggleBtn.addEventListener('click', () => {
+             const currentTheme = root.getAttribute('data-theme');
+             const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+             
+             if (newTheme === 'dark') {
+                 root.removeAttribute('data-theme'); // Go back to default (Dark)
+             } else {
+                 root.setAttribute('data-theme', 'light');
+             }
+             
+             localStorage.setItem('theme', newTheme);
+        });
+    }
+
     // User Dropdown Logic
     const avatarBtn = document.getElementById('avatarBtn');
     const userDropdown = document.getElementById('userDropdown');
@@ -530,10 +690,12 @@ document.addEventListener('DOMContentLoaded', () => {
         // Après l'animation, on active les transitions de scroll normales
         setTimeout(() => {
             navbar.classList.remove('animate-entry');
+            navbar.classList.add('visible');
             navbar.classList.add('scrolling');
-        }, 1000);
+        }, 800);
     } else {
         // Déjà visité, pas d'animation d'entrée, on active direct le scroll behavior
+        navbar.classList.add('visible');
         navbar.classList.add('scrolling');
     }
 
@@ -541,6 +703,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Force l'activation si scroll avant la fin du timer
         if (!navbar.classList.contains('scrolling')) {
             navbar.classList.add('scrolling');
+            navbar.classList.add('visible');
             navbar.style.animation = 'none';
         }
 

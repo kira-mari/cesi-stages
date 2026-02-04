@@ -248,7 +248,7 @@ class Entreprise extends Controller
      */
     public function evaluate()
     {
-        $this->requireRole(['admin', 'pilote']);
+        $this->requireRole(['admin', 'pilote', 'etudiant']);
 
         $id = $this->routeParams['id'] ?? 0;
 
@@ -268,15 +268,23 @@ class Entreprise extends Controller
             }
 
             $evaluationModel = new Evaluation();
-            $evaluationModel->create([
-                'entreprise_id' => $id,
-                'user_id' => $_SESSION['user_id'],
-                'note' => $note,
-                'commentaire' => $commentaire,
-                'created_at' => date('Y-m-d H:i:s')
-            ]);
+            try {
+                $evaluationModel->create([
+                    'entreprise_id' => $id,
+                    'user_id' => $_SESSION['user_id'],
+                    'note' => $note,
+                    'commentaire' => $commentaire,
+                    'created_at' => date('Y-m-d H:i:s')
+                ]);
+                $_SESSION['flash_success'] = "Évaluation ajoutée avec succès !";
+            } catch (\PDOException $e) {
+                if ($e->getCode() == '23000') {
+                    $_SESSION['flash_error'] = "Vous avez déjà évalué cette entreprise. Impossible de soumettre une nouvelle évaluation.";
+                } else {
+                    $_SESSION['flash_error'] = "Une erreur est survenue lors de l'enregistrement de votre avis.";
+                }
+            }
 
-            $_SESSION['flash_success'] = "Évaluation ajoutée avec succès !";
             $this->redirect('entreprises/show/' . $id);
         }
     }

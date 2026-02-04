@@ -31,14 +31,14 @@ INSERT INTO users (nom, prenom, email, password, role, is_verified, age, telepho
 -- Insertion des entreprises
 -- ============================================
 INSERT INTO entreprises (nom, description, email, telephone, adresse, secteur) VALUES
-('TechCorp', 'Entreprise leader dans le développement de solutions technologiques innovantes.', 'contact@techcorp.fr', '01 23 45 67 89', '123 Avenue de la Technologie, 75001 Paris', 'Informatique'),
-('DataSolutions', 'Spécialiste en analyse de données et business intelligence.', 'recrutement@datasolutions.fr', '01 98 76 54 32', '45 Rue des Données, 69002 Lyon', 'Data Science'),
-('WebAgency', 'Agence web créative spécialisée dans le design et le développement.', 'jobs@webagency.fr', '01 11 22 33 44', '8 Boulevard du Web, 33000 Bordeaux', 'Web Design'),
-('CloudSystems', 'Expert en solutions cloud et infrastructure IT.', 'careers@cloudsystems.fr', '01 55 66 77 88', '12 Avenue du Cloud, 75008 Paris', 'Cloud Computing'),
-('CyberSecur', 'Société de cybersécurité et protection des données.', 'stage@cybersecur.fr', '01 33 44 55 66', '25 Rue de la Sécurité, 75015 Paris', 'Cybersécurité'),
-('DevStudio', 'Studio de développement de jeux vidéo et applications mobiles.', 'hello@devstudio.fr', '01 77 88 99 00', '56 Rue du Jeu, 69007 Lyon', 'Développement'),
-('AIInnovation', 'Startup spécialisée en intelligence artificielle et machine learning.', 'contact@aiinnovation.fr', '01 22 33 44 55', '78 Avenue de l\'IA, 75009 Paris', 'Intelligence Artificielle'),
-('NetServices', 'Fournisseur de services réseaux et télécommunications.', 'rh@netservices.fr', '01 66 77 88 99', '34 Boulevard des Réseaux, 44000 Nantes', 'Réseaux');
+('Capgemini', 'Un leader mondial du conseil, de la transformation numérique, des services technologiques et de l''ingénierie.', 'contact@capgemini.com', '01 47 54 50 00', '11 Rue de Tilsitt, 75017 Paris', 'Informatique'),
+('Criteo', 'Entreprise technologique mondiale de commerce média qui permet aux spécialistes du marketing et aux propriétaires de médias d''obtenir de meilleurs résultats.', 'jobs@criteo.com', '01 40 40 50 50', '32 Rue Blanche, 75009 Paris', 'Data Science'),
+('Publicis Sapient', 'Partenaire de transformation numérique aidant les organisations établies à évoluer vers le numérique.', 'careers@publicissapient.fr', '01 44 43 70 00', '94 Avenue Gambetta, 75020 Paris', 'Web Design'),
+('OVHcloud', 'Acteur mondial du cloud computing et leader européen, proposant des infrastructures cloud performantes.', 'jobs@ovhcloud.com', '09 72 10 10 07', '2 Rue Kellermann, 59100 Roubaix', 'Cloud Computing'),
+('Thales', 'Groupe d''électronique spécialisé dans l''aérospatiale, la défense, la sécurité et le transport terrestre.', 'recrutement@thalesgroup.com', '01 57 77 80 00', '31 Place des Corolles, 92400 Courbevoie', 'Cybersécurité'),
+('Ubisoft', 'L''un des leaders mondiaux de la création, édition et distribution de jeux vidéo et de services interactifs.', 'stages@ubisoft.com', '01 48 18 50 00', '2 Avenue Pasteur, 94160 Saint-Mandé', 'Développement'),
+('Dassault Systèmes', 'L''entreprise 3DEXPERIENCE, fournit aux entreprises et aux particuliers des univers virtuels pour imaginer des innovations durables.', 'contact@3ds.com', '01 61 62 61 62', '10 Rue Marcel Dassault, 78140 Vélizy-Villacoublay', 'Intelligence Artificielle'),
+('Airbus', 'Pionnier international de l''industrie aérospatiale, opérant dans les secteurs des avions commerciaux, des hélicoptères, de la défense et de l''espace.', 'careers@airbus.com', '05 61 93 33 33', '2 Rond-Point Emile Dewoitine, 31700 Blagnac', 'Réseaux');
 
 -- ============================================
 -- Insertion des offres de stage
@@ -65,7 +65,7 @@ INSERT INTO offres (entreprise_id, titre, description, competences, remuneration
  1400.00, 6, '2025-02-01', '2025-07-31'),
 
 (3, 'Designer UI/UX', 
- 'Stage en design d\'interface utilisateur et expérience utilisateur. Vous travaillerez sur des projets web et mobile.',
+ 'Stage en design d''interface utilisateur et expérience utilisateur. Vous travaillerez sur des projets web et mobile.',
  '["Figma", "Adobe XD", "UI Design", "UX Research", "Prototypage"]',
  900.00, 3, '2025-03-01', '2025-05-31'),
 
@@ -75,7 +75,7 @@ INSERT INTO offres (entreprise_id, titre, description, competences, remuneration
  1100.00, 4, '2025-04-01', '2025-07-31'),
 
 (4, 'Ingénieur Cloud', 
- 'Stage en architecture cloud et déploiement d\'infrastructure AWS/Azure.',
+ 'Stage en architecture cloud et déploiement d''infrastructure AWS/Azure.',
  '["AWS", "Azure", "Docker", "Kubernetes", "Terraform"]',
  1500.00, 6, '2025-03-01', '2025-08-31'),
 
@@ -97,7 +97,12 @@ INSERT INTO offres (entreprise_id, titre, description, competences, remuneration
 (7, 'Ingénieur IA', 
  'Stage en recherche et développement en intelligence artificielle.',
  '["Python", "TensorFlow", "PyTorch", "NLP", "Deep Learning"]',
- 1600.00, 6, '2025-03-01', '2025-08-31');
+ 1600.00, 6, '2025-03-01', '2025-08-31'),
+
+(8, 'Ingénieur Réseaux et Télécoms', 
+ 'Participation au déploiement et à la maintenance des réseaux sécurisés pour nos systèmes aéronautiques.',
+ '["Cisco", "Réseaux", "Sécurité", "Python", "Linux"]',
+ 1250.00, 6, '2025-03-01', '2025-08-31');
 
 -- ============================================
 -- Insertion des candidatures
