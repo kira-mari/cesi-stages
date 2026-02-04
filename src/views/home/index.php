@@ -212,6 +212,101 @@ $title = "Accueil";
         height: 40px !important;
     }
 }
+
+/* --- LIGHT MODE OVERRIDES --- */
+[data-theme="light"] .hero-animated-bg {
+    background: radial-gradient(circle at center, #ffffff 0%, #e2e8f0 100%) !important;
+}
+
+[data-theme="light"] .hero-animated-bg > div:first-child + div + div + div {
+    /* Targetting the grid pattern div (4th child) */
+    background-image: linear-gradient(rgba(0, 0, 0, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 0, 0, 0.05) 1px, transparent 1px) !important;
+}
+
+[data-theme="light"] .hero h1.text-white {
+    color: #0f172a !important; /* Slate 900 */
+}
+
+[data-theme="light"] .hero .lead {
+    color: #475569 !important; /* Slate 600 */
+}
+
+[data-theme="light"] .glass-card {
+    background: rgba(255, 255, 255, 0.85);
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    box-shadow: 0 4px 20px -5px rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="light"] .glass-card:hover {
+    background: #ffffff;
+    border-color: var(--primary);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 0 0 1px var(--primary);
+}
+
+[data-theme="light"] .floating-offer {
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.15);
+    color: #0f172a;
+}
+
+[data-theme="light"] .floating-offer h6 {
+    color: #0f172a;
+}
+
+[data-theme="light"] .floating-offer p, 
+[data-theme="light"] .floating-offer div {
+    color: #475569 !important;
+}
+
+[data-theme="light"] .rounded-pill.bg-white\/10 {
+    background: rgba(0, 0, 0, 0.05) !important;
+    border-color: rgba(0, 0, 0, 0.1) !important;
+    color: #334155 !important;
+}
+
+[data-theme="light"] .hero-blob {
+    opacity: 0.25; /* Softer blobs */
+}
+
+/* Features Section Light Mode Fixes */
+[data-theme="light"] h2.text-white, 
+[data-theme="light"] h3.text-white,
+[data-theme="light"] .glass-card .text-white {
+    color: #0f172a !important; /* Dark text for titles */
+}
+
+[data-theme="light"] .glass-card .text-muted {
+    color: #475569 !important; /* Readable slate text for descriptions */
+}
+
+/* Fix Mockup UI elements inside feature cards */
+[data-theme="light"] .glass-card .bg-opacity-5 {
+    background-color: rgba(0, 0, 0, 0.05) !important;
+    border-color: rgba(0, 0, 0, 0.1) !important;
+}
+
+[data-theme="light"] .glass-card .bg-white.bg-opacity-5 {
+    background-color: rgba(0, 0, 0, 0.05) !important;
+}
+
+[data-theme="light"] .glass-card .h6.text-white {
+    color: #1e293b !important;
+}
+
+[data-theme="light"] .glass-card .small.text-white {
+    color: #334155 !important;
+}
+
+[data-theme="light"] .glass-card .feature-mockup-bg {
+    background: rgba(255, 255, 255, 0.8) !important;
+    border-color: rgba(0,0,0,0.1) !important;
+}
+
+[data-theme="light"] .glass-card .rounded-4.border-white {
+    border-color: rgba(0,0,0,0.1) !important;
+    background: rgba(255,255,255,0.5) !important;
+}
 </style>
 
 <div class="hero position-relative overflow-hidden d-flex align-items-center" style="min-height: 90vh; padding-bottom: 10rem;">
@@ -320,24 +415,58 @@ $title = "Accueil";
                     </div>
                     
                     <!-- Visual Bottom -->
-                    <div class="mt-5 px-4 pb-4 position-relative">
-                        <div class="p-4 rounded-4 border border-white border-opacity-10 shadow-lg transform-gpu group-hover:-translate-y-2 transition-transform duration-500" style="background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(5px);">
-                            <!-- Mockup UI -->
-                            <div class="d-flex align-items-center gap-3 mb-4">
-                                <div class="bg-gradient-to-br from-primary to-purple p-2 rounded-3 text-white shadow-sm">
-                                    <i class="fas fa-building"></i>
+                    <div class="mt-4 px-4 pb-4 position-relative">
+                        <!-- 3 Cards Side-by-Side -->
+                        <div class="d-flex flex-wrap flex-md-nowrap gap-3">
+                            
+                            <!-- Card 1: Capgemini -->
+                            <div class="flex-fill p-3 rounded-4 border border-white border-opacity-10 shadow-lg transform-gpu group-hover:translate-y-[-8px] transition-transform duration-500" style="background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(5px);">
+                                <div class="d-flex align-items-center gap-2 mb-3">
+                                    <div class="bg-primary bg-opacity-10 p-2 rounded-3 text-primary shadow-sm">
+                                        <i class="fas fa-code"></i>
+                                    </div>
+                                    <div>
+                                        <div class="h6 text-white mb-0 small fw-bold">Capgemini</div>
+                                        <div class="text-xs text-muted" style="font-size: 0.7rem;">Paris</div>
+                                    </div>
                                 </div>
-                                <div>
-                                    <div class="h6 text-white mb-0">Capgemini</div>
-                                    <div class="small text-muted">Partenaire Gold</div>
+                                <div class="d-flex gap-1 justify-content-center">
+                                    <span class="badge bg-white bg-opacity-5 border border-white border-opacity-10 text-muted w-100 py-2 rounded-pill font-monospace" style="font-size: 0.7rem;">DevOps</span>
                                 </div>
-                                <span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-25 ms-auto rounded-pill px-3">Vérifié</span>
                             </div>
-                            <!-- Tags -->
-                            <div class="d-flex gap-2">
-                                <span class="badge bg-white bg-opacity-5 border border-white border-opacity-10 text-muted px-3 py-2 rounded-pill font-monospace">DevOps</span>
-                                <span class="badge bg-white bg-opacity-5 border border-white border-opacity-10 text-muted px-3 py-2 rounded-pill font-monospace">Cloud</span>
+
+                            <!-- Card 2: Ubisoft -->
+                            <div class="flex-fill p-3 rounded-4 border border-white border-opacity-10 shadow-lg transform-gpu group-hover:translate-y-[-12px] transition-transform duration-500" style="background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(5px); transition-delay: 50ms;">
+                                <div class="d-flex align-items-center gap-2 mb-3">
+                                    <div class="bg-purple bg-opacity-10 p-2 rounded-3 text-purple shadow-sm" style="color: #a855f7;">
+                                        <i class="fas fa-gamepad"></i>
+                                    </div>
+                                    <div>
+                                        <div class="h6 text-white mb-0 small fw-bold">Ubisoft</div>
+                                        <div class="text-xs text-muted" style="font-size: 0.7rem;">Montreuil</div>
+                                    </div>
+                                </div>
+                                <div class="d-flex gap-1 justify-content-center">
+                                    <span class="badge bg-white bg-opacity-5 border border-white border-opacity-10 text-muted w-100 py-2 rounded-pill font-monospace" style="font-size: 0.7rem;">Unity 3D</span>
+                                </div>
                             </div>
+
+                            <!-- Card 3: Thales -->
+                            <div class="flex-fill p-3 rounded-4 border border-white border-opacity-10 shadow-lg transform-gpu group-hover:translate-y-[-8px] transition-transform duration-500" style="background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(5px); transition-delay: 100ms;">
+                                <div class="d-flex align-items-center gap-2 mb-3">
+                                    <div class="bg-danger bg-opacity-10 p-2 rounded-3 text-danger shadow-sm">
+                                        <i class="fas fa-shield-alt"></i>
+                                    </div>
+                                    <div>
+                                        <div class="h6 text-white mb-0 small fw-bold">Thales</div>
+                                        <div class="text-xs text-muted" style="font-size: 0.7rem;">Nantes</div>
+                                    </div>
+                                </div>
+                                <div class="d-flex gap-1 justify-content-center">
+                                    <span class="badge bg-white bg-opacity-5 border border-white border-opacity-10 text-muted w-100 py-2 rounded-pill font-monospace" style="font-size: 0.7rem;">Cyber</span>
+                                </div>
+                            </div>
+
                         </div>
                     </div>
                 </div>
@@ -469,9 +598,15 @@ document.addEventListener('DOMContentLoaded', () => {
         const floaters = items.map((item, index) => {
             const el = document.createElement('div');
             el.className = 'floating-offer';
-            // Add dynamic transition for "trail" effect
-            // Each card follows with a slightly longer delay
-            el.style.transition = `opacity 0.3s ease, transform 0.3s ease, left ${0.2 + (index * 0.15)}s cubic-bezier(0.2, 0.8, 0.2, 1), top ${0.2 + (index * 0.15)}s cubic-bezier(0.2, 0.8, 0.2, 1)`;
+            el.style.top = '0';
+            el.style.left = '0';
+            el.style.willChange = 'transform, opacity'; // Optimization hint for browser
+            
+            // Use transform for movement (Hardware Accelerated)
+            // Reduced latency for tighter, smoother control
+            // Staggered duration creates the trail effect without lag
+            const duration = 0.15 + (index * 0.08); 
+            el.style.transition = `opacity 0.2s ease, transform ${duration}s cubic-bezier(0.1, 0.5, 0.2, 1)`;
             
             el.innerHTML = `
                 <div class="d-flex align-items-center gap-2">
@@ -490,22 +625,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Mouse Move Handler
         card.addEventListener('mousemove', (e) => {
-             floaters.forEach((el, index) => {
-                el.classList.add('active');
-                
-                // Calculate position with offsets
-                // Stagger positions around cursor
-                const angle = (index / floaters.length) * Math.PI * 2;
-                const radius = 100; // Distance from cursor
-                
-                const offsetX = Math.cos(angle) * (radius + (index * 10));
-                const offsetY = Math.sin(angle) * (radius + (index * 10));
+            // Use requestAnimationFrame to sync with screen refresh rate
+            requestAnimationFrame(() => {
+                floaters.forEach((el, index) => {
+                    el.classList.add('active');
+                    
+                    // Positions relative to cursor
+                    // Using translate3d forces GPU acceleration
+                    const x = e.clientX + 20 + (index * 5); 
+                    const y = e.clientY - 40 + (index * 50);
 
-                const x = e.clientX + 20 + (index * 10);
-                const y = e.clientY - 50 + (index * 60);
-
-                el.style.left = `${x}px`;
-                el.style.top = `${y}px`;
+                    el.style.transform = `translate3d(${x}px, ${y}px, 0)`;
+                });
             });
         });
 

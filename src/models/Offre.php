@@ -35,6 +35,22 @@ class Offre extends Model
     }
 
     /**
+     * Récupère toutes les offres pour la carte (sans pagination)
+     *
+     * @return array
+     */
+    public function getAllForMap()
+    {
+        $stmt = self::getDB()->query(
+            "SELECT o.id, o.titre, o.description, e.nom as entreprise_nom, e.adresse as entreprise_adresse
+             FROM {$this->table} o
+             JOIN entreprises e ON o.entreprise_id = e.id
+             ORDER BY o.created_at DESC"
+        );
+        return $stmt->fetchAll();
+    }
+
+    /**
      * Récupère les offres par ville (en se basant sur l'adresse de l'entreprise)
      *
      * @param string $ville

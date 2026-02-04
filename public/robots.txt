@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /
+Disallow: /dashboard/
+Disallow: /admin/
+Disallow: /config/
+Disallow: /core/
+Disallow: /src/
+Disallow: /vendor/
+Disallow: /uploads/
+
+Sitemap: https://cesi-site.local/sitemap.xml

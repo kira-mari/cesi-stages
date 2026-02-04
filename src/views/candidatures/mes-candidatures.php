@@ -1,8 +1,98 @@
+<style>
+/* Light Mode Support for Candidatures */
+[data-theme="light"] .page-section h1, 
+[data-theme="light"] .page-section h3.text-white, 
+[data-theme="light"] .page-section .h2.text-white,
+[data-theme="light"] .page-section .text-white {
+    color: #1f2937 !important;
+}
+
+[data-theme="light"] .page-section p.text-muted {
+    color: #6b7280 !important;
+}
+
+/* Badge Contrast */
+[data-theme="light"] .badge.bg-primary {
+    background-color: rgba(79, 70, 229, 0.1) !important;
+    color: #4338ca !important;
+    border: 1px solid rgba(79, 70, 229, 0.2);
+}
+
+/* Empty State Box */
+[data-theme="light"] .bg-dark.rounded-circle {
+    background-color: #f3f4f6 !important;
+    border-color: #e5e7eb !important;
+}
+[data-theme="light"] .bg-dark.rounded-circle i {
+    color: #9ca3af !important;
+}
+
+/* Candidature Card Light Mode */
+[data-theme="light"] .candidature-card {
+    background: #ffffff !important;
+    border: 1px solid #e5e7eb !important;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="light"] .candidature-title a {
+    color: #1f2937 !important;
+}
+
+[data-theme="light"] .candidature-company {
+    color: #4f46e5 !important;
+}
+
+[data-theme="light"] .candidature-date {
+    color: #6b7280 !important;
+    background: #f3f4f6 !important;
+    border-color: #e5e7eb !important;
+}
+
+/* Buttons in Card */
+[data-theme="light"] .candidature-actions .btn-outline-light {
+    color: #4b5563 !important;
+    border-color: #e5e7eb !important;
+}
+[data-theme="light"] .candidature-actions .btn-outline-light:hover {
+    background-color: #f3f4f6 !important;
+    color: #1f2937 !important;
+}
+
+/* Modals Light Mode */
+[data-theme="light"] .modal-content.bg-dark {
+    background-color: #ffffff !important;
+    color: #1f2937 !important;
+    border: 1px solid #e5e7eb !important;
+}
+[data-theme="light"] .modal-header,
+[data-theme="light"] .modal-footer {
+    border-color: #e5e7eb !important;
+}
+[data-theme="light"] .modal-body .bg-black {
+    background-color: #f9fafb !important;
+    border-color: #e5e7eb !important;
+}
+[data-theme="light"] .modal-body p.text-white-50 {
+    color: #4b5563 !important;
+}
+[data-theme="light"] .btn-close-white {
+    filter: invert(1) grayscale(100%) brightness(200%);
+}
+[data-theme="light"] .modal-footer .btn-outline-light {
+    color: #4b5563 !important;
+    border-color: #e5e7eb !important;
+} 
+/* Hover effect for modal close button to be visible */
+[data-theme="light"] .btn-close-white:hover {
+    opacity: 0.7;
+}
+
+</style>
 
 <div class="page-section">
     <div class="container">
         <!-- Header -->
-        <div class="text-center mb-5">
+        <div class="text-center mb-3">
             <h1 class="display-5 fw-bold mb-3">Mes Candidatures</h1>
             <p class="text-muted lead">Suivez l'avancement de vos demandes de stage.</p>
             <div class="mt-3">
@@ -13,7 +103,7 @@
         </div>
 
         <?php if (empty($candidatures)): ?>
-            <div class="text-center py-5">
+            <div class="text-center py-3">
                 <div class="mb-4">
                     <div class="d-inline-flex align-items-center justify-content-center bg-dark rounded-circle border border-secondary shadow-lg" style="width: 120px; height: 120px;">
                         <i class="fas fa-file-signature fa-4x text-muted opacity-50"></i>

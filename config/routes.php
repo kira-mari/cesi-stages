@@ -89,6 +89,9 @@ $router->add('wishlist', ['controller' => 'Wishlist', 'action' => 'index']);
 // Route des mentions légales
 $router->add('mentions-legales', ['controller' => 'Page', 'action' => 'mentionsLegales']);
 
+// Route de contact
+$router->add('contact', ['controller' => 'Page', 'action' => 'contact']);
+
 // Route du chatbot (API JSON)
 $router->add('chatbot/ask', ['controller' => 'Chatbot', 'action' => 'ask']);
 

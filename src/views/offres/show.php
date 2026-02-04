@@ -1,4 +1,4 @@
-<div class="page-section">
+<div class="page-section" style="padding-top: 1.5rem;">
     <div class="container">
         
         <div class="mb-4">
@@ -20,15 +20,19 @@
                                 </a>
                             </div>
                             <?php if (isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'etudiant'): ?>
-                                <?php if ($inWishlist): ?>
-                                    <a href="<?= BASE_URL ?>/offres/removeFromWishlist/<?= $offre['id'] ?>" class="btn btn-icon btn-warning" title="Retirer de la wishlist">
-                                        <i class="fas fa-star"></i>
-                                    </a>
-                                <?php else: ?>
-                                    <a href="<?= BASE_URL ?>/offres/addToWishlist/<?= $offre['id'] ?>" class="btn btn-icon btn-outline" title="Ajouter à la wishlist">
-                                        <i class="far fa-star"></i>
-                                    </a>
-                                <?php endif; ?>
+                                <?php 
+                                    $btnClass = $inWishlist ? 'btn-primary text-white' : 'btn-outline-secondary';
+                                    $iconClass = $inWishlist ? 'fas fa-star' : 'far fa-star';
+                                    $title = $inWishlist ? 'Retirer de la wishlist' : 'Ajouter à la wishlist';
+                                    $action = $inWishlist ? 'removeFromWishlist' : 'addToWishlist';
+                                ?>
+                                <a href="<?= BASE_URL ?>/offres/<?= $action ?>/<?= $offre['id'] ?>" 
+                                   class="btn btn-icon <?= $btnClass ?> wishlist-btn" 
+                                   title="<?= $title ?>"
+                                   data-id="<?= $offre['id'] ?>"
+                                   data-in-wishlist="<?= $inWishlist ? 'true' : 'false' ?>">
+                                    <i class="<?= $iconClass ?>"></i>
+                                </a>
                             <?php endif; ?>
                         </div>
 
@@ -98,16 +102,27 @@
                                         <input type="hidden" name="csrf_token" value="<?= $csrf_token ?>">
                                         
                                         <div class="form-group mb-3">
-                                            <label class="form-label">Lettre de motivation</label>
-                                            <textarea name="lettre_motivation" class="input w-100" rows="6" placeholder="Présentez-vous en quelques lignes..." required></textarea>
+                                            <label class="form-label fw-bold mb-2">Lettre de motivation <span class="text-danger">*</span></label>
+                                            <textarea name="lettre_motivation" class="form-textarea" rows="3" placeholder="Présentez-vous et expliquez pourquoi ce poste vous intéresse..." required></textarea>
                                         </div>
                                         
                                         <div class="form-group mb-4">
-                                            <label class="form-label">CV (PDF, DOC)</label>
-                                            <input type="file" name="cv" class="input w-100" required>
+                                            <label class="form-label fw-bold mb-2">CV (PDF, DOC) <span class="text-danger">*</span></label>
+                                            <div class="custom-file-upload">
+                                                <input type="file" name="cv" id="cv_upload" class="form-file-input" required onchange="updateFileName(this)">
+                                                <label for="cv_upload" class="file-upload-label">
+                                                    <div class="icon-container">
+                                                        <i class="fas fa-cloud-upload-alt"></i>
+                                                    </div>
+                                                    <span class="file-name-text" id="file-name-display">Cliquez pour importer votre CV</span>
+                                                    <span class="file-formats">Formats : PDF, DOC, DOCX (Max 5 Mo)</span>
+                                                </label>
+                                            </div>
                                         </div>
                                         
-                                        <button type="submit" class="btn btn-primary w-100">Envoyer ma candidature</button>
+                                        <button type="submit" class="btn btn-primary w-100 py-2 fw-bold">
+                                            <i class="fas fa-paper-plane mr-2"></i> Envoyer ma candidature
+                                        </button>
                                     </form>
                                 <?php endif; ?>
                             </div>
@@ -131,7 +146,7 @@
                         </div>
                     <?php endif; ?>
                 <?php else: ?>
-                     <div class="card mb-4">
+                     <div class="card mb-4 sticky-top" style="top: 2rem; z-index: 10;">
                         <div class="card-body text-center">
                             <h3 class="h5 mb-3">Intéressé ?</h3>
                             <p class="text-muted mb-4">Connectez-vous pour postuler à cette offre.</p>
@@ -144,4 +159,221 @@
 
     </div>
 </div>
+
+<script>
+function updateFileName(input) {
+    const label = document.getElementById('file-name-display');
+    const uploadArea = input.nextElementSibling;
+    const maxSize = 5 * 1024 * 1024; // 5MB
+
+    // Reset error state
+    uploadArea.classList.remove('file-upload-error');
+    const iconContainer = uploadArea.querySelector('.icon-container');
+    const icon = uploadArea.querySelector('i');
+    const formatsText = uploadArea.querySelector('.file-formats');
+    
+    // Existing remove btn?
+    const existingRemoveBtn = uploadArea.querySelector('.remove-file-btn');
+    if (existingRemoveBtn) existingRemoveBtn.remove();
+
+    if (input.files && input.files.length > 0) {
+        if (input.files[0].size > maxSize) {
+            // Error state
+            input.value = ""; 
+            uploadArea.classList.add('file-upload-error');
+            label.textContent = 'Fichier trop volumineux !';
+            label.className = 'file-name-text text-danger fw-bold';
+            formatsText.textContent = 'La taille maximale est de 5 Mo';
+            formatsText.className = 'file-formats text-danger';
+            icon.className = 'fas fa-exclamation-circle';
+            iconContainer.style.backgroundColor = 'hsl(var(--destructive) / 0.1)';
+            iconContainer.style.borderColor = 'hsl(var(--destructive))';
+            setTimeout(() => { uploadArea.classList.remove('file-upload-error'); }, 600);
+            return;
+        }
+
+        // Success state
+        label.textContent = input.files[0].name;
+        label.className = 'file-name-text text-primary';
+        formatsText.textContent = 'Formats : PDF, DOC, DOCX (Max 5 Mo)';
+        formatsText.className = 'file-formats';
+        icon.className = 'fas fa-check-circle';
+        iconContainer.style.backgroundColor = 'hsl(142, 71%, 45%, 0.1)';
+        iconContainer.style.borderColor = 'hsl(142, 71%, 45%)';
+        icon.style.color = '#16a34a'; 
+
+        // Add Remove Button
+        const removeBtn = document.createElement('div');
+        removeBtn.className = 'remove-file-btn';
+        removeBtn.innerHTML = '<i class="fas fa-times"></i>';
+        removeBtn.title = "Supprimer le fichier";
+        removeBtn.onclick = (e) => {
+            e.preventDefault(); 
+            e.stopPropagation();
+            input.value = "";
+            updateFileName(input);
+        };
+        uploadArea.appendChild(removeBtn);
+
+    } else {
+        // Default state
+        label.textContent = 'Cliquez pour importer votre CV';
+        label.className = 'file-name-text';
+        formatsText.textContent = 'Formats : PDF, DOC, DOCX (Max 5 Mo)';
+        formatsText.className = 'file-formats';
+        icon.className = 'fas fa-cloud-upload-alt';
+        iconContainer.style.backgroundColor = '';
+        iconContainer.style.borderColor = '';
+        icon.style.color = ''; 
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    // Drag and Drop Logic
+    const dropZoneLabel = document.querySelector('.file-upload-label');
+    const fileInput = document.getElementById('cv_upload');
+
+    if (dropZoneLabel && fileInput) {
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropZoneLabel.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZoneLabel.addEventListener(eventName, highlight, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropZoneLabel.addEventListener(eventName, unhighlight, false);
+        });
+
+        function highlight(e) {
+            dropZoneLabel.classList.add('dragover');
+        }
+
+        function unhighlight(e) {
+            dropZoneLabel.classList.remove('dragover');
+        }
+
+        dropZoneLabel.addEventListener('drop', handleDrop, false);
+
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+
+            if (files.length > 0) {
+                fileInput.files = files;
+                updateFileName(fileInput);
+            }
+        }
+    }
+
+    // Select all wishlist buttons
+    const wishlistBtns = document.querySelectorAll('.wishlist-btn');
+    const BASE_URL = '<?= BASE_URL ?>';
+
+    wishlistBtns.forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+            e.preventDefault(); // Prevent default link navigation
+            e.stopPropagation(); // Stop bubbling
+
+            const id = btn.getAttribute('data-id');
+            const isInWishlist = btn.getAttribute('data-in-wishlist') === 'true';
+            
+            const action = isInWishlist ? 'removeFromWishlist' : 'addToWishlist';
+            const url = `${BASE_URL}/offres/${action}/${id}`;
+
+            try {
+                btn.style.opacity = '0.7';
+
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        // Toggle state
+                        const newState = !isInWishlist;
+                        btn.setAttribute('data-in-wishlist', newState ? 'true' : 'false');
+                        
+                        // Update visual
+                        const icon = btn.querySelector('i');
+                        if (newState) {
+                            // Added
+                            btn.classList.remove('btn-outline-secondary');
+                            btn.classList.add('btn-primary', 'text-white');
+                            icon.classList.remove('far');
+                            icon.classList.add('fas');
+                            btn.setAttribute('title', 'Retirer de la wishlist');
+                            
+                            showToast("Offre ajoutée à votre liste", "success");
+                        } else {
+                            // Removed
+                            btn.classList.remove('btn-primary', 'text-white');
+                            btn.classList.add('btn-outline-secondary');
+                            icon.classList.remove('fas');
+                            icon.classList.add('far');
+                            btn.setAttribute('title', 'Ajouter à la wishlist');
+                            
+                            showToast("Offre retirée de votre liste", "info");
+                        }
+                    }
+                }
+            } catch (err) {
+                console.error("Erreur wishlist:", err);
+            } finally {
+                btn.style.opacity = '1';
+                // Update href for fallback
+                const nextAction = btn.getAttribute('data-in-wishlist') === 'true' ? 'removeFromWishlist' : 'addToWishlist';
+                btn.setAttribute('href', `${BASE_URL}/offres/${nextAction}/${id}`);
+            }
+        });
+    });
+
+    // Helper for simple toast notification
+    function showToast(message, type = 'info') {
+        const existingToasts = document.querySelectorAll('.flash-message');
+        if (existingToasts.length >= 3) {
+            existingToasts[0].remove();
+        }
+
+        const toast = document.createElement('div');
+        toast.className = `flash-message flash-${type}`;
+        
+        const currentToasts = document.querySelectorAll('.flash-message');
+        let topOffset = 90; 
+        if (currentToasts.length > 0) {
+            topOffset += (currentToasts.length * 70); 
+        }
+        
+        toast.style.top = `${topOffset}px`;
+        
+        let icon = type === 'success' ? 'fa-check-circle' : 'fa-info-circle';
+        
+        toast.innerHTML = `
+            <i class="fas ${icon}"></i>
+            ${message}
+            <button class="flash-close" onclick="this.parentElement.remove()">&times;</button>
+        `;
+        
+        document.body.appendChild(toast);
+        
+        setTimeout(() => {
+            toast.style.transition = 'opacity 0.3s, transform 0.3s';
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateX(100%)';
+            setTimeout(() => toast.remove(), 300);
+        }, 3000);
+    }
+});
+</script>
 

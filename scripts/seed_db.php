@@ -29,15 +29,24 @@ try {
     // Désactiver les contraintes de clés étrangères
     $pdo->exec("SET FOREIGN_KEY_CHECKS = 0");
 
-    // Liste des tables à vider
-    $tables = ['wishlist', 'candidatures', 'offres', 'entreprises', 'users'];
+    // Liste des tables à supprimer (ordre inverse des dépendances)
+    $tables = ['wishlist', 'candidatures', 'pilote_etudiant', 'evaluations', 'offres', 'entreprises', 'users'];
     
     foreach ($tables as $table) {
-        echo "Vidage de la table $table...\n";
-        $pdo->exec("TRUNCATE TABLE $table");
+        echo "Suppression de la table $table...\n";
+        $pdo->exec("DROP TABLE IF EXISTS $table");
     }
 
-    // Lire le fichier SQL
+    // Lire et executer le fichier de migration (création des tables)
+    $migrationFile = ROOT_PATH . '/database/migrations/create_tables_full.sql';
+    if (!file_exists($migrationFile)) {
+        throw new Exception("Le fichier de migration n'existe pas : $migrationFile");
+    }
+    echo "Exécution de la migration...\n";
+    $sqlMigration = file_get_contents($migrationFile);
+    $pdo->exec($sqlMigration);
+
+    // Lire le fichier SQL de seeds
     $sqlFile = ROOT_PATH . '/database/seeds/insert_data_full.sql';
     if (!file_exists($sqlFile)) {
         throw new Exception("Le fichier SQL n'existe pas : $sqlFile");

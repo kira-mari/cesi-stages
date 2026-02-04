@@ -19,4 +19,16 @@ class Page extends Controller
             'title' => 'Mentions légales - ' . APP_NAME
         ]);
     }
+
+    /**
+     * Page de contact
+     *
+     * @return void
+     */
+    public function contact()
+    {
+        $this->render('pages/contact', [
+            'title' => 'Contact - ' . APP_NAME
+        ]);
+    }
 }

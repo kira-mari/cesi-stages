@@ -1,4 +1,5 @@
 <div class="container py-4 mb-5">
+
     <!-- Company Info Card -->
     <div class="card mb-5 border-0 shadow-sm" style="background: linear-gradient(145deg, hsl(var(--card)), rgba(20, 20, 35, 0.6)); border-top: 4px solid hsl(var(--primary));">
         <div class="card-body p-4">
@@ -34,12 +35,14 @@
                     <ul class="list-unstyled">
                         <li class="mb-4">
                             <small class="d-block text-uppercase fw-bold text-white-50 fs-7 mb-1">Email</small>
-                            <a href="mailto:<?= htmlspecialchars($entreprise['email']) ?>" class="text-white text-decoration-none d-flex align-items-center gap-2 hover-primary transition-color">
+                            <div class="d-flex align-items-center gap-2">
                                 <div class="icon-box-sm bg-secondary bg-opacity-25 rounded-circle p-2">
                                     <i class="fas fa-envelope text-primary small"></i>
                                 </div>
-                                <?= htmlspecialchars($entreprise['email']) ?>
-                            </a>
+                                <a href="mailto:<?= htmlspecialchars($entreprise['email']) ?>" class="text-white text-decoration-none hover-primary transition-color">
+                                    <?= htmlspecialchars($entreprise['email']) ?>
+                                </a>
+                            </div>
                         </li>
                         <li>
                             <small class="d-block text-uppercase fw-bold text-white-50 fs-7 mb-1">Téléphone</small>
@@ -50,6 +53,19 @@
                                 <?= htmlspecialchars($entreprise['telephone']) ?>
                             </div>
                         </li>
+                        <?php if (!empty($entreprise['site_web'])): ?>
+                        <li class="mt-4">
+                            <small class="d-block text-uppercase fw-bold text-white-50 fs-7 mb-1">Site Web</small>
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="icon-box-sm bg-secondary bg-opacity-25 rounded-circle p-2">
+                                    <i class="fas fa-globe text-primary small"></i>
+                                </div>
+                                <a href="<?= htmlspecialchars($entreprise['site_web']) ?>" target="_blank" class="text-white text-decoration-none hover-primary transition-color">
+                                    <?= htmlspecialchars(parse_url($entreprise['site_web'], PHP_URL_HOST) ?? $entreprise['site_web']) ?> <i class="fas fa-external-link-alt small ms-1 opacity-50"></i>
+                                </a>
+                            </div>
+                        </li>
+                        <?php endif; ?>
                     </ul>
                 </div>
             </div>
@@ -307,5 +323,84 @@ document.addEventListener('DOMContentLoaded', function() {
 
 @media (max-width: 768px) {
     .border-start { border-left: none !important; }
+}
+
+/* --- LIGHT MODE ADJUSTMENTS --- */
+[data-theme="light"] .card[style*="linear-gradient"] {
+    background: linear-gradient(145deg, #ffffff, #f1f5f9) !important;
+    border: 1px solid #e2e8f0;
+    border-top: 4px solid var(--primary) !important;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+}
+
+[data-theme="light"] .card.bg-transparent {
+    background-color: #ffffff !important;
+    border-color: #e2e8f0 !important;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="light"] .bg-card-secondary {
+    background-color: #f8fafc !important;
+    border: 1px solid #e2e8f0;
+}
+
+[data-theme="light"] .bg-dark {
+    background-color: #f1f5f9 !important;
+}
+
+/* Invert colors for text elements on cards (excluding badges/buttons that keep their own bg) */
+[data-theme="light"] h1.text-white,
+[data-theme="light"] h2.text-white,
+[data-theme="light"] h3.text-white,
+[data-theme="light"] h5.text-white,
+[data-theme="light"] p.text-white,
+[data-theme="light"] div.text-white,
+[data-theme="light"] span.text-white:not(.badge),
+[data-theme="light"] a.text-white:not(.btn) {
+    color: #1e293b !important; /* Slate 800 */
+}
+
+[data-theme="light"] .text-white-50 {
+    color: #64748b !important; /* Slate 500 */
+}
+
+[data-theme="light"] .border-secondary {
+    border-color: #cbd5e1 !important; /* Slate 300 */
+}
+
+[data-theme="light"] .dash-border {
+    border-color: #e2e8f0 !important;
+}
+
+[data-theme="light"] textarea.text-white {
+    color: #1e293b !important;
+    background-color: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+}
+
+[data-theme="light"] .dropdown-menu {
+    border: 1px solid #e2e8f0;
+}
+
+[data-theme="light"] .rating-input label {
+    color: #cbd5e1;
+}
+
+[data-theme="light"] .rating-input label:hover,
+[data-theme="light"] .rating-input input:checked ~ label {
+    color: #f59e0b;
+}
+
+/* Adjust icon boxes in light mode */
+[data-theme="light"] .icon-box-sm.bg-secondary {
+    background-color: rgba(6, 182, 212, 0.1) !important; /* Cyan with low opacity */
+}
+
+/* Fix Badge Contrast in Light Mode: Turn solid primary into soft pastel with dark text */
+[data-theme="light"] .badge.bg-primary {
+    background-color: rgba(79, 70, 229, 0.1) !important; /* Very light Indigo */
+    color: #4338ca !important; /* Dark Indigo text */
+    border: 1px solid rgba(79, 70, 229, 0.2);
+    box-shadow: none !important;
 }
 </style>

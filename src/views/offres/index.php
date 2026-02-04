@@ -43,8 +43,8 @@
                     </div>
 
                     <div class="filter-group" style="max-width: 150px;">
-                        <button type="button" id="toggleMapBtn" class="btn btn-outline" style="width: 100%; height: 3rem; background: white; border-color: #e2e8f0;">
-                            <i class="fas fa-map-marked-alt mr-2"></i> Carte
+                        <button type="button" id="toggleMapBtn" class="btn btn-outline gap-2" style="width: 100%; height: 3rem; background: white; border-color: #e2e8f0;">
+                            <i class="fas fa-map-marked-alt"></i> Carte
                         </button>
                     </div>
                 </div>
@@ -106,6 +106,8 @@
             };
 
             // Offers data from PHP
+            // Note: We use $offresMap here which contains ALL offers (for the map),
+            // whereas $offres in the view loop only contains the current page.
             const offres = <?= json_encode(array_map(function($o) {
                 return [
                     'id' => $o['id'],
@@ -114,7 +116,7 @@
                     'ville' => $o['entreprise_adresse'] ?? 'Paris', // Use full address
                     'desc' => substr($o['description'], 0, 100) . '...'
                 ];
-            }, $offres ?? [])) ?>;
+            }, $offresMap ?? [])) ?>;
 
             // Define styles
             const styles = {
@@ -249,27 +251,25 @@
                 await Promise.all(uniqueAddresses.map(async (address) => {
                     let coords = null;
                     
-                    // Vérification liste codée en dur (Fallback immédiat)
-                    for (const [city, c] of Object.entries(cityCoords)) {
-                        if (address.toLowerCase().includes(city.toLowerCase())) {
-                            // On convertit [lat, lon] de cityCoords en [lon, lat] pour MapLibre/GeoJSON
-                            // cityCoords = [lat, lon] -> MapLibre wants [lon, lat]
-                            coords = [c[1], c[0]]; 
-                            break;
+                    // A. Essai API BAN en PREMIER (Précision maximale)
+                    // On ne check PAS les mots clés "Paris", etc. avant, sinon "10 Rue de Paris" finit au centre du village "Paris" au lieu de la rue.
+                    try {
+                        const response = await fetch(`https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(address)}&limit=1`);
+                        const data = await response.json();
+                        if (data.features && data.features.length > 0) {
+                            coords = data.features[0].geometry.coordinates; // [lon, lat] natif API
                         }
+                    } catch (e) {
+                        console.warn("Erreur géocodage BAN pour:", address, e);
                     }
 
-                    // Si pas trouvé en dur, on demande à l'API BAN (Base Adresse Nationale)
-                    // Format retour API BAN: GeoJSON [lon, lat]
+                    // B. Fallback : Liste codée en dur (Uniquement si l'API n'a rien trouvé)
                     if (!coords) {
-                        try {
-                            const response = await fetch(`https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(address)}&limit=1`);
-                            const data = await response.json();
-                            if (data.features && data.features.length > 0) {
-                                coords = data.features[0].geometry.coordinates;
+                        for (const [city, c] of Object.entries(cityCoords)) {
+                            if (address.toLowerCase().includes(city.toLowerCase())) {
+                                coords = [c[1], c[0]]; // Conversion [lat, lon] -> [lon, lat]
+                                break;
                             }
-                        } catch (e) {
-                            console.warn("Erreur géocodage BAN pour:", address, e);
                         }
                     }
 
@@ -350,10 +350,33 @@
                 </div>
             <?php else: ?>
                 <?php foreach ($offres as $offre): ?>
-                    <div class="offer-card">
-                        <div class="offer-header">
-                            <h3><?= htmlspecialchars($offre['titre']) ?></h3>
-                            <span class="offer-company"><?= htmlspecialchars($offre['entreprise_nom'] ?? 'Entreprise') ?></span>
+                    <div class="offer-card position-relative pt-5">
+                        <?php if (isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'etudiant'): ?>
+                            <?php 
+                                $inWishlist = in_array($offre['id'], $wishlistIds ?? []);
+                                $wishlistAction = $inWishlist ? 'removeFromWishlist' : 'addToWishlist';
+                                $wishlistTitle = $inWishlist ? 'Retirer de ma liste' : 'Ajouter à ma liste';
+                                // Theme color (primary) instead of warning
+                                $btnClass = $inWishlist ? 'btn-primary text-white' : 'btn-outline-secondary';
+                                $iconClass = $inWishlist ? 'fas fa-star' : 'far fa-star';
+                            ?>
+                            <a href="<?= BASE_URL ?>/offres/<?= $wishlistAction ?>/<?= $offre['id'] ?>" 
+                               class="btn btn-icon <?= $btnClass ?> rounded-circle position-absolute top-0 end-0 m-3 wishlist-btn" 
+                               data-id="<?= $offre['id'] ?>"
+                               data-in-wishlist="<?= $inWishlist ? 'true' : 'false' ?>"
+                               data-bs-toggle="tooltip" 
+                               title="<?= $wishlistTitle ?>" 
+                               style="width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; z-index: 5;">
+                                <i class="<?= $iconClass ?>"></i>
+                            </a>
+                        <?php endif; ?>
+
+                        <div class="offer-header d-block mb-3">
+                            <h3 class="mb-2"><?= htmlspecialchars($offre['titre']) ?></h3>
+                            <div class="d-flex align-items-center text-primary small">
+                                <i class="fas fa-building me-2 opacity-75"></i>
+                                <span class="offer-company fw-bold"><?= htmlspecialchars($offre['entreprise_nom'] ?? 'Entreprise') ?></span>
+                            </div>
                         </div>
                         
                         <div class="offer-body">
@@ -384,8 +407,8 @@
                             </div>
                         </div>
 
-                        <div class="offer-footer">
-                            <a href="<?= BASE_URL ?>/offres/<?= $offre['id'] ?>" class="btn btn-outline">Voir l'offre</a>
+                        <div class="offer-footer d-flex justify-content-between align-items-center">
+                            <a href="<?= BASE_URL ?>/offres/<?= $offre['id'] ?>" class="btn btn-outline w-100">Voir l'offre</a>
                         </div>
                     </div>
                 <?php endforeach; ?>
@@ -406,3 +429,120 @@
         <?php endif; ?>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // Select all wishlist buttons
+    const wishlistBtns = document.querySelectorAll('.wishlist-btn');
+    const BASE_URL = '<?= BASE_URL ?>';
+
+    wishlistBtns.forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+            e.preventDefault(); // Prevent default link navigation
+            e.stopPropagation(); // Stop bubbling
+
+            const id = btn.getAttribute('data-id');
+            const isInWishlist = btn.getAttribute('data-in-wishlist') === 'true';
+            
+            // Determine action URL
+            // If currently in wishlist => remove, else => add
+            // But we can also just use the href if it's correctly set by PHP, 
+            // OR use hardcoded logic. Let's rely on current state.
+            const action = isInWishlist ? 'removeFromWishlist' : 'addToWishlist';
+            const url = `${BASE_URL}/offres/${action}/${id}`;
+
+            try {
+                // Add loading state visuals? (Optional)
+                btn.style.opacity = '0.7';
+
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        // Toggle state
+                        const newState = !isInWishlist;
+                        btn.setAttribute('data-in-wishlist', newState ? 'true' : 'false');
+                        
+                        // Update visual
+                        const icon = btn.querySelector('i');
+                        if (newState) {
+                            // Added
+                            btn.classList.remove('btn-outline-secondary');
+                            btn.classList.add('btn-primary', 'text-white');
+                            icon.classList.remove('far');
+                            icon.classList.add('fas');
+                            btn.setAttribute('title', 'Retirer de ma liste');
+                            
+                            // Show toast/flash (Create simple toast manually)
+                            showToast("Offre ajoutée à votre liste", "success");
+                        } else {
+                            // Removed
+                            btn.classList.remove('btn-primary', 'text-white');
+                            btn.classList.add('btn-outline-secondary');
+                            icon.classList.remove('fas');
+                            icon.classList.add('far');
+                            btn.setAttribute('title', 'Ajouter à ma liste');
+                            
+                            showToast("Offre retirée de votre liste", "info");
+                        }
+                    }
+                }
+            } catch (err) {
+                console.error("Erreur wishlist:", err);
+            } finally {
+                btn.style.opacity = '1';
+                // Update href for fallback
+                const nextAction = btn.getAttribute('data-in-wishlist') === 'true' ? 'removeFromWishlist' : 'addToWishlist';
+                btn.setAttribute('href', `${BASE_URL}/offres/${nextAction}/${id}`);
+            }
+        });
+    });
+
+    // Helper for simple toast notification matching the system flash messages
+    function showToast(message, type = 'info') {
+        // Enforce max 3 toasts limit
+        const existingToasts = document.querySelectorAll('.flash-message');
+        if (existingToasts.length >= 3) {
+            // Remove the oldest one (first in the DOM)
+            existingToasts[0].remove();
+        }
+
+        const toast = document.createElement('div');
+        toast.className = `flash-message flash-${type}`;
+        
+        // Recalculate top offset based on currently visible toasts (re-query after removal)
+        const currentToasts = document.querySelectorAll('.flash-message');
+        let topOffset = 90; // Default start from CSS
+        if (currentToasts.length > 0) {
+            topOffset += (currentToasts.length * 70); 
+        }
+        
+        toast.style.top = `${topOffset}px`;
+        
+        let icon = type === 'success' ? 'fa-check-circle' : 'fa-info-circle';
+        
+        toast.innerHTML = `
+            <i class="fas ${icon}"></i>
+            ${message}
+            <button class="flash-close" onclick="this.parentElement.remove()">&times;</button>
+        `;
+        
+        document.body.appendChild(toast);
+        
+        // Auto remove
+        setTimeout(() => {
+            toast.style.transition = 'opacity 0.3s, transform 0.3s';
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateX(100%)';
+            setTimeout(() => toast.remove(), 300);
+        }, 3000);
+    }
+});
+</script>

@@ -30,15 +30,15 @@ INSERT INTO users (nom, prenom, email, password, role, is_verified, age, telepho
 -- ============================================
 -- Insertion des entreprises
 -- ============================================
-INSERT INTO entreprises (nom, description, email, telephone, adresse, secteur) VALUES
-('Capgemini', 'Un leader mondial du conseil, de la transformation numérique, des services technologiques et de l''ingénierie.', 'contact@capgemini.com', '01 47 54 50 00', '11 Rue de Tilsitt, 75017 Paris', 'Informatique'),
-('Criteo', 'Entreprise technologique mondiale de commerce média qui permet aux spécialistes du marketing et aux propriétaires de médias d''obtenir de meilleurs résultats.', 'jobs@criteo.com', '01 40 40 50 50', '32 Rue Blanche, 75009 Paris', 'Data Science'),
-('Publicis Sapient', 'Partenaire de transformation numérique aidant les organisations établies à évoluer vers le numérique.', 'careers@publicissapient.fr', '01 44 43 70 00', '94 Avenue Gambetta, 75020 Paris', 'Web Design'),
-('OVHcloud', 'Acteur mondial du cloud computing et leader européen, proposant des infrastructures cloud performantes.', 'jobs@ovhcloud.com', '09 72 10 10 07', '2 Rue Kellermann, 59100 Roubaix', 'Cloud Computing'),
-('Thales', 'Groupe d''électronique spécialisé dans l''aérospatiale, la défense, la sécurité et le transport terrestre.', 'recrutement@thalesgroup.com', '01 57 77 80 00', '31 Place des Corolles, 92400 Courbevoie', 'Cybersécurité'),
-('Ubisoft', 'L''un des leaders mondiaux de la création, édition et distribution de jeux vidéo et de services interactifs.', 'stages@ubisoft.com', '01 48 18 50 00', '2 Avenue Pasteur, 94160 Saint-Mandé', 'Développement'),
-('Dassault Systèmes', 'L''entreprise 3DEXPERIENCE, fournit aux entreprises et aux particuliers des univers virtuels pour imaginer des innovations durables.', 'contact@3ds.com', '01 61 62 61 62', '10 Rue Marcel Dassault, 78140 Vélizy-Villacoublay', 'Intelligence Artificielle'),
-('Airbus', 'Pionnier international de l''industrie aérospatiale, opérant dans les secteurs des avions commerciaux, des hélicoptères, de la défense et de l''espace.', 'careers@airbus.com', '05 61 93 33 33', '2 Rond-Point Emile Dewoitine, 31700 Blagnac', 'Réseaux');
+INSERT INTO entreprises (nom, description, email, telephone, adresse, site_web, secteur) VALUES
+('Capgemini', 'Un leader mondial du conseil, de la transformation numérique, des services technologiques et de l''ingénierie.', 'contact@capgemini.com', '01 47 54 50 00', '11 Rue de Tilsitt, 75017 Paris', 'https://www.capgemini.com', 'Informatique'),
+('Criteo', 'Entreprise technologique mondiale de commerce média qui permet aux spécialistes du marketing et aux propriétaires de médias d''obtenir de meilleurs résultats.', 'jobs@criteo.com', '01 40 40 50 50', '32 Rue Blanche, 75009 Paris', 'https://www.criteo.com', 'Data Science'),
+('Publicis Sapient', 'Partenaire de transformation numérique aidant les organisations établies à évoluer vers le numérique.', 'careers@publicissapient.fr', '01 44 43 70 00', '94 Avenue Gambetta, 75020 Paris', 'https://www.publicissapient.com', 'Web Design'),
+('OVHcloud', 'Acteur mondial du cloud computing et leader européen, proposant des infrastructures cloud performantes.', 'jobs@ovhcloud.com', '09 72 10 10 07', '2 Rue Kellermann, 59100 Roubaix', 'https://www.ovhcloud.com', 'Cloud Computing'),
+('Thales', 'Groupe d''électronique spécialisé dans l''aérospatiale, la défense, la sécurité et le transport terrestre.', 'recrutement@thalesgroup.com', '01 57 77 80 00', '31 Place des Corolles, 92400 Courbevoie', 'https://www.thalesgroup.com', 'Cybersécurité'),
+('Ubisoft', 'L''un des leaders mondiaux de la création, édition et distribution de jeux vidéo et de services interactifs.', 'stages@ubisoft.com', '01 48 18 50 00', '2 Avenue Pasteur, 94160 Saint-Mandé', 'https://www.ubisoft.com', 'Développement'),
+('Dassault Systèmes', 'L''entreprise 3DEXPERIENCE, fournit aux entreprises et aux particuliers des univers virtuels pour imaginer des innovations durables.', 'contact@3ds.com', '01 61 62 61 62', '10 Rue Marcel Dassault, 78140 Vélizy-Villacoublay', 'https://www.3ds.com', 'Intelligence Artificielle'),
+('Airbus', 'Pionnier international de l''industrie aérospatiale, opérant dans les secteurs des avions commerciaux, des hélicoptères, de la défense et de l''espace.', 'careers@airbus.com', '05 61 93 33 33', '2 Rond-Point Emile Dewoitine, 31700 Blagnac', 'https://www.airbus.com', 'Réseaux');
 
 -- ============================================
 -- Insertion des offres de stage

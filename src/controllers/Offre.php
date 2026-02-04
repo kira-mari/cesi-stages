@@ -27,25 +27,37 @@ class Offre extends Controller
         if (!empty($search) || !empty($competence)) {
             $offres = $offreModel->searchAdvanced($search, $competence);
             $total = count($offres);
+            $offresMap = $offres; // Pour la recherche, on affiche tous les résultats sur la carte
         } else {
             $offres = $offreModel->getAllWithEntreprise($page, ITEMS_PER_PAGE);
             $total = $offreModel->count();
+            // Pour l'affichage normal, on veut TOUTES les offres sur la carte, pas juste la page courante
+            $offresMap = $offreModel->getAllForMap();
         }
 
         $totalPages = ceil($total / ITEMS_PER_PAGE);
 
         // Récupération des compétences pour le filtre
         $competences = $offreModel->getAllCompetences();
+        
+        // Wishlist for user
+        $wishlistIds = [];
+        if (isset($_SESSION['user_id']) && isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'etudiant') {
+            $wishlistModel = new Wishlist();
+            $userWishlist = $wishlistModel->getByEtudiant($_SESSION['user_id']);
+            $wishlistIds = array_column($userWishlist, 'offre_id');
+        }
 
         $this->render('offres/index', [
             'title' => 'Offres de stage - ' . APP_NAME,
             'offres' => $offres,
+            'offresMap' => $offresMap,
             'competences' => $competences,
             'search' => $search,
             'competence' => $competence,
             'page' => $page,
             'totalPages' => $totalPages,
-            'total' => $total
+            'wishlistIds' => $wishlistIds
         ]);
     }
 
@@ -325,6 +337,7 @@ class Offre extends Controller
 
         $id = $this->routeParams['id'] ?? 0;
         $wishlistModel = new Wishlist();
+        $added = false;
 
         if (!$wishlistModel->isInWishlist($_SESSION['user_id'], $id)) {
             $wishlistModel->create([
@@ -333,13 +346,35 @@ class Offre extends Controller
                 'created_at' => date('Y-m-d H:i:s')
             ]);
             $_SESSION['flash_success'] = "Offre ajoutée à votre wishlist !";
+            $added = true;
         } else {
             $_SESSION['flash_info'] = "Cette offre est déjà dans votre wishlist.";
         }
 
+        // AJAX Response
+        if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
+            // Nettoyage des messages flash pour éviter qu'ils ne réapparaissent au rechargement
+            unset($_SESSION['flash_success']);
+            unset($_SESSION['flash_info']);
+
+            header('Content-Type: application/json');
+            echo json_encode([
+                'success' => true, 
+                'state' => 'added',
+                'message' => $added ? "Offre ajoutée à votre liste" : "Déjà dans votre liste"
+            ]);
+            exit;
+        }
+
+        // Redirection vers la page précédente si possible, sinon vers l'offre
+        if (isset($_SERVER['HTTP_REFERER'])) {
+            header('Location: ' . $_SERVER['HTTP_REFERER']);
+            exit;
+        }
+        
         $this->redirect('offres/show/' . $id);
     }
-
+    
     /**
      * Retire une offre de la wishlist
      *
@@ -354,6 +389,26 @@ class Offre extends Controller
 
         $wishlistModel->remove($_SESSION['user_id'], $id);
         $_SESSION['flash_success'] = "Offre retirée de votre wishlist.";
+
+        // AJAX Response
+        if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
+            // Nettoyage des messages flash pour éviter qu'ils ne réapparaissent au rechargement
+            unset($_SESSION['flash_success']);
+            
+            header('Content-Type: application/json');
+            echo json_encode([
+                'success' => true, 
+                'state' => 'removed',
+                'message' => "Offre retirée de votre liste"
+            ]);
+            exit;
+        }
+
+        // Redirection vers la page précédente si possible, sinon vers la wishlist
+        if (isset($_SERVER['HTTP_REFERER'])) {
+            header('Location: ' . $_SERVER['HTTP_REFERER']);
+            exit;
+        }
 
         $this->redirect('wishlist');
     }

@@ -1,9 +1,70 @@
 
+<style>
+/* Light Mode Support for Wishlist */
+[data-theme="light"] .page-section h1, 
+[data-theme="light"] .page-section h3.text-white, 
+[data-theme="light"] .page-section .h2.text-white,
+[data-theme="light"] .page-section .text-white {
+    color: #1f2937 !important;
+}
+
+[data-theme="light"] .page-section p.text-muted {
+    color: #6b7280 !important;
+}
+
+/* Badge Contrast */
+[data-theme="light"] .badge.bg-primary {
+    background-color: rgba(79, 70, 229, 0.1) !important;
+    color: #4338ca !important;
+    border: 1px solid rgba(79, 70, 229, 0.2);
+}
+
+/* Empty State Box */
+[data-theme="light"] .bg-dark.rounded-circle {
+    background-color: #f3f4f6 !important;
+    border-color: #e5e7eb !important;
+}
+[data-theme="light"] .bg-dark.rounded-circle .fa-heart {
+    color: #9ca3af !important;
+}
+
+/* Remove button specific */
+[data-theme="light"] .btn-icon.bg-dark {
+    background-color: #ffffff !important;
+    border: 1px solid #e5e7eb !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05) !important;
+}
+
+/* Offer Cards in Light Mode */
+[data-theme="light"] .offer-card {
+    background: #ffffff !important;
+    border: 1px solid #e5e7eb !important;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="light"] .offer-card h3 a.text-white {
+    color: #1f2937 !important;
+}
+
+[data-theme="light"] .offer-card .text-primary {
+    color: #4f46e5 !important;
+}
+
+[data-theme="light"] .offer-tags .badge.bg-dark {
+    background-color: #f3f4f6 !important;
+    color: #4b5563 !important; /* text-secondary replacement */
+    border-color: #e5e7eb !important;
+}
+
+[data-theme="light"] .offer-tags .badge.bg-dark i {
+    color: #6b7280 !important;
+}
+</style>
 
 <div class="page-section">
     <div class="container">
         <!-- Header -->
-        <div class="text-center mb-5">
+        <div class="text-center mb-3">
             <h1 class="display-5 fw-bold mb-3">Ma Liste de Souhaits</h1>
             <p class="text-muted lead">Gérez vos offres favorites pour postuler plus tard.</p>
             <div class="mt-3">
@@ -14,7 +75,7 @@
         </div>
 
         <?php if (empty($offres)): ?>
-            <div class="text-center py-5">
+            <div class="text-center py-3">
                 <div class="mb-4">
                     <div class="d-inline-flex align-items-center justify-content-center bg-dark rounded-circle border border-secondary shadow-lg" style="width: 120px; height: 120px;">
                         <i class="far fa-heart fa-4x text-muted opacity-50"></i>

@@ -42,6 +42,7 @@ CREATE TABLE entreprises (
     email VARCHAR(255),
     telephone VARCHAR(20),
     adresse TEXT,
+    site_web VARCHAR(255),
     secteur VARCHAR(100),
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
