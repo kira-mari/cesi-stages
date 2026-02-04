@@ -34,7 +34,19 @@
                         <small class="form-text text-muted">Au moins 8 caractères.</small>
                     </div>
 
-                    <!-- Ici on pourrait ajouter la gestion de la promotion -->
+                    <?php if (!empty($pilotes)): ?>
+                    <div class="form-group mb-3">
+                        <label for="pilote_id">Assigner à un pilote (Admin)</label>
+                        <select class="form-control" id="pilote_id" name="pilote_id">
+                            <option value="">-- Aucun --</option>
+                            <?php foreach ($pilotes as $pilote): ?>
+                                <option value="<?= $pilote['id'] ?>">
+                                    <?= htmlspecialchars($pilote['nom'] . ' ' . $pilote['prenom']) ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <?php endif; ?>
 
                     <div class="d-flex justify-content-between mt-4">
                         <a href="<?= BASE_URL ?>/etudiants" class="btn btn-secondary">Annuler</a>

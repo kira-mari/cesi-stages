@@ -28,6 +28,22 @@
                         <input type="email" class="form-control" id="email" name="email" value="<?= htmlspecialchars($etudiant['email']) ?>" required>
                     </div>
 
+                    <?php if (!empty($pilotes)): ?>
+                    <div class="form-group mb-3">
+                        <label for="pilote_id">Pilote assigné (Admin)</label>
+                        <select class="form-control" id="pilote_id" name="pilote_id">
+                            <option value="">-- Aucun --</option>
+                            <?php foreach ($pilotes as $pilote): ?>
+                                <option value="<?= $pilote['id'] ?>" 
+                                    <?= ($currentPilote && $currentPilote['id'] == $pilote['id']) ? 'selected' : '' ?>>
+                                    <?= htmlspecialchars($pilote['nom'] . ' ' . $pilote['prenom']) ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                        <small class="text-muted">Sélectionnez le pilote en charge de cet étudiant.</small>
+                    </div>
+                    <?php endif; ?>
+
                     <div class="d-flex justify-content-between mt-4">
                         <a href="<?= BASE_URL ?>/etudiants" class="btn btn-secondary">Annuler</a>
                         <button type="submit" class="btn btn-primary">Enregistrer les modifications</button>

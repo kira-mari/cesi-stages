@@ -22,13 +22,28 @@ class Etudiant extends Controller
         $userModel = new User();
         $search = $_GET['search'] ?? '';
         $page = intval($_GET['page'] ?? 1);
+        
+        $isPilote = (isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'pilote');
+        $currentUserId = $_SESSION['user_id'] ?? 0;
 
-        if (!empty($search)) {
-            $etudiants = $userModel->searchByRole('etudiant', $search);
-            $total = count($etudiants);
+        if ($isPilote) {
+            // Logique pour le pilote : voir uniquement ses étudiants assignés
+            if (!empty($search)) {
+                $etudiants = $userModel->searchEtudiantsByPilote($currentUserId, $search);
+                $total = count($etudiants);
+            } else {
+                $etudiants = $userModel->getEtudiantsByPilotePaginated($currentUserId, $page, ITEMS_PER_PAGE);
+                $total = $userModel->countEtudiantsByPilote($currentUserId);
+            }
         } else {
-            $etudiants = $userModel->getByRolePaginated('etudiant', $page, ITEMS_PER_PAGE);
-            $total = $userModel->countByRole('etudiant');
+            // Logique pour l'admin : voir tous les étudiants
+            if (!empty($search)) {
+                $etudiants = $userModel->searchByRole('etudiant', $search);
+                $total = count($etudiants);
+            } else {
+                $etudiants = $userModel->getByRolePaginated('etudiant', $page, ITEMS_PER_PAGE);
+                $total = $userModel->countByRole('etudiant');
+            }
         }
 
         $totalPages = ceil($total / ITEMS_PER_PAGE);
@@ -81,9 +96,16 @@ class Etudiant extends Controller
     {
         $this->requireRole(['admin', 'pilote']);
 
+        $pilotes = [];
+        if (isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'admin') {
+            $userModel = new User();
+            $pilotes = $userModel->getAllPilotes();
+        }
+
         $this->render('etudiants/create', [
             'title' => 'Créer un compte étudiant - ' . APP_NAME,
-            'csrf_token' => $this->generateCsrfToken()
+            'csrf_token' => $this->generateCsrfToken(),
+            'pilotes' => $pilotes
         ]);
     }
 
@@ -107,6 +129,7 @@ class Etudiant extends Controller
             $prenom = htmlspecialchars(trim($_POST['prenom'] ?? ''));
             $email = filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL);
             $password = $_POST['password'] ?? '';
+            $piloteId = isset($_POST['pilote_id']) ? intval($_POST['pilote_id']) : null;
 
             if (empty($nom) || empty($prenom) || empty($email) || empty($password)) {
                 $_SESSION['flash_error'] = "Veuillez remplir tous les champs obligatoires.";
@@ -135,6 +158,16 @@ class Etudiant extends Controller
             ]);
 
             if ($userId) {
+                // Assignation du pilote si Admin
+                if (isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'admin' && $piloteId) {
+                    $userModel->assignPiloteToEtudiant($userId, $piloteId);
+                } elseif (isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'pilote') {
+                    // Le pilote se l'auto-assigne ? (Optionnel, à voir)
+                    // Pour l'instant non, sauf demande explicite. 
+                    // Mais logique : un pilote qui crée un étudiant est probablement son tuteur.
+                    $userModel->assignPiloteToEtudiant($userId, $_SESSION['user_id']);
+                }
+
                 $_SESSION['flash_success'] = "Étudiant créé avec succès !";
                 $this->redirect('etudiants/show/' . $userId);
             } else {
@@ -162,10 +195,20 @@ class Etudiant extends Controller
             $this->redirect('etudiants');
         }
 
+        $pilotes = [];
+        $currentPilote = null;
+
+        if (isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'admin') {
+            $pilotes = $userModel->getAllPilotes();
+            $currentPilote = $userModel->getPiloteByEtudiant($id);
+        }
+
         $this->render('etudiants/edit', [
             'title' => 'Modifier un étudiant - ' . APP_NAME,
             'etudiant' => $etudiant,
-            'csrf_token' => $this->generateCsrfToken()
+            'csrf_token' => $this->generateCsrfToken(),
+            'pilotes' => $pilotes,
+            'currentPilote' => $currentPilote
         ]);
     }
 
@@ -190,6 +233,7 @@ class Etudiant extends Controller
             $nom = htmlspecialchars(trim($_POST['nom'] ?? ''));
             $prenom = htmlspecialchars(trim($_POST['prenom'] ?? ''));
             $email = filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL);
+            $piloteId = isset($_POST['pilote_id']) ? intval($_POST['pilote_id']) : null;
 
             if (empty($nom) || empty($prenom) || empty($email)) {
                 $_SESSION['flash_error'] = "Veuillez remplir tous les champs obligatoires.";
@@ -211,18 +255,19 @@ class Etudiant extends Controller
                 'updated_at' => date('Y-m-d H:i:s')
             ];
 
-            // Mise à jour du mot de passe si fourni
-            if (!empty($_POST['password'])) {
-                if (strlen($_POST['password']) < 8) {
-                    $_SESSION['flash_error'] = "Le mot de passe doit contenir au moins 8 caractères.";
-                    $this->redirect('etudiants/edit/' . $id);
-                }
-                $data['password'] = password_hash($_POST['password'], PASSWORD_BCRYPT);
-            }
-
             $success = $userModel->update($id, $data);
 
             if ($success) {
+                 // Gestion pilote (Admin only)
+                 if (isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'admin') {
+                    if ($piloteId) {
+                        $userModel->assignPiloteToEtudiant($id, $piloteId);
+                    } else {
+                        // Si vide, on désassigne
+                        $userModel->removePiloteFromEtudiant($id);
+                    }
+                }
+
                 $_SESSION['flash_success'] = "Étudiant mis à jour avec succès !";
                 $this->redirect('etudiants/show/' . $id);
             } else {

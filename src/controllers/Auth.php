@@ -289,8 +289,12 @@ class Auth extends Controller
                     $errors[] = "Les mots de passe ne correspondent pas.";
                 }
 
-                if (strlen($password) < 8) {
-                    $errors[] = "Le mot de passe doit contenir au moins 8 caractères.";
+                if (strlen($password) < 8 || 
+                    !preg_match('/[A-Z]/', $password) || 
+                    !preg_match('/[a-z]/', $password) || 
+                    !preg_match('/[0-9]/', $password) || 
+                    !preg_match('/[\W_]/', $password)) {
+                    $errors[] = "Le mot de passe doit contenir au moins 8 caractères, une majuscule, une minuscule, un chiffre et un caractère spécial.";
                 }
 
                 if (empty($errors)) {
@@ -407,7 +411,7 @@ class Auth extends Controller
                 $this->redirect('login');
             }
 
-            $userModel->create([
+            $userId = $userModel->create([
                 'nom' => $pendingUser['nom'],
                 'prenom' => $pendingUser['prenom'],
                 'email' => $pendingUser['email'],
@@ -417,12 +421,20 @@ class Auth extends Controller
                 'verification_code' => null
             ]);
 
+            // Auto-login
+            $_SESSION['user_id'] = $userId;
+            $_SESSION['user_email'] = $pendingUser['email'];
+            $_SESSION['user_role'] = $pendingUser['role'];
+            $_SESSION['user_nom'] = $pendingUser['nom'];
+            $_SESSION['user_prenom'] = $pendingUser['prenom'];
+            session_regenerate_id(true);
+
             // Nettoyage session
             unset($_SESSION['pending_registration']);
             unset($_SESSION['verify_email']);
             
-            $_SESSION['flash_success'] = "Compte créé et vérifié avec succès ! Vous pouvez maintenant vous connecter.";
-            $this->redirect('login');
+            $_SESSION['flash_success'] = "Compte créé et vérifié avec succès ! Bienvenue sur votre tableau de bord.";
+            $this->redirect('dashboard');
         } else {
             // Code invalide
             $pendingUser['attempts']++;
@@ -761,11 +773,16 @@ class Auth extends Controller
         $confirm = $_POST['confirm_password'] ?? '';
         $errors = [];
         
-        if (strlen($password) < 8) {
-            $errors[] = "Le mot de passe doit faire 8 caractères min.";
-        }
         if ($password !== $confirm) {
             $errors[] = "Les mots de passe ne correspondent pas.";
+        }
+
+        if (strlen($password) < 8 || 
+            !preg_match('/[A-Z]/', $password) || 
+            !preg_match('/[a-z]/', $password) || 
+            !preg_match('/[0-9]/', $password) || 
+            !preg_match('/[\W_]/', $password)) {
+            $errors[] = "Le mot de passe doit contenir au moins 8 caractères, une majuscule, une minuscule, un chiffre et un caractère spécial.";
         }
         
         if (empty($errors)) {
