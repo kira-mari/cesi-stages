@@ -649,20 +649,24 @@ class Auth extends Controller
                 // Toujours afficher le même message pour éviter l'énumération
                 $_SESSION['flash_success'] = "Si cette adresse existe, un code de vérification vous a été envoyé.";
                 
+                $_SESSION['reset_email'] = $email;
+                $_SESSION['reset_expires'] = time() + (5 * 60); // 5 minutes
+                unset($_SESSION['reset_verified']);
+
                 if ($user) {
                      $code = (string) rand(100000, 999999);
                      
                      // Stockage en session
-                     $_SESSION['reset_email'] = $email;
                      $_SESSION['reset_code'] = $code;
-                     $_SESSION['reset_expires'] = time() + (5 * 60); // 5 minutes
-                     // Reset previous verified state
-                     unset($_SESSION['reset_verified']);
                      
                      // Envoi email
-                     $this->sendPasswordResetEmail($email, $code);
+                     if (!$this->sendPasswordResetEmail($email, $code)) {
+                        // En cas d'erreur mail, on peut logger
+                        error_log("Echec envoi mail reset pour $email");
+                     }
                 } else {
                     // Simulation délai
+                     $_SESSION['reset_code'] = "INVALID_CODE_" . rand(); // Code impossible à deviner
                     usleep(500000); 
                 }
                 
