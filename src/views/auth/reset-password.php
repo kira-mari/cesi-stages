@@ -37,9 +37,16 @@
                         </button>
                     </div>
                      <!-- Password requirements feedback -->
-                    <div id="password-feedback" style="margin-top: 0.5rem; font-size: 0.8rem; height: 0; overflow: hidden; transition: height 0.3s ease;">
-                        <div id="length-check" style="color: rgba(255,255,255,0.5); display: flex; align-items: center; gap: 0.5rem;">
-                            <i class="fas fa-circle" style="font-size: 0.4rem;"></i> 8 caractères minimum
+                    <div id="password-feedback" class="password-strength-container">
+                        <div class="strength-meter-bar-container">
+                            <div id="strength-bar" class="strength-meter-bar"></div>
+                        </div>
+                        <div class="criteria-list">
+                            <div id="length-check" class="criteria-item"><i class="fas fa-circle"></i> 8 caractères minimum</div>
+                            <div id="uppercase-check" class="criteria-item"><i class="fas fa-circle"></i> 1 majuscule</div>
+                            <div id="lowercase-check" class="criteria-item"><i class="fas fa-circle"></i> 1 minuscule</div>
+                            <div id="number-check" class="criteria-item"><i class="fas fa-circle"></i> 1 chiffre</div>
+                            <div id="special-check" class="criteria-item"><i class="fas fa-circle"></i> 1 caractère spécial</div>
                         </div>
                     </div>
                 </div>
@@ -53,9 +60,9 @@
                             <i class="far fa-eye-slash" id="toggleIconConfirm"></i>
                         </button>
                     </div>
-                    <div id="match-feedback" style="margin-top: 0.5rem; font-size: 0.8rem; height: 0; overflow: hidden; transition: height 0.3s ease;">
-                         <div id="match-check" style="color: rgba(255,255,255,0.5); display: flex; align-items: center; gap: 0.5rem;">
-                            <i class="fas fa-circle" style="font-size: 0.4rem;"></i> Les mots de passe correspondent
+                    <div id="match-feedback" class="password-strength-container">
+                         <div id="match-check" class="criteria-item">
+                            <i class="fas fa-circle"></i> Les mots de passe correspondent
                         </div>
                     </div>
                 </div>
@@ -86,23 +93,55 @@ function togglePassword(inputId, iconId) {
 function checkPasswordStrength() {
     const password = document.getElementById('password').value;
     const feedback = document.getElementById('password-feedback');
+    const strengthBar = document.getElementById('strength-bar');
+    
+    // Elements
     const lengthCheck = document.getElementById('length-check');
-    const icon = lengthCheck.querySelector('i');
+    const uppercaseCheck = document.getElementById('uppercase-check');
+    const lowercaseCheck = document.getElementById('lowercase-check');
+    const numberCheck = document.getElementById('number-check');
+    const specialCheck = document.getElementById('special-check');
 
     if (password.length > 0) {
-        feedback.style.height = '20px';
+        feedback.classList.add('visible');
     } else {
-        feedback.style.height = '0';
+        feedback.classList.remove('visible');
     }
 
-    if (password.length >= 8) {
-        lengthCheck.style.color = '#4ade80'; // Green
-        icon.className = 'fas fa-check-circle';
-        icon.style.color = '#4ade80';
+    let score = 0;
+
+    // Helper function to update UI
+    const updateCriteria = (element, isValid) => {
+        const icon = element.querySelector('i');
+        if (isValid) {
+            element.classList.add('valid');
+            element.classList.remove('invalid');
+            icon.className = 'fas fa-check-circle';
+            score++;
+        } else {
+            element.classList.remove('valid');
+            element.classList.add('invalid');
+            icon.className = 'fas fa-circle';
+        }
+    };
+
+    // Validations
+    updateCriteria(lengthCheck, password.length >= 8);
+    updateCriteria(uppercaseCheck, /[A-Z]/.test(password));
+    updateCriteria(lowercaseCheck, /[a-z]/.test(password));
+    updateCriteria(numberCheck, /[0-9]/.test(password));
+    updateCriteria(specialCheck, /[\W_]/.test(password));
+
+    // Update Strength Bar
+    const percentage = (score / 5) * 100;
+    strengthBar.style.width = percentage + '%';
+
+    if (score <= 2) {
+        strengthBar.style.backgroundColor = 'var(--strength-weak)';
+    } else if (score <= 4) {
+        strengthBar.style.backgroundColor = 'var(--strength-medium)';
     } else {
-        lengthCheck.style.color = 'rgba(255,255,255,0.5)';
-        icon.className = 'fas fa-circle';
-        icon.style.color = 'rgba(255,255,255,0.5)';
+        strengthBar.style.backgroundColor = 'var(--strength-strong)';
     }
 
     checkPasswordMatch(); // Re-check match when password changes
@@ -116,19 +155,19 @@ function checkPasswordMatch() {
     const icon = matchCheck.querySelector('i');
 
     if (confirm.length > 0) {
-        feedback.style.height = '20px';
+        feedback.classList.add('visible');
         
         if (password === confirm) {
-            matchCheck.style.color = '#4ade80';
+            matchCheck.classList.add('valid');
+            matchCheck.classList.remove('invalid');
             icon.className = 'fas fa-check-circle';
-            icon.style.color = '#4ade80';
         } else {
-            matchCheck.style.color = '#f87171'; // Red
+            matchCheck.classList.remove('valid');
+            matchCheck.classList.add('invalid');
             icon.className = 'fas fa-times-circle';
-            icon.style.color = '#f87171';
         }
     } else {
-        feedback.style.height = '0';
+        feedback.classList.remove('visible');
     }
 }
 </script>

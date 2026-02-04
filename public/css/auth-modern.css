@@ -7,6 +7,11 @@
     --auth-primary-text: #000000;
     --auth-accent: #8b5cf6;
     --auth-accent-glow: rgba(139, 92, 246, 0.5);
+
+    /* Password Strength Colors */
+    --strength-weak: #ef4444;   /* Red */
+    --strength-medium: #f59e0b; /* Orange */
+    --strength-strong: #10b981; /* Green */
 }
 
 body {
@@ -314,4 +319,82 @@ input[type="checkbox"] {
 .main-content {
     margin-bottom: 0 !important;
     padding-bottom: 0 !important;
+}
+
+/* Password Strength Meter */
+.password-strength-container {
+    margin-top: 1rem;
+    transition: all 0.3s ease;
+    height: 0;
+    overflow: hidden;
+    opacity: 0;
+}
+
+.password-strength-container.visible {
+    height: auto;
+    opacity: 1;
+    margin-bottom: 0.5rem;
+    overflow: visible;
+}
+
+.strength-meter-bar-container {
+    width: 100%;
+    height: 4px;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 2px;
+    margin-bottom: 0.75rem;
+    overflow: hidden;
+    margin-top: 0.5rem;
+}
+
+.strength-meter-bar {
+    height: 100%;
+    width: 0;
+    border-radius: 2px;
+    background-color: var(--strength-weak);
+    transition: width 0.3s ease, background-color 0.3s ease;
+}
+
+.criteria-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.criteria-item {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.5);
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    transition: color 0.2s ease;
+}
+
+.criteria-item i {
+    font-size: 0.8rem;
+    width: 14px;
+    text-align: center;
+}
+
+.criteria-item.valid {
+    color: var(--strength-strong);
+}
+
+.criteria-item.invalid {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+/* Specific icons colors */
+.criteria-item.valid i {
+    color: var(--strength-strong);
+}
+
+.criteria-item.invalid i {
+    color: var(--strength-weak);
+}
+
+/* When waiting to be typed (neutral) */
+.criteria-item.neutral i {
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 0.4rem;
 }
