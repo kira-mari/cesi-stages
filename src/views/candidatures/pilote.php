@@ -138,9 +138,9 @@
         <div class="page-header">
             <h1>Suivi des Candidatures</h1>
             <p>Analysez l'activité de vos étudiants en temps réel.</p>
-            <div class="d-inline-block bg-glass px-3 py-2 rounded-pill mt-2 border border-dark">
+            <div class="d-inline-block bg-glass px-3 py-2 rounded-pill mt-2 border border-secondary border-opacity-25">
                 <span class="text-muted small text-uppercase fw-bold">Total :</span>
-                <span class="fw-bold text-white ms-2"><?= count($candidatures) ?></span>
+                <span class="fw-bold ms-2"><?= count($candidatures) ?></span>
             </div>
         </div>
 
@@ -152,7 +152,7 @@
                          style="width: 100px; height: 100px; background: hsl(var(--primary) / 0.2); filter: blur(40px); border-radius: 50%;"></div>
                     <i class="fas fa-clipboard-list fa-4x text-muted relative z-10" style="opacity: 0.5;"></i>
                 </div>
-                <h3 class="h4 text-white mb-2">Aucune donnée disponible</h3>
+                <h3 class="h4 mb-2">Aucune donnée disponible</h3>
                 <p class="text-muted mb-0">Vos étudiants n'ont pas encore postulé à des offres.</p>
             </div>
         <?php else: ?>
@@ -191,7 +191,7 @@
                                             <?= $initials ?>
                                         </div>
                                         <div>
-                                            <div class="fw-bold text-white">
+                                            <div class="fw-bold text-foreground">
                                                 <?= htmlspecialchars($candidature['etudiant_prenom'] . ' ' . $candidature['etudiant_nom']) ?>
                                             </div>
                                             <div class="small text-muted">
@@ -203,7 +203,7 @@
                                 <td>
                                     <div class="d-flex flex-column">
                                         <a href="<?= BASE_URL ?>/offres/show/<?= $candidature['offre_id'] ?>" 
-                                           class="fw-semibold text-white text-decoration-none hover-primary mb-1">
+                                           class="fw-semibold text-foreground text-decoration-none hover-primary mb-1">
                                             <?= htmlspecialchars($candidature['offre_titre']) ?>
                                         </a>
                                         <div class="d-flex align-items-center text-muted small">

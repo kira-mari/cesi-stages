@@ -260,7 +260,7 @@ class Entreprise extends Controller
             }
 
             $note = intval($_POST['note'] ?? 0);
-            $commentaire = htmlspecialchars(trim($_POST['commentaire'] ?? ''));
+            $commentaire = trim($_POST['commentaire'] ?? '');
 
             if ($note < 1 || $note > 5) {
                 $_SESSION['flash_error'] = "La note doit être entre 1 et 5.";
@@ -287,5 +287,69 @@ class Entreprise extends Controller
 
             $this->redirect('entreprises/show/' . $id);
         }
+    }
+
+    /**
+     * Supprime une évaluation
+     *
+     * @return void
+     */
+    public function deleteEvaluation()
+    {
+        $this->requireRole('admin');
+
+        $id = $this->routeParams['id'] ?? 0;
+        $evaluationModel = new Evaluation();
+        
+        // Récupérer l'évaluation pour connaître l'entreprise ID (pour la redirection)
+        $eval = $evaluationModel->find($id);
+        
+        if (!$eval) {
+            $_SESSION['flash_error'] = "Évaluation non trouvée.";
+            $this->redirect('entreprises');
+        }
+
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            // Check for JSON request (AJAX)
+            $isAjax = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest';
+            
+            // Get input data (supports JSON or Form data)
+            if ($isAjax && strpos($_SERVER['CONTENT_TYPE'] ?? '', 'application/json') !== false) {
+                $input = json_decode(file_get_contents('php://input'), true);
+                $csrfToken = $input['csrf_token'] ?? '';
+            } else {
+                $csrfToken = $_POST['csrf_token'] ?? '';
+            }
+            
+            if (!$this->verifyCsrfToken($csrfToken)) {
+                if ($isAjax) {
+                    header('Content-Type: application/json');
+                    http_response_code(403);
+                    echo json_encode(['success' => false, 'message' => 'Token de sécurité invalide.']);
+                    exit;
+                }
+                $_SESSION['flash_error'] = "Token de sécurité invalide.";
+                $this->redirect('entreprises/show/' . $eval['entreprise_id']);
+            }
+
+            if ($evaluationModel->delete($id)) {
+                if ($isAjax) {
+                    header('Content-Type: application/json');
+                    echo json_encode(['success' => true, 'message' => 'Avis supprimé avec succès.']);
+                    exit;
+                }
+                $_SESSION['flash_success'] = "Avis supprimé avec succès.";
+            } else {
+                if ($isAjax) {
+                    header('Content-Type: application/json');
+                    http_response_code(500);
+                    echo json_encode(['success' => false, 'message' => 'Erreur lors de la suppression de l\'avis.']);
+                    exit;
+                }
+                $_SESSION['flash_error'] = "Erreur lors de la suppression de l'avis.";
+            }
+        }
+        
+        $this->redirect('entreprises/show/' . $eval['entreprise_id']);
     }
 }

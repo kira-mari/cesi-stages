@@ -119,7 +119,7 @@
             <div class="d-flex justify-content-between align-items-center">
                 <h3 class="mb-0 fw-bold text-white"><i class="fas fa-star text-warning me-2"></i>Avis et Évaluations</h3>
                 
-                <?php if (isset($_SESSION['user_role']) && in_array($_SESSION['user_role'], ['admin', 'pilote', 'etudiant'])): ?>
+                <?php if (isset($_SESSION['user_role']) && in_array($_SESSION['user_role'], ['pilote', 'etudiant'])): ?>
                     <button type="button" class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm" id="toggleReviewForm">
                         <i class="fas fa-pen-nib me-2"></i>Donner mon avis
                     </button>
@@ -133,7 +133,7 @@
                 <div class="bg-dark bg-opacity-25 border border-primary border-opacity-25 rounded-3 p-4 mb-5">
                     <form action="<?= BASE_URL ?>/entreprises/evaluate/<?= $entreprise['id'] ?>" method="post">
                         <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?? '' ?>">
-                        <h5 class="fw-bold mb-3 text-white">Partagez votre expérience</h5>
+                        <h5 class="fw-bold mb-3 text-foreground">Partagez votre expérience</h5>
                         
                         <div class="row g-4">
                             <div class="col-md-4">
@@ -148,7 +148,7 @@
                             </div>
                             <div class="col-md-8">
                                 <label class="form-label text-uppercase text-muted fw-bold small mb-2">Votre commentaire</label>
-                                <textarea name="commentaire" class="form-control border-secondary text-white" style="background-color: rgba(255, 255, 255, 0.08);" rows="3" placeholder="Qu'avez-vous pensé de l'ambiance, des missions, de l'équipe ?" required></textarea>
+                                <textarea name="commentaire" class="form-control border-secondary review-textarea" rows="3" placeholder="Qu'avez-vous pensé de l'ambiance, des missions, de l'équipe ?" required></textarea>
                             </div>
                             <div class="col-12 text-end mt-3">
                                 <button type="button" class="btn btn-link text-muted me-2 text-decoration-none" id="cancelReview">Annuler</button>
@@ -201,7 +201,18 @@
                                                 <?php for($i=1; $i<=5; $i++) echo $i <= $eval['note'] ? '<i class="fas fa-star"></i>' : '<i class="far fa-star opacity-25"></i>'; ?>
                                             </div>
                                         </div>
-                                        <small class="text-muted opacity-75" style="font-size: 0.8rem;"><?= date('d/m/Y', strtotime($eval['created_at'])) ?></small>
+                                        <div class="d-flex align-items-center gap-3">
+                                            <small class="text-muted opacity-75" style="font-size: 0.8rem;"><?= date('d/m/Y', strtotime($eval['created_at'])) ?></small>
+                                            <?php if (isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'admin'): ?>
+                                                <button type="button" 
+                                                        class="btn btn-link py-0 px-2 text-decoration-none text-danger opacity-50 hover-opacity-100 transition-all delete-evaluation" 
+                                                        title="Supprimer cet avis"
+                                                        data-id="<?= $eval['id'] ?>"
+                                                        data-csrf="<?= $_SESSION['csrf_token'] ?? '' ?>">
+                                                    <i class="fas fa-trash-alt"></i>
+                                                </button>
+                                            <?php endif; ?>
+                                        </div>
                                     </div>
                                     <p class="mb-0 text-white-50 ps-1" style="font-size: 0.95rem; line-height: 1.6;">
                                         "<?= htmlspecialchars($eval['commentaire']) ?>"
@@ -259,6 +270,50 @@ document.addEventListener('DOMContentLoaded', function() {
             }, 300);
         });
     }
+
+    // AJAX Handling for deleting evaluations
+    document.querySelectorAll('.delete-evaluation').forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            if (!confirm('Voulez-vous vraiment supprimer cet avis ?')) {
+                return;
+            }
+
+            const evalId = this.getAttribute('data-id');
+            const csrfToken = this.getAttribute('data-csrf');
+            const card = this.closest('.card'); // Get parent card to remove it later
+
+            fetch(`<?= BASE_URL ?>/entreprises/delete-evaluation/${evalId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({
+                    csrf_token: csrfToken
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Animate and remove the card
+                    card.style.transition = 'all 0.3s ease';
+                    card.style.opacity = '0';
+                    card.style.transform = 'translateX(20px)';
+                    setTimeout(() => {
+                        card.remove();
+                    }, 300);
+                } else {
+                    alert(data.message || 'Une erreur est survenue.');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Une erreur réseau est survenue.');
+            });
+        });
+    });
 });
 </script>
 

@@ -351,7 +351,7 @@
 .user-dropdown-menu {
     position: absolute;
     top: 100%;
-    right: 0;
+    right: -13rem;
     margin-top: 1rem;
     background: #1a1a24;
     border: 1px solid rgba(255,255,255,0.1);
@@ -368,6 +368,34 @@
     background: #ffffff;
     border-color: rgba(0,0,0,0.1);
     box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+}
+
+@media (max-width: 768px) {
+    /* Make container static on mobile to allow dropdown to align with navbar */
+    #userMenuContainer {
+        position: static !important;
+    }
+
+    .user-dropdown-menu {
+        position: absolute; /* Relative to navbar-floating now */
+        top: 100%;
+        left: 0;
+        right: 0;
+        width: 100%; /* Full width of navbar */
+        max-width: none;
+        margin-top: 1.6rem;
+        transform-origin: top center;
+        border-radius: 1rem;
+    }
+
+    .user-dropdown-menu.show {
+        animation: mobileDropdownEnter 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    @keyframes mobileDropdownEnter {
+        from { opacity: 0; transform: translateY(-10px) scale(0.98); }
+        to { opacity: 1; transform: translateY(0) scale(1); }
+    }
 }
 
 [data-theme="light"] .user-dropdown-menu .text-white {
@@ -512,7 +540,7 @@ function isNavLinkActive($uri, $base, $path) {
                 
                 <?php if (isset($_SESSION['user_role'])): ?>
                     <?php if ($_SESSION['user_role'] === 'etudiant'): ?>
-                        <li><a href="<?= BASE_URL ?>/wishlist" class="nav-link-custom <?= isNavLinkActive($currentUri, $basePath, '/wishlist') ? 'active' : '' ?>">Ma Liste</a></li>
+                        <li><a href="<?= BASE_URL ?>/wishlist" class="nav-link-custom <?= isNavLinkActive($currentUri, $basePath, '/wishlist') ? 'active' : '' ?>">Wishlist</a></li>
                         <li><a href="<?= BASE_URL ?>/candidatures/etudiant" class="nav-link-custom <?= isNavLinkActive($currentUri, $basePath, '/candidatures') ? 'active' : '' ?>">Candidatures</a></li>
                     <?php elseif ($_SESSION['user_role'] === 'pilote'): ?>
                         <li><a href="<?= BASE_URL ?>/etudiants" class="nav-link-custom <?= isNavLinkActive($currentUri, $basePath, '/etudiants') ? 'active' : '' ?>">Mes Étudiants</a></li>
@@ -563,9 +591,7 @@ function isNavLinkActive($uri, $base, $path) {
                     <!-- Dropdown -->
                     <div class="user-dropdown-menu" id="userDropdown">
                         <div class="d-flex align-items-center gap-3 mb-3 pb-3 border-bottom border-secondary border-opacity-25">
-                            <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center text-white fw-bold" style="width: 40px; height: 40px;">
-                                <?= substr($_SESSION['user_prenom'], 0, 1) ?>
-                            </div>
+                            <img src="https://ui-avatars.com/api/?name=<?= urlencode($_SESSION['user_prenom'] . '+' . $_SESSION['user_nom']) ?>&background=random&color=fff" class="rounded-circle" width="40" height="40" alt="Avatar">
                             <div class="overflow-hidden">
                                 <div class="fw-bold text-white text-truncate"><?= htmlspecialchars($_SESSION['user_prenom'] . ' ' . $_SESSION['user_nom']) ?></div>
                                 <div class="small text-muted text-uppercase"><?= htmlspecialchars($_SESSION['user_role']) ?></div>
@@ -616,7 +642,7 @@ function isNavLinkActive($uri, $base, $path) {
         <?php if (isset($_SESSION['user_role'])): ?>
             <?php if ($_SESSION['user_role'] === 'etudiant'): ?>
                 <a href="<?= BASE_URL ?>/wishlist" class="mobile-nav-link w-100">
-                    <i class="fas fa-heart w-5 text-center"></i> Ma Liste
+                    <i class="fas fa-heart w-5 text-center"></i> Wishlist
                 </a>
                 <a href="<?= BASE_URL ?>/candidatures/etudiant" class="mobile-nav-link w-100">
                     <i class="fas fa-paper-plane w-5 text-center"></i> Candidatures

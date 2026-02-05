@@ -44,7 +44,7 @@
         <?php if (isset($_SESSION['user_role']) && in_array($_SESSION['user_role'], ['admin', 'pilote'])): ?>
             <div class="d-flex justify-content-end mb-4">
                 <a href="<?= BASE_URL ?>/entreprises/create" class="btn btn-primary">
-                    <i class="fas fa-plus mr-2"></i> Ajouter une entreprise
+                    <i class="fas fa-plus me-2"></i> Ajouter une entreprise
                 </a>
             </div>
         <?php endif; ?>

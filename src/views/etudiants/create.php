@@ -29,7 +29,7 @@
                     </div>
 
                     <div class="form-group mb-3">
-                        <label for="password">Mot de passe *</label>
+                        <label for="password">Mot de passe provisoire *</label>
                         <input type="password" class="form-control" id="password" name="password" minlength="8" required>
                         <small class="form-text text-muted">Au moins 8 caractères.</small>
                     </div>

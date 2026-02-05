@@ -17,7 +17,7 @@
             </div>
             <div class="card-body">
                 <?php if (empty($etudiants)): ?>
-                    <p class="text-muted">Ce pilote ne gère aucun étudiant pour le moment (ou la fonctionnalité n'est pas encore liée).</p>
+                    <p class="text-muted">Ce pilote ne gère aucun étudiant pour le moment.</p>
                 <?php else: ?>
                     <div class="list-group">
                         <?php foreach ($etudiants as $etudiant): ?>

@@ -26,13 +26,15 @@
     --auth-accent-glow: rgba(109, 40, 217, 0.2);
 }
 
-/* Light Theme Overrides - Body Background */
+/* Light Theme Overrides - Body Background - REMOVED for uniformity */
+/*
 [data-theme="light"] body {
     background-color: #f8fafc;
     background-image: 
         radial-gradient(circle at top left, rgba(99, 102, 241, 0.1), transparent 50%),
         radial-gradient(circle at bottom right, rgba(236, 72, 153, 0.1), transparent 50%);
 }
+*/
 
 /* Light Theme Overrides - Text Colors */
 [data-theme="light"] .auth-title { color: #111827; }
@@ -91,6 +93,7 @@
     z-index: 1; 
 }
 
+/* 
 body {
     background-color: #05050a;
     background-image: 
@@ -101,6 +104,7 @@ body {
     min-height: 100vh;
     margin: 0;
 }
+*/
 
 .auth-container {
     width: 100%;

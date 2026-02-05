@@ -1,3 +1,42 @@
+/* Carousel indicators & controls theme adaptation */
+.carousel-indicators [data-bs-target] {
+    background-color: hsl(var(--muted-foreground));
+    opacity: 0.5;
+    width: 32px;
+    height: 4px;
+    border-radius: 2px;
+    margin: 0 4px;
+    transition: background 0.2s, opacity 0.2s;
+}
+.carousel-indicators .active {
+    background-color: hsl(var(--foreground));
+    opacity: 1;
+}
+[data-theme="light"] .carousel-indicators [data-bs-target] {
+    background-color: hsl(var(--muted-foreground));
+}
+[data-theme="light"] .carousel-indicators .active {
+    background-color: hsl(var(--primary));
+}
+
+/* Carousel next/prev buttons violet */
+.carousel-control-prev-icon,
+.carousel-control-next-icon {
+  background-color: hsl(var(--primary));
+  border-radius: 50%;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+  transition: background 0.2s;
+}
+[data-theme="light"] .carousel-control-prev-icon,
+[data-theme="light"] .carousel-control-next-icon {
+  background-color: hsl(var(--primary));
+}
+
+.carousel-control-prev:hover .carousel-control-prev-icon,
+.carousel-control-next:hover .carousel-control-next-icon {
+    background-color: hsl(var(--primary));
+    opacity: 1;
+}
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@300;400;500;600;700&display=swap");
 
 :root {
@@ -114,12 +153,24 @@ html {
 
 body {
     font-family: 'Inter', sans-serif;
-    background-color: hsl(var(--background));
+    background-color: #05050a; /* Dark default */
+    background-image: 
+        radial-gradient(circle at top left, rgba(139, 92, 246, 0.15), transparent 50%),
+        radial-gradient(circle at bottom right, rgba(236, 72, 153, 0.15), transparent 50%);
+    background-attachment: fixed;
+    background-size: cover;
     color: hsl(var(--foreground));
     line-height: 1.6;
     min-height: 100vh;
     display: flex;
     flex-direction: column;
+}
+
+[data-theme="light"] body {
+    background-color: #f8fafc;
+    background-image: 
+        radial-gradient(circle at top left, rgba(99, 102, 241, 0.1), transparent 60%),
+        radial-gradient(circle at bottom right, rgba(236, 72, 153, 0.1), transparent 60%);
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -301,9 +352,28 @@ code, pre {
 }
 
 .card-header {
-    padding: 1.25rem 1.5rem;
+    padding: 1rem 1.5rem;
     border-bottom: 1px solid hsl(var(--border));
-    background-color: hsl(var(--muted) / 0.5); /* Lighter background for headers */
+    background-color: hsl(var(--muted) / 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.card-header h2,
+.card-header h3,
+.card-header h4,
+.card-header h5 {
+    margin-bottom: 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.card-header i {
+    color: hsl(var(--primary));
 }
 
 .card-body {
@@ -503,28 +573,69 @@ code, pre {
     width: 100%;
     margin-bottom: 1rem;
     color: hsl(var(--foreground));
-    vertical-align: top;
+    vertical-align: middle;
     border-color: hsl(var(--border));
+    font-size: 0.925rem;
+    
+    /* Variables Bootstrap overrides pour assurer la compatibilité */
+    --bs-table-bg: transparent;
+    --bs-table-accent-bg: transparent;
+    --bs-table-striped-color: hsl(var(--foreground));
+    --bs-table-striped-bg: hsl(var(--muted), 0.05);
+    --bs-table-active-color: hsl(var(--foreground));
+    --bs-table-active-bg: hsl(var(--muted), 0.1);
+    --bs-table-hover-color: hsl(var(--foreground));
+    --bs-table-hover-bg: hsl(var(--muted), 0.1);
+    
+    background-color: transparent !important;
 }
 
 .table > thead {
     vertical-align: bottom;
+    background-color: hsl(var(--muted) / 0.3);
+}
+
+.table > thead > tr > th {
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+    color: hsl(var(--muted-foreground));
+    padding: 0.75rem 1rem;
     border-bottom: 1px solid hsl(var(--border));
+    white-space: nowrap;
+    background-color: transparent !important; /* Ensure th is transparent over thead bg */
 }
 
 .table > tbody {
     vertical-align: inherit;
 }
 
+.table > tbody > tr {
+    transition: background-color 0.2s ease;
+}
+
+.table > tbody > tr:hover {
+    background-color: hsl(var(--muted) / 0.4);
+}
+
 .table > :not(caption) > * > * {
     padding: 1rem 1rem;
     border-bottom-width: 1px;
-    box-shadow: inset 0 0 0 9999px transparent;
+    border-bottom-color: hsl(var(--border));
+    background-color: transparent !important; /* Force transparent cells to show row/card bg */
+    color: inherit;
+    box-shadow: none !important;
+}
+
+.table > tbody > tr:last-child > td {
+    border-bottom-width: 0;
 }
 
 .table-responsive {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
+    border-radius: 0 0 var(--radius) var(--radius);
 }
 
 /* Lists */
@@ -2870,4 +2981,101 @@ body:has(.hero) .main-content {
     }
 }
 
+
+
+/* Review Textarea Placeholder & Styles */
+.review-textarea {
+    background-color: rgba(255, 255, 255, 0.08);
+    color: #fff;
+}
+
+.review-textarea::placeholder {
+    color: rgba(255, 255, 255, 0.4) !important;
+}
+
+.review-textarea:focus::placeholder {
+    color: rgba(255, 255, 255, 0.6) !important;
+}
+
+/* Light Theme Adaptation for Review Textarea */
+[data-theme="light"] .review-textarea {
+    background-color: rgba(0, 0, 0, 0.03);
+    color: #1f2937;
+    border-color: rgba(0,0,0,0.1) !important;
+}
+
+[data-theme="light"] .review-textarea::placeholder {
+    color: rgba(0, 0, 0, 0.4) !important;
+}
+
+[data-theme="light"] .review-textarea:focus::placeholder {
+    color: rgba(0, 0, 0, 0.6) !important;
+}
+
+/* --- Statistics Carousel Styling --- */
+.stats-carousel-card {
+    background: radial-gradient(circle at top right, rgba(99, 102, 241, 0.05), transparent 40%),
+                hsl(var(--card));
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+[data-theme="light"] .stats-carousel-card {
+    background: radial-gradient(circle at top right, rgba(79, 70, 229, 0.05), transparent 40%), 
+                #ffffff;
+    border: 1px solid rgba(0,0,0,0.05);
+}
+
+.animate-value {
+    background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--secondary)));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 2px 4px rgba(99, 102, 241, 0.2));
+}
+
+/* Fix Height & Arrows overlap */
+.stats-carousel-card .carousel-inner {
+    padding-left: 4rem;  /* Space for arrows */
+    padding-right: 4rem;
+    padding-bottom: 2rem; /* Space for indicators */
+}
+
+.stats-carousel-card .carousel-item {
+    height: 460px; /* Increased height to fit all content comfortably */
+}
+
+.carousel-control-prev-icon,
+.carousel-control-next-icon {
+    background-size: 50%, 50%;
+}
+
+.carousel-control-prev, 
+.carousel-control-next {
+    width: 3.5rem;
+    opacity: 0.5;
+    transition: all 0.2s ease;
+}
+
+
+/* Mobile Optimizations for Carousel */
+@media (max-width: 768px) {
+    .stats-carousel-card .display-4 {
+        font-size: 2.5rem;
+    }
+
+    .stats-carousel-card .carousel-inner {
+        padding-left: 2.5rem;
+        padding-right: 2.5rem;
+    }
+
+    .stats-carousel-card .carousel-item {
+        height: 500px; /* Taller for stacked content on mobile */
+    }
+
+    .carousel-control-prev, 
+    .carousel-control-next {
+        width: 2.5rem;
+        margin-bottom: 0;
+    }
+}
 

@@ -45,6 +45,7 @@ $router->add('entreprises/edit/{id:\d+}', ['controller' => 'Entreprise', 'action
 $router->add('entreprises/update/{id:\d+}', ['controller' => 'Entreprise', 'action' => 'update']);
 $router->add('entreprises/delete/{id:\d+}', ['controller' => 'Entreprise', 'action' => 'delete']);
 $router->add('entreprises/evaluate/{id:\d+}', ['controller' => 'Entreprise', 'action' => 'evaluate']);
+$router->add('entreprises/delete-evaluation/{id:\d+}', ['controller' => 'Entreprise', 'action' => 'deleteEvaluation']);
 
 // Routes des offres de stage
 $router->add('offres', ['controller' => 'Offre', 'action' => 'index']);

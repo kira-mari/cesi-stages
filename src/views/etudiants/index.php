@@ -27,7 +27,7 @@
         <!-- Add Button Right -->
         <div class="d-flex justify-content-end mb-4">
             <a href="<?= BASE_URL ?>/etudiants/create" class="btn btn-primary">
-                <i class="fas fa-plus mr-2"></i> Ajouter un étudiant
+                <i class="fas fa-plus me-2"></i> Ajouter un étudiant
             </a>
         </div>
 
@@ -50,13 +50,13 @@
                         <div class="user-info">
                             <h3><?= htmlspecialchars($etudiant['nom'] . ' ' . $etudiant['prenom']) ?></h3>
                             <span class="user-email" title="<?= htmlspecialchars($etudiant['email']) ?>">
-                                <i class="far fa-envelope mr-1"></i> <?= htmlspecialchars($etudiant['email']) ?>
+                                <i class="far fa-envelope me-1"></i> <?= htmlspecialchars($etudiant['email']) ?>
                             </span>
                         </div>
 
                         <div class="user-card-actions">
                             <a href="<?= BASE_URL ?>/etudiants/show/<?= $etudiant['id'] ?>" class="btn btn-action-primary" title="Voir le profil">
-                                <i class="fas fa-eye mr-2"></i> Profil
+                                <i class="fas fa-eye me-2"></i> Profil
                             </a>
                             <a href="<?= BASE_URL ?>/etudiants/edit/<?= $etudiant['id'] ?>" class="btn btn-action-icon btn-action-warning" title="Modifier">
                                 <i class="fas fa-pen"></i>

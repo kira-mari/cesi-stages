@@ -71,9 +71,15 @@ class Dashboard extends Controller
             'title' => 'Statistiques - ' . APP_NAME
         ];
 
+        // SFx 11 - Statistiques des offres pour tous (Carrousel)
+        $data['repartitionDuree'] = $offreModel->getRepartitionParDuree();
+        $data['topWishlist'] = $offreModel->getTopWishlist(5);
+        $totalCandidatures = $candidatureModel->count();
+        $data['totalOffres'] = $offreModel->count(); // Besoin pour le calcul ci-dessous et l'affichage global
+        $data['moyenneCandidatures'] = ($data['totalOffres'] > 0) ? round($totalCandidatures / $data['totalOffres'], 2) : 0;
+
         // Rôle Administrateur
         if ($_SESSION['user_role'] === 'admin') {
-            $data['totalOffres'] = $offreModel->count();
             $data['totalEntreprises'] = $entrepriseModel->count();
             $data['totalPilotes'] = $userModel->countByRole('pilote');
             $data['totalEtudiants'] = $userModel->countByRole('etudiant');

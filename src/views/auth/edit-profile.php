@@ -3,7 +3,7 @@
         <div class="col-lg-10">
             <div class="card">
                 <div class="card-header">
-                    <h4 class="mb-0 text-white"><i class="fas fa-user-edit me-2"></i>Modifier mon profil</h4>
+                    <h4 class="mb-0 text-foreground"><i class="fas fa-user-edit me-2"></i>Modifier mon profil</h4>
                 </div>
                 <div class="card-body p-4">
                     <?php if (isset($_SESSION['flash_error'])): ?>
