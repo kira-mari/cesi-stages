@@ -397,6 +397,37 @@ input[type="checkbox"] {
     margin-bottom: 1.5rem;
 }
 
+[data-theme="light"] .auth-alert {
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    color: #b91c1c;
+}
+
+/* Light theme for password strength */
+[data-theme="light"] .criteria-item {
+    color: #6b7280;
+}
+
+[data-theme="light"] .criteria-item.valid {
+    color: #059669;
+}
+
+[data-theme="light"] .criteria-item.invalid {
+    color: #6b7280;
+}
+
+[data-theme="light"] .criteria-item.valid i {
+    color: #059669;
+}
+
+[data-theme="light"] .criteria-item.invalid i {
+    color: #dc2626;
+}
+
+[data-theme="light"] .strength-meter-bar-container {
+    background-color: rgba(0, 0, 0, 0.1);
+}
+
 /* Auth Layout Overrides */
 .main-content {
     margin-bottom: 0 !important;

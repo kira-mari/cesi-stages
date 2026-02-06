@@ -26,6 +26,7 @@ Ce document décrit les différents rôles utilisateur et leurs fonctionnalités
 | **Gestion des utilisateurs** | Créer, modifier, supprimer tous les utilisateurs |
 | **Gestion des pilotes** | Créer des pilotes et leur assigner des étudiants |
 | **Gestion des recruteurs** | Créer des recruteurs et leur assigner des entreprises |
+| **Approbation des comptes** | Valider ou refuser les inscriptions pilote/recruteur |
 | **Gestion des entreprises** | CRUD complet sur les entreprises |
 | **Gestion des offres** | CRUD complet sur les offres de stage |
 | **Statistiques globales** | Voir toutes les statistiques de la plateforme |
@@ -38,6 +39,7 @@ Ce document décrit les différents rôles utilisateur et leurs fonctionnalités
 - Étudiants
 - Pilotes
 - Recruteurs
+- **Approbations** (demandes en attente)
 - Messagerie
 
 ---
@@ -136,11 +138,28 @@ L'utilisateur peut choisir son rôle lors de l'inscription :
 
 | Rôle sélectionnable | Processus après inscription |
 |---------------------|----------------------------|
-| **Étudiant** | Redirigé vers la page de connexion |
-| **Pilote** | Redirigé vers la page de connexion |
-| **Recruteur** | Connecté automatiquement + redirigé vers la configuration d'entreprise |
+| **Étudiant** | Redirigé vers la page de connexion (accès immédiat) |
+| **Pilote** | Redirigé vers la page de connexion (en attente d'approbation) |
+| **Recruteur** | Connecté automatiquement + redirigé vers la configuration d'entreprise (en attente d'approbation) |
 
 **Note** : Le rôle "Admin" ne peut pas être choisi à l'inscription.
+
+### Système d'approbation des comptes
+
+Les comptes **Pilote** et **Recruteur** nécessitent une validation par un administrateur :
+
+1. **Inscription** : L'utilisateur s'inscrit avec le rôle pilote ou recruteur
+2. **Notification admin** : Les administrateurs reçoivent une notification de la nouvelle demande
+3. **En attente** : L'utilisateur peut se connecter mais avec des accès limités (comme un étudiant)
+4. **Validation** : L'administrateur approuve ou refuse la demande depuis la page "Approbations"
+5. **Notification utilisateur** : L'utilisateur reçoit un message l'informant de la décision
+6. **Accès complet** : Si approuvé, l'utilisateur a accès à toutes les fonctionnalités de son rôle
+
+### Pourquoi ce système ?
+
+- **Sécurité** : Évite que n'importe qui puisse se créer un compte pilote/recruteur
+- **Contrôle** : L'admin vérifie l'identité des utilisateurs avec des rôles privilégiés
+- **Flexibilité** : L'utilisateur en attente peut quand même naviguer sur la plateforme
 
 ### Configuration entreprise (Recruteurs uniquement)
 

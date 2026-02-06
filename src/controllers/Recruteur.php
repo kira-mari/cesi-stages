@@ -366,4 +366,37 @@ class Recruteur extends Controller
             'csrf_token' => $this->generateCsrfToken()
         ]);
     }
+
+    /**
+     * Supprime un recruteur (admin uniquement)
+     */
+    public function delete()
+    {
+        $this->requireRole(['admin']);
+
+        $id = $this->routeParams['id'] ?? 0;
+        $userModel = new User();
+
+        $recruteur = $userModel->find($id);
+        if (!$recruteur || $recruteur['role'] !== 'recruteur') {
+            $_SESSION['flash_error'] = "Recruteur non trouvé.";
+            $this->redirect('recruteurs');
+            return;
+        }
+
+        // Supprimer les associations entreprise-recruteur
+        $stmt = \Core\Model::getDB()->prepare(
+            "DELETE FROM recruteur_entreprise WHERE recruteur_id = :id"
+        );
+        $stmt->execute([':id' => $id]);
+
+        // Supprimer le recruteur
+        if ($userModel->delete($id)) {
+            $_SESSION['flash_success'] = "Recruteur supprimé avec succès !";
+        } else {
+            $_SESSION['flash_error'] = "Une erreur s'est produite lors de la suppression.";
+        }
+
+        $this->redirect('recruteurs');
+    }
 }

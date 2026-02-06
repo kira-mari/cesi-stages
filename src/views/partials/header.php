@@ -503,6 +503,304 @@
     transform: scale(1);
 }
 
+/* Notification Bell Styles */
+.notification-bell {
+    position: relative;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: rgba(255, 255, 255, 0.9);
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+}
+
+.notification-bell:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: white;
+}
+
+[data-theme="light"] .notification-bell {
+    color: rgba(0, 0, 0, 0.7);
+}
+
+[data-theme="light"] .notification-bell:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+    color: #4f46e5;
+}
+
+.notification-bell .bell-icon {
+    font-size: 1.2rem;
+    transition: transform 0.3s ease;
+}
+
+.notification-bell:hover .bell-icon {
+    transform: rotate(15deg);
+}
+
+.notification-bell.has-notifications .bell-icon {
+    animation: bellRing 0.5s ease-in-out;
+}
+
+@keyframes bellRing {
+    0%, 100% { transform: rotate(0); }
+    25% { transform: rotate(15deg); }
+    50% { transform: rotate(-15deg); }
+    75% { transform: rotate(10deg); }
+}
+
+.notification-badge {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    color: white;
+    font-size: 0.65rem;
+    font-weight: 700;
+    min-width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 6px rgba(239, 68, 68, 0.5);
+    transform: scale(0);
+    transition: transform 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.notification-badge.show {
+    transform: scale(1);
+}
+
+/* Notification Dropdown */
+.notification-dropdown {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 1rem;
+    background: #1a1a24;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 1rem;
+    width: 320px;
+    max-height: 400px;
+    overflow: hidden;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+    z-index: 10000;
+    display: none;
+    transform-origin: top right;
+}
+
+.notification-dropdown.show {
+    display: block;
+    animation: notifDropdownIn 0.25s ease-out forwards;
+}
+
+@keyframes notifDropdownIn {
+    from { opacity: 0; transform: translateY(-10px) scale(0.95); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+[data-theme="light"] .notification-dropdown {
+    background: #ffffff;
+    border-color: rgba(0,0,0,0.1);
+    box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+}
+
+.notification-header {
+    padding: 1rem;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+[data-theme="light"] .notification-header {
+    border-color: rgba(0,0,0,0.1);
+}
+
+.notification-header h6 {
+    margin: 0;
+    font-weight: 600;
+    color: white;
+}
+
+[data-theme="light"] .notification-header h6 {
+    color: #1f2937;
+}
+
+.notification-header .mark-read-btn {
+    font-size: 0.75rem;
+    color: #6366f1;
+    background: none;
+    border: none;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.notification-header .mark-read-btn:hover {
+    color: #818cf8;
+}
+
+.notification-list {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.notification-item {
+    display: flex;
+    gap: 0.75rem;
+    padding: 0.875rem 1rem;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    cursor: pointer;
+    transition: background 0.2s;
+    text-decoration: none;
+}
+
+.notification-item:hover {
+    background: rgba(255,255,255,0.05);
+}
+
+[data-theme="light"] .notification-item {
+    border-color: rgba(0,0,0,0.05);
+}
+
+[data-theme="light"] .notification-item:hover {
+    background: rgba(0,0,0,0.03);
+}
+
+.notification-item.unread {
+    background: rgba(99, 102, 241, 0.1);
+}
+
+.notification-item.unread::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: #6366f1;
+}
+
+.notification-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 0.9rem;
+}
+
+.notification-icon.message {
+    background: rgba(99, 102, 241, 0.2);
+    color: #818cf8;
+}
+
+.notification-icon.candidature {
+    background: rgba(34, 197, 94, 0.2);
+    color: #22c55e;
+}
+
+.notification-icon.system {
+    background: rgba(251, 191, 36, 0.2);
+    color: #fbbf24;
+}
+
+.notification-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.notification-content .title {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: white;
+    margin-bottom: 0.25rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+[data-theme="light"] .notification-content .title {
+    color: #1f2937;
+}
+
+.notification-content .preview {
+    font-size: 0.75rem;
+    color: rgba(255,255,255,0.6);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+[data-theme="light"] .notification-content .preview {
+    color: rgba(0,0,0,0.5);
+}
+
+.notification-content .time {
+    font-size: 0.7rem;
+    color: rgba(255,255,255,0.4);
+    margin-top: 0.25rem;
+}
+
+[data-theme="light"] .notification-content .time {
+    color: rgba(0,0,0,0.4);
+}
+
+.notification-empty {
+    padding: 2rem;
+    text-align: center;
+    color: rgba(255,255,255,0.5);
+}
+
+[data-theme="light"] .notification-empty {
+    color: rgba(0,0,0,0.4);
+}
+
+.notification-empty i {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+    opacity: 0.5;
+}
+
+.notification-footer {
+    padding: 0.75rem;
+    border-top: 1px solid rgba(255,255,255,0.1);
+    text-align: center;
+}
+
+[data-theme="light"] .notification-footer {
+    border-color: rgba(0,0,0,0.1);
+}
+
+.notification-footer a {
+    font-size: 0.8rem;
+    color: #6366f1;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.notification-footer a:hover {
+    text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+    .notification-dropdown {
+        position: fixed;
+        top: 80px;
+        right: 1rem;
+        left: 1rem;
+        width: auto;
+    }
+}
+
 </style>
 
 <?php 
@@ -533,10 +831,10 @@ function isNavLinkActive($uri, $base, $path) {
         <nav class="desktop-nav">
             <ul class="d-flex align-items-center gap-3 list-unstyled m-0">
                 <?php if (!isset($_SESSION['user_id'])): ?>
-                    <li><a href="<?= BASE_URL ?>" class="nav-link-custom fw-bold <?= isNavLinkActive($currentUri, $basePath, '') ? 'active' : '' ?>">Accueil</a></li>
+                    <li><a href="<?= BASE_URL ?>" class="nav-link-custom <?= isNavLinkActive($currentUri, $basePath, '') ? 'active' : '' ?>">Accueil</a></li>
                 <?php endif; ?>
-                <li><a href="<?= BASE_URL ?>/offres" class="nav-link-custom fw-bold <?= isNavLinkActive($currentUri, $basePath, '/offres') ? 'active' : '' ?>">Offres</a></li>
-                <li><a href="<?= BASE_URL ?>/entreprises" class="nav-link-custom fw-bold <?= isNavLinkActive($currentUri, $basePath, '/entreprises') ? 'active' : '' ?>">Entreprises</a></li>
+                <li><a href="<?= BASE_URL ?>/offres" class="nav-link-custom <?= isNavLinkActive($currentUri, $basePath, '/offres') ? 'active' : '' ?>">Offres</a></li>
+                <li><a href="<?= BASE_URL ?>/entreprises" class="nav-link-custom <?= isNavLinkActive($currentUri, $basePath, '/entreprises') ? 'active' : '' ?>">Entreprises</a></li>
                 
                 <?php if (isset($_SESSION['user_role'])): ?>
                     <?php if ($_SESSION['user_role'] === 'etudiant'): ?>
@@ -559,7 +857,34 @@ function isNavLinkActive($uri, $base, $path) {
         </nav>
         
         <!-- Actions -->
-        <div class="d-flex align-items-center gap-3">
+        <div class="d-flex align-items-center gap-3" style="margin-left: 2rem;">
+            <?php if (isset($_SESSION['user_id'])): ?>
+            <!-- Notification Bell -->
+            <div class="position-relative" id="notificationContainer">
+                <button type="button" class="notification-bell" id="notificationBtn" aria-label="Notifications">
+                    <i class="fas fa-bell bell-icon"></i>
+                    <span class="notification-badge" id="notificationBadge">0</span>
+                </button>
+                
+                <!-- Notification Dropdown -->
+                <div class="notification-dropdown" id="notificationDropdown">
+                    <div class="notification-header">
+                        <h6><i class="fas fa-bell me-2"></i>Notifications</h6>
+                        <button class="mark-read-btn" id="markAllReadBtn">Tout marquer lu</button>
+                    </div>
+                    <div class="notification-list" id="notificationList">
+                        <div class="notification-empty">
+                            <i class="fas fa-bell-slash d-block"></i>
+                            <span>Aucune notification</span>
+                        </div>
+                    </div>
+                    <div class="notification-footer">
+                        <a href="<?= BASE_URL ?>/messages">Voir tous les messages</a>
+                    </div>
+                </div>
+            </div>
+            <?php endif; ?>
+
             <!-- Theme Toggle -->
             <button class="theme-toggle-btn" id="themeToggle" aria-label="Toggle Theme">
                 <svg class="sun-and-moon" aria-hidden="true" width="24" height="24" viewBox="0 0 24 24">
@@ -612,7 +937,6 @@ function isNavLinkActive($uri, $base, $path) {
                             </a>
                             <a href="<?= BASE_URL ?>/messages" class="nav-link-custom w-100 d-flex align-items-center gap-2 px-3">
                                 <i class="fas fa-envelope opacity-50 w-5"></i> Messagerie
-                                <span id="message-badge" class="badge bg-danger ms-auto" style="display: none;">0</span>
                             </a>
                             <div class="border-top border-secondary border-opacity-25 my-1"></div>
                             <a href="<?= BASE_URL ?>/logout" class="nav-link-custom w-100 d-flex align-items-center gap-2 px-3 text-danger hover-bg-danger-soft">
@@ -810,5 +1134,116 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         lastScrollTop = scrollTop <= 0 ? 0 : scrollTop; // For Mobile or negative scrolling
     }, { passive: true });
+
+    // Notification System
+    const notificationBtn = document.getElementById('notificationBtn');
+    const notificationDropdown = document.getElementById('notificationDropdown');
+    const notificationBadge = document.getElementById('notificationBadge');
+    const notificationList = document.getElementById('notificationList');
+    const markAllReadBtn = document.getElementById('markAllReadBtn');
+
+    if (notificationBtn && notificationDropdown) {
+        // Toggle dropdown
+        notificationBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            notificationDropdown.classList.toggle('show');
+            if (notificationDropdown.classList.contains('show')) {
+                loadNotifications();
+            }
+        });
+
+        // Close on outside click
+        document.addEventListener('click', (e) => {
+            if (!notificationBtn.contains(e.target) && !notificationDropdown.contains(e.target)) {
+                notificationDropdown.classList.remove('show');
+            }
+        });
+
+        // Mark all as read
+        if (markAllReadBtn) {
+            markAllReadBtn.addEventListener('click', () => {
+                fetch('<?= BASE_URL ?>/notifications/mark-all-read', { method: 'POST' })
+                    .then(() => {
+                        loadNotifications();
+                        updateNotificationCount();
+                    });
+            });
+        }
+
+        // Load notifications
+        function loadNotifications() {
+            fetch('<?= BASE_URL ?>/notifications/list')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.notifications && data.notifications.length > 0) {
+                        notificationList.innerHTML = data.notifications.map(n => `
+                            <a href="${n.url}" class="notification-item ${n.lu ? '' : 'unread'}" style="position: relative;">
+                                <div class="notification-icon ${n.type}">
+                                    <i class="fas ${getNotificationIcon(n.type)}"></i>
+                                </div>
+                                <div class="notification-content">
+                                    <div class="title">${escapeHtml(n.title)}</div>
+                                    <div class="preview">${escapeHtml(n.preview)}</div>
+                                    <div class="time">${n.time_ago}</div>
+                                </div>
+                            </a>
+                        `).join('');
+                    } else {
+                        notificationList.innerHTML = `
+                            <div class="notification-empty">
+                                <i class="fas fa-bell-slash d-block"></i>
+                                <span>Aucune notification</span>
+                            </div>
+                        `;
+                    }
+                })
+                .catch(() => {
+                    notificationList.innerHTML = `
+                        <div class="notification-empty">
+                            <i class="fas fa-exclamation-circle d-block"></i>
+                            <span>Erreur de chargement</span>
+                        </div>
+                    `;
+                });
+        }
+
+        function getNotificationIcon(type) {
+            switch(type) {
+                case 'message': return 'fa-envelope';
+                case 'candidature': return 'fa-file-alt';
+                case 'system': return 'fa-info-circle';
+                default: return 'fa-bell';
+            }
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Update notification count
+        function updateNotificationCount() {
+            fetch('<?= BASE_URL ?>/notifications/count')
+                .then(res => res.json())
+                .then(data => {
+                    const count = data.count || 0;
+                    notificationBadge.textContent = count > 99 ? '99+' : count;
+                    if (count > 0) {
+                        notificationBadge.classList.add('show');
+                        notificationBtn.classList.add('has-notifications');
+                    } else {
+                        notificationBadge.classList.remove('show');
+                        notificationBtn.classList.remove('has-notifications');
+                    }
+                });
+        }
+
+        // Initial load
+        updateNotificationCount();
+        
+        // Refresh every 30 seconds
+        setInterval(updateNotificationCount, 30000);
+    }
 });
 </script>

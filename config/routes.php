@@ -15,6 +15,7 @@ $router->add('register', ['controller' => 'Auth', 'action' => 'register']);
 $router->add('profile', ['controller' => 'Auth', 'action' => 'profile']);
 $router->add('profile/edit', ['controller' => 'Auth', 'action' => 'editProfile']);
 $router->add('profile/update', ['controller' => 'Auth', 'action' => 'updateProfile']);
+$router->add('profile/delete', ['controller' => 'Auth', 'action' => 'deleteAccount']);
 // Verification
 $router->add('verify', ['controller' => 'Auth', 'action' => 'verify']);
 $router->add('verify/submit', ['controller' => 'Auth', 'action' => 'verifyCode']);
@@ -82,6 +83,7 @@ $router->add('pilotes/delete/{id:\d+}', ['controller' => 'Pilote', 'action' => '
 // Routes des recruteurs (gestion admin)
 $router->add('recruteurs', ['controller' => 'Recruteur', 'action' => 'index']);
 $router->add('recruteurs/show/{id:\d+}', ['controller' => 'Recruteur', 'action' => 'show']);
+$router->add('recruteurs/delete/{id:\d+}', ['controller' => 'Recruteur', 'action' => 'delete']);
 $router->add('recruteurs/assign-entreprise/{id:\d+}', ['controller' => 'Recruteur', 'action' => 'assignEntreprise']);
 $router->add('recruteurs/remove-entreprise/{recruteurId:\d+}/{entrepriseId:\d+}', ['controller' => 'Recruteur', 'action' => 'removeEntreprise']);
 
@@ -114,6 +116,16 @@ $router->add('messages/envoyer', ['controller' => 'Message', 'action' => 'envoye
 $router->add('messages/show/{id:\d+}', ['controller' => 'Message', 'action' => 'show']);
 $router->add('messages/supprimer/{id:\d+}', ['controller' => 'Message', 'action' => 'supprimer']);
 $router->add('messages/count', ['controller' => 'Message', 'action' => 'countNonLus']);
+
+// Routes des notifications
+$router->add('notifications/count', ['controller' => 'Notification', 'action' => 'count']);
+$router->add('notifications/list', ['controller' => 'Notification', 'action' => 'list']);
+$router->add('notifications/mark-all-read', ['controller' => 'Notification', 'action' => 'markAllRead']);
+
+// Routes des approbations (admin)
+$router->add('approbations', ['controller' => 'Approbation', 'action' => 'index']);
+$router->add('approbations/approve/{id:\d+}', ['controller' => 'Approbation', 'action' => 'approve']);
+$router->add('approbations/reject/{id:\d+}', ['controller' => 'Approbation', 'action' => 'reject']);
 
 // Route du chatbot (API JSON)
 $router->add('chatbot/ask', ['controller' => 'Chatbot', 'action' => 'ask']);

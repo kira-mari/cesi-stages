@@ -1,4 +1,4 @@
-<div class="container py-5">
+<div class="container py-5" style="margin-top: 80px;">
     <div class="row justify-content-center">
         <!-- Carte de Profil -->
         <div class="col-lg-10">
@@ -16,6 +16,15 @@
                             <i class="fas fa-check-circle me-2"></i>
                             <div>
                                 <?= $_SESSION['flash_success']; unset($_SESSION['flash_success']); ?>
+                            </div>
+                        </div>
+                    <?php endif; ?>
+                    
+                    <?php if (isset($_SESSION['flash_error'])): ?>
+                        <div class="alert alert-danger d-flex align-items-center mb-4" role="alert">
+                            <i class="fas fa-exclamation-circle me-2"></i>
+                            <div>
+                                <?= $_SESSION['flash_error']; unset($_SESSION['flash_error']); ?>
                             </div>
                         </div>
                     <?php endif; ?>
@@ -90,7 +99,10 @@
                                 </div>
                             </div>
 
-                            <div class="mt-5 text-end">
+                            <div class="mt-5 d-flex justify-content-between align-items-center">
+                                <button type="button" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteAccountModal">
+                                    <i class="fas fa-trash-alt me-2"></i> Supprimer mon compte
+                                </button>
                                 <a href="<?= BASE_URL ?>/logout" class="btn btn-outline btn-sm text-danger border-danger hover-danger">
                                     <i class="fas fa-sign-out-alt me-2"></i> Se déconnecter
                                 </a>
@@ -99,6 +111,49 @@
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmation de suppression -->
+<div class="modal fade" id="deleteAccountModal" tabindex="-1" aria-labelledby="deleteAccountModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="deleteAccountModalLabel">
+                    <i class="fas fa-exclamation-triangle me-2"></i>Supprimer mon compte
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fermer"></button>
+            </div>
+            <form action="<?= BASE_URL ?>/profile/delete" method="POST">
+                <div class="modal-body">
+                    <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?? '' ?>">
+                    
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-circle me-2"></i>
+                        <strong>Attention !</strong> Cette action est irréversible.
+                    </div>
+                    
+                    <p>La suppression de votre compte entraînera :</p>
+                    <ul>
+                        <li>La perte de toutes vos données personnelles</li>
+                        <li>La suppression de vos candidatures</li>
+                        <li>La suppression de vos messages</li>
+                    </ul>
+                    
+                    <div class="mb-3">
+                        <label for="password" class="form-label fw-bold">Confirmez avec votre mot de passe</label>
+                        <input type="password" class="form-control" id="password" name="password" required 
+                               placeholder="Entrez votre mot de passe pour confirmer">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash-alt me-2"></i>Supprimer définitivement
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>

@@ -30,6 +30,14 @@ composer install
    - Choisissez le fichier : `database/migrations/create_tables_full.sql`.
 5. **Importez les données de test** (optionnel) :
    - Choisissez le fichier : `database/seeds/insert_data_full.sql`.
+6. **Exécutez les migrations supplémentaires** (dans le terminal) :
+   ```bash
+   php run_messages_migration.php
+   php run_approval_migration.php
+   ```
+   Ou importez manuellement depuis phpMyAdmin :
+   - `database/migrations/007_add_messages_table.sql`
+   - `database/migrations/008_add_approval_system.sql`
 
 ---
 👉 **Étape suivante :** [Configuration des variables d'environnement](02_CONFIGURATION_ENV.md)
