@@ -52,6 +52,11 @@ class Candidature extends Controller
      */
     public function candidaturesPilote()
     {
+        // Vérifier l'approbation pour les pilotes
+        if ($_SESSION['user_role'] === 'pilote' && isset($_SESSION['user_is_approved']) && $_SESSION['user_is_approved'] === false) {
+            $this->redirect('dashboard');
+            return;
+        }
         $this->requireRole(['pilote']);
 
         $candidatureModel = new CandidatureModel();

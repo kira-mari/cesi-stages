@@ -851,11 +851,15 @@ function isNavLinkActive($uri, $base, $path) {
                 
                 <?php if (isset($_SESSION['user_role'])): ?>
                     <?php if ($_SESSION['user_role'] === 'etudiant'): ?>
-                        <li><a href="<?= BASE_URL ?>/wishlist" class="nav-link-custom <?= isNavLinkActive($currentUri, $basePath, '/wishlist') ? 'active' : '' ?>">Wishlist</a></li>
-                        <li><a href="<?= BASE_URL ?>/candidatures/etudiant" class="nav-link-custom <?= isNavLinkActive($currentUri, $basePath, '/candidatures/etudiant') ? 'active' : '' ?>">Candidatures</a></li>
+                        <?php if (!isset($_SESSION['user_role_pending']) || $_SESSION['user_role_pending'] !== 'recruteur'): ?>
+                            <li><a href="<?= BASE_URL ?>/wishlist" class="nav-link-custom <?= isNavLinkActive($currentUri, $basePath, '/wishlist') ? 'active' : '' ?>">Wishlist</a></li>
+                            <li><a href="<?= BASE_URL ?>/candidatures/etudiant" class="nav-link-custom <?= isNavLinkActive($currentUri, $basePath, '/candidatures/etudiant') ? 'active' : '' ?>">Candidatures</a></li>
+                        <?php endif; ?>
                     <?php elseif ($_SESSION['user_role'] === 'pilote'): ?>
-                        <li><a href="<?= BASE_URL ?>/etudiants" class="nav-link-custom <?= isNavLinkActive($currentUri, $basePath, '/etudiants') ? 'active' : '' ?>">Mes Étudiants</a></li>
-                        <li><a href="<?= BASE_URL ?>/candidatures/pilote" class="nav-link-custom <?= isNavLinkActive($currentUri, $basePath, '/candidatures/pilote') ? 'active' : '' ?>">Candidatures</a></li>
+                        <?php if (!isset($_SESSION['user_is_approved']) || $_SESSION['user_is_approved'] !== false): ?>
+                            <li><a href="<?= BASE_URL ?>/etudiants" class="nav-link-custom <?= isNavLinkActive($currentUri, $basePath, '/etudiants') ? 'active' : '' ?>">Mes Étudiants</a></li>
+                            <li><a href="<?= BASE_URL ?>/candidatures/pilote" class="nav-link-custom <?= isNavLinkActive($currentUri, $basePath, '/candidatures/pilote') ? 'active' : '' ?>">Candidatures</a></li>
+                        <?php endif; ?>
                     <?php elseif ($_SESSION['user_role'] === 'admin'): ?>
                         <li><a href="<?= BASE_URL ?>/etudiants" class="nav-link-custom <?= isNavLinkActive($currentUri, $basePath, '/etudiants') ? 'active' : '' ?>">Étudiants</a></li>
                         <li><a href="<?= BASE_URL ?>/pilotes" class="nav-link-custom <?= isNavLinkActive($currentUri, $basePath, '/pilotes') ? 'active' : '' ?>">Pilotes</a></li>
@@ -988,19 +992,23 @@ function isNavLinkActive($uri, $base, $path) {
         
         <?php if (isset($_SESSION['user_role'])): ?>
             <?php if ($_SESSION['user_role'] === 'etudiant'): ?>
-                <a href="<?= BASE_URL ?>/wishlist" class="mobile-nav-link w-100">
-                    <i class="fas fa-heart w-5 text-center"></i> Wishlist
-                </a>
-                <a href="<?= BASE_URL ?>/candidatures/etudiant" class="mobile-nav-link w-100">
-                    <i class="fas fa-paper-plane w-5 text-center"></i> Candidatures
-                </a>
+                <?php if (!isset($_SESSION['user_role_pending']) || $_SESSION['user_role_pending'] !== 'recruteur'): ?>
+                    <a href="<?= BASE_URL ?>/wishlist" class="mobile-nav-link w-100">
+                        <i class="fas fa-heart w-5 text-center"></i> Wishlist
+                    </a>
+                    <a href="<?= BASE_URL ?>/candidatures/etudiant" class="mobile-nav-link w-100">
+                        <i class="fas fa-paper-plane w-5 text-center"></i> Candidatures
+                    </a>
+                <?php endif; ?>
             <?php elseif ($_SESSION['user_role'] === 'pilote'): ?>
-                <a href="<?= BASE_URL ?>/etudiants" class="mobile-nav-link w-100">
-                    <i class="fas fa-users w-5 text-center"></i> Mes Étudiants
-                </a>
-                <a href="<?= BASE_URL ?>/candidatures/pilote" class="mobile-nav-link w-100">
-                    <i class="fas fa-clipboard-list w-5 text-center"></i> Candidatures
-                </a>
+                <?php if (!isset($_SESSION['user_is_approved']) || $_SESSION['user_is_approved'] !== false): ?>
+                    <a href="<?= BASE_URL ?>/etudiants" class="mobile-nav-link w-100">
+                        <i class="fas fa-users w-5 text-center"></i> Mes Étudiants
+                    </a>
+                    <a href="<?= BASE_URL ?>/candidatures/pilote" class="mobile-nav-link w-100">
+                        <i class="fas fa-clipboard-list w-5 text-center"></i> Candidatures
+                    </a>
+                <?php endif; ?>
             <?php elseif ($_SESSION['user_role'] === 'admin'): ?>
                 <a href="<?= BASE_URL ?>/etudiants" class="mobile-nav-link w-100">
                     <i class="fas fa-user-graduate w-5 text-center"></i> Étudiants
@@ -1010,6 +1018,9 @@ function isNavLinkActive($uri, $base, $path) {
                 </a>
                 <a href="<?= BASE_URL ?>/recruteurs" class="mobile-nav-link w-100">
                     <i class="fas fa-user-tie w-5 text-center"></i> Recruteurs
+                </a>
+                <a href="<?= BASE_URL ?>/approbations" class="mobile-nav-link w-100">
+                    <i class="fas fa-check-circle w-5 text-center"></i> Approbations
                 </a>
             <?php elseif ($_SESSION['user_role'] === 'recruteur'): ?>
                 <a href="<?= BASE_URL ?>/recruteur/candidatures" class="mobile-nav-link w-100">

@@ -44,9 +44,12 @@ class Offre extends Controller
         // Wishlist for user
         $wishlistIds = [];
         if (isset($_SESSION['user_id']) && isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'etudiant') {
-            $wishlistModel = new Wishlist();
-            $userWishlist = $wishlistModel->getByEtudiant($_SESSION['user_id']);
-            $wishlistIds = array_column($userWishlist, 'offre_id');
+            // Ne pas montrer la wishlist pour les recruteurs en attente
+            if (!isset($_SESSION['user_role_pending']) || $_SESSION['user_role_pending'] !== 'recruteur') {
+                $wishlistModel = new Wishlist();
+                $userWishlist = $wishlistModel->getByEtudiant($_SESSION['user_id']);
+                $wishlistIds = array_column($userWishlist, 'offre_id');
+            }
         }
 
         $this->render('offres/index', [
@@ -93,12 +96,27 @@ class Offre extends Controller
         // Nombre de candidatures
         $nbCandidatures = (new Candidature())->countByOffre($id);
 
+        // Vérifier si l'utilisateur peut administrer cette offre
+        $canAdminister = false;
+        if ($this->isAuthenticated()) {
+            if (in_array($_SESSION['user_role'], ['admin', 'pilote'])) {
+                $canAdminister = true;
+            } elseif ($_SESSION['user_role'] === 'recruteur') {
+                // Vérifier que le recruteur a accès à cette offre (entreprise assignée)
+                $userModel = new User();
+                $entreprisesRecruteur = $userModel->getEntreprisesByRecruteur($_SESSION['user_id']);
+                $entrepriseIds = array_column($entreprisesRecruteur, 'id');
+                $canAdminister = in_array($offre['entreprise_id'], $entrepriseIds);
+            }
+        }
+
         $this->render('offres/show', [
             'title' => $offre['titre'] . ' - ' . APP_NAME,
             'offre' => $offre,
             'inWishlist' => $inWishlist,
             'aPostule' => $aPostule,
             'nbCandidatures' => $nbCandidatures,
+            'canAdminister' => $canAdminister,
             'csrf_token' => $this->generateCsrfToken()
         ]);
     }
@@ -110,6 +128,11 @@ class Offre extends Controller
      */
     public function create()
     {
+        // Vérifier l'approbation pour les pilotes
+        if ($_SESSION['user_role'] === 'pilote' && isset($_SESSION['user_is_approved']) && $_SESSION['user_is_approved'] === false) {
+            $this->redirect('dashboard');
+            return;
+        }
         $this->requireRole(['admin', 'pilote', 'recruteur']);
 
         // Vérifier que le recruteur a au moins une entreprise assignée
@@ -147,6 +170,11 @@ class Offre extends Controller
      */
     public function store()
     {
+        // Vérifier l'approbation pour les pilotes
+        if ($_SESSION['user_role'] === 'pilote' && isset($_SESSION['user_is_approved']) && $_SESSION['user_is_approved'] === false) {
+            $this->redirect('dashboard');
+            return;
+        }
         $this->requireRole(['admin', 'pilote', 'recruteur']);
 
         // Vérifier que le recruteur a au moins une entreprise assignée
@@ -225,7 +253,12 @@ class Offre extends Controller
      */
     public function edit()
     {
-        $this->requireRole(['admin', 'pilote']);
+        // Vérifier l'approbation pour les pilotes
+        if ($_SESSION['user_role'] === 'pilote' && isset($_SESSION['user_is_approved']) && $_SESSION['user_is_approved'] === false) {
+            $this->redirect('dashboard');
+            return;
+        }
+        $this->requireRole(['admin', 'pilote', 'recruteur']);
 
         $id = $this->routeParams['id'] ?? 0;
         $offreModel = new OffreModel();
@@ -234,6 +267,18 @@ class Offre extends Controller
         if (!$offre) {
             $_SESSION['flash_error'] = "Offre non trouvée.";
             $this->redirect('offres');
+        }
+
+        // Vérifier que le recruteur a accès à cette offre (entreprise assignée)
+        if ($_SESSION['user_role'] === 'recruteur') {
+            $userModel = new User();
+            $entreprisesRecruteur = $userModel->getEntreprisesByRecruteur($_SESSION['user_id']);
+            $entrepriseIds = array_column($entreprisesRecruteur, 'id');
+            
+            if (!in_array($offre['entreprise_id'], $entrepriseIds)) {
+                $_SESSION['flash_error'] = "Vous n'avez pas accès à cette offre.";
+                $this->redirect('offres');
+            }
         }
 
         $entrepriseModel = new Entreprise();
@@ -256,9 +301,35 @@ class Offre extends Controller
      */
     public function update()
     {
-        $this->requireRole(['admin', 'pilote']);
+        // Vérifier l'approbation pour les pilotes
+        if ($_SESSION['user_role'] === 'pilote' && isset($_SESSION['user_is_approved']) && $_SESSION['user_is_approved'] === false) {
+            $this->redirect('dashboard');
+            return;
+        }
+        $this->requireRole(['admin', 'pilote', 'recruteur']);
 
         $id = $this->routeParams['id'] ?? 0;
+
+        // Vérifier que l'offre existe et que le recruteur a accès
+        $offreModel = new OffreModel();
+        $offre = $offreModel->find($id);
+        
+        if (!$offre) {
+            $_SESSION['flash_error'] = "Offre non trouvée.";
+            $this->redirect('offres');
+        }
+
+        // Vérifier que le recruteur a accès à cette offre (entreprise assignée)
+        if ($_SESSION['user_role'] === 'recruteur') {
+            $userModel = new User();
+            $entreprisesRecruteur = $userModel->getEntreprisesByRecruteur($_SESSION['user_id']);
+            $entrepriseIds = array_column($entreprisesRecruteur, 'id');
+            
+            if (!in_array($offre['entreprise_id'], $entrepriseIds)) {
+                $_SESSION['flash_error'] = "Vous n'avez pas accès à cette offre.";
+                $this->redirect('offres');
+            }
+        }
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $csrfToken = $_POST['csrf_token'] ?? '';
@@ -311,10 +382,35 @@ class Offre extends Controller
      */
     public function delete()
     {
-        $this->requireRole(['admin', 'pilote']);
+        // Vérifier l'approbation pour les pilotes
+        if ($_SESSION['user_role'] === 'pilote' && isset($_SESSION['user_is_approved']) && $_SESSION['user_is_approved'] === false) {
+            $this->redirect('dashboard');
+            return;
+        }
+        $this->requireRole(['admin', 'pilote', 'recruteur']);
 
         $id = $this->routeParams['id'] ?? 0;
         $offreModel = new OffreModel();
+
+        // Vérifier que l'offre existe et que le recruteur a accès
+        $offre = $offreModel->find($id);
+        
+        if (!$offre) {
+            $_SESSION['flash_error'] = "Offre non trouvée.";
+            $this->redirect('offres');
+        }
+
+        // Vérifier que le recruteur a accès à cette offre (entreprise assignée)
+        if ($_SESSION['user_role'] === 'recruteur') {
+            $userModel = new User();
+            $entreprisesRecruteur = $userModel->getEntreprisesByRecruteur($_SESSION['user_id']);
+            $entrepriseIds = array_column($entreprisesRecruteur, 'id');
+            
+            if (!in_array($offre['entreprise_id'], $entrepriseIds)) {
+                $_SESSION['flash_error'] = "Vous n'avez pas accès à cette offre.";
+                $this->redirect('offres');
+            }
+        }
 
         if ($offreModel->delete($id)) {
             $_SESSION['flash_success'] = "Offre supprimée avec succès !";

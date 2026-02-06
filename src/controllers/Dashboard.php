@@ -36,11 +36,27 @@ class Dashboard extends Controller
             $stats['total_etudiants'] = $userModel->countByRole('etudiant');
             $stats['total_pilotes'] = $userModel->countByRole('pilote');
             $stats['total_candidatures'] = $candidatureModel->count();
+            $stats['pending_approvals'] = $userModel->countPendingApprovals();
         } elseif ($_SESSION['user_role'] === 'pilote') {
-            $stats['candidatures_etudiants'] = $candidatureModel->countByPilote($_SESSION['user_id']);
+            // Vérifier si le pilote est approuvé
+            if (isset($_SESSION['user_is_approved']) && $_SESSION['user_is_approved'] === false) {
+                // Pilote en attente : montrer les stats générales
+                $stats['pending_pilote'] = true;
+            } else {
+                // Pilote approuvé
+                $stats['candidatures_etudiants'] = $candidatureModel->countByPilote($_SESSION['user_id']);
+            }
         } elseif ($_SESSION['user_role'] === 'etudiant') {
-            $stats['mes_candidatures'] = $candidatureModel->countByEtudiant($_SESSION['user_id']);
-            $stats['wishlist_count'] = (new \Models\Wishlist())->countByEtudiant($_SESSION['user_id']);
+            // Vérifier si c'est un recruteur en attente d'approbation
+            if (isset($_SESSION['user_role_pending']) && $_SESSION['user_role_pending'] === 'recruteur') {
+                // Recruteur en attente : montrer les stats générales plus nb_entreprises
+                $stats['pending_recruteur'] = true;
+                $stats['nb_entreprises'] = $userModel->countEntreprisesByRecruteur($_SESSION['user_id']);
+            } else {
+                // Étudiant normal
+                $stats['mes_candidatures'] = $candidatureModel->countByEtudiant($_SESSION['user_id']);
+                $stats['wishlist_count'] = (new \Models\Wishlist())->countByEtudiant($_SESSION['user_id']);
+            }
         } elseif ($_SESSION['user_role'] === 'recruteur') {
             // Le recruteur voit les stats de ses offres et candidatures reçues
             $stats['total_candidatures'] = $candidatureModel->countByRecruteur($_SESSION['user_id']);

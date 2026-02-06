@@ -17,6 +17,11 @@ class Etudiant extends Controller
      */
     public function index()
     {
+        // Vérifier le rôle et l'approbation pour les pilotes
+        if ($_SESSION['user_role'] === 'pilote' && isset($_SESSION['user_is_approved']) && $_SESSION['user_is_approved'] === false) {
+            $this->redirect('dashboard');
+            return;
+        }
         $this->requireRole(['admin', 'pilote']);
 
         $userModel = new User();

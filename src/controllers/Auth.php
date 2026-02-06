@@ -57,7 +57,11 @@ class Auth extends Controller
                     
                     if ($needsApproval && !$isApproved) {
                         // Compte en attente d'approbation - accès limité
-                        $_SESSION['user_role'] = 'etudiant'; // Rôle temporaire
+                        if ($user['role'] === 'pilote') {
+                            $_SESSION['user_role'] = 'pilote'; // Rôle temporaire avec restrictions
+                        } else {
+                            $_SESSION['user_role'] = 'etudiant'; // Pour les recruteurs
+                        }
                         $_SESSION['user_role_pending'] = $user['role'];
                         $_SESSION['user_is_approved'] = false;
                         $_SESSION['flash_info'] = "Votre demande de compte " . ucfirst($user['role']) . " est en attente de validation par un administrateur.";
@@ -327,64 +331,31 @@ class Auth extends Controller
                     if ($userModel->findByEmail($email)) {
                         $errors[] = "Cet email est déjà utilisé.";
                     } else {
-                        // TEMPORAIRE: Création directe sans vérification email (Brevo pas activé)
-                        // TODO: Réactiver la vérification email quand SMTP sera fonctionnel
-                        // Déterminer si le compte nécessite une approbation
-                        $needsApproval = in_array($role, ['pilote', 'recruteur']);
-                        
-                        $userData = [
+                        // Générer un code de vérification
+                        $verificationCode = (string) rand(100000, 999999);
+
+                        // Stocker les données en session pour vérification
+                        $_SESSION['pending_registration'] = [
                             'nom' => $nom,
                             'prenom' => $prenom,
                             'email' => $email,
                             'password' => password_hash($password, PASSWORD_BCRYPT),
                             'role' => $role,
-                            'is_verified' => 1
+                            'verification_code' => $verificationCode,
+                            'expires_at' => time() + (15 * 60), // 15 minutes
+                            'attempts' => 0
                         ];
-                        
-                        // Si le rôle nécessite une approbation, mettre en attente
-                        if ($needsApproval) {
-                            $userData['is_approved'] = 0; // En attente
-                            $userData['approval_requested_at'] = date('Y-m-d H:i:s');
-                        }
-                        
-                        $userId = $userModel->create($userData);
+                        $_SESSION['verify_email'] = $email;
 
-                        if ($userId) {
-                            // Notifier les admins si approbation requise
-                            if ($needsApproval) {
-                                $this->notifyAdminsNewApprovalRequest($userId, $nom, $prenom, $email, $role);
-                            }
-                            
-                            // Connecter automatiquement l'utilisateur après inscription
-                            $_SESSION['user_id'] = $userId;
-                            $_SESSION['user_email'] = $email;
-                            $_SESSION['user_nom'] = $nom;
-                            $_SESSION['user_prenom'] = $prenom;
-                            session_regenerate_id(true);
-                            
-                            if ($role === 'recruteur') {
-                                // Recruteur en attente d'approbation
-                                $_SESSION['user_role'] = 'etudiant'; // Rôle temporaire
-                                $_SESSION['user_role_pending'] = $role;
-                                $_SESSION['user_is_approved'] = false;
-                                $_SESSION['flash_info'] = "Bienvenue ! Veuillez configurer votre entreprise. Votre compte sera activé après validation par un administrateur.";
-                                $this->redirect('recruteur/configurer-entreprise');
-                            } elseif ($role === 'pilote') {
-                                // Pilote en attente d'approbation
-                                $_SESSION['user_role'] = 'etudiant'; // Rôle temporaire
-                                $_SESSION['user_role_pending'] = $role;
-                                $_SESSION['user_is_approved'] = false;
-                                $_SESSION['flash_info'] = "Bienvenue ! Votre demande de compte Pilote est en attente de validation par un administrateur.";
-                                $this->redirect('dashboard');
-                            } else {
-                                // Étudiant - accès direct
-                                $_SESSION['user_role'] = $role;
-                                $_SESSION['user_is_approved'] = true;
-                                $_SESSION['flash_success'] = "Bienvenue sur CesiStages ! Votre compte a été créé avec succès.";
-                                $this->redirect('dashboard');
-                            }
+                        // Envoyer l'email de vérification
+                        if ($this->sendVerificationEmail($email, $prenom, $verificationCode)) {
+                            $_SESSION['flash_success'] = "Un code de vérification a été envoyé à votre adresse email.";
+                            $this->redirect('verify');
                         } else {
-                            $errors[] = "Erreur lors de la création du compte. Veuillez réessayer.";
+                            $errors[] = "Erreur lors de l'envoi de l'email de vérification. Veuillez réessayer.";
+                            // Nettoyer la session en cas d'erreur
+                            unset($_SESSION['pending_registration']);
+                            unset($_SESSION['verify_email']);
                         }
                     }
                 }
@@ -459,7 +430,7 @@ class Auth extends Controller
         if ($pendingUser['verification_code'] === $code) {
             // Code valide : création finale du compte
             $userModel = new User();
-            
+
             if ($userModel->findByEmail($email)) {
                 $_SESSION['flash_error'] = "Cet email est déjà utilisé par un compte actif.";
                 unset($_SESSION['pending_registration']);
@@ -467,30 +438,68 @@ class Auth extends Controller
                 $this->redirect('login');
             }
 
-            $userId = $userModel->create([
+            // Déterminer si le compte nécessite une approbation
+            $needsApproval = in_array($pendingUser['role'], ['pilote', 'recruteur']);
+
+            $userData = [
                 'nom' => $pendingUser['nom'],
                 'prenom' => $pendingUser['prenom'],
                 'email' => $pendingUser['email'],
-                'password' => $pendingUser['password'], 
+                'password' => $pendingUser['password'],
                 'role' => $pendingUser['role'],
-                'is_verified' => 1, 
+                'is_verified' => 1,
                 'verification_code' => null
-            ]);
+            ];
 
-            // Auto-login
-            $_SESSION['user_id'] = $userId;
-            $_SESSION['user_email'] = $pendingUser['email'];
-            $_SESSION['user_role'] = $pendingUser['role'];
-            $_SESSION['user_nom'] = $pendingUser['nom'];
-            $_SESSION['user_prenom'] = $pendingUser['prenom'];
-            session_regenerate_id(true);
+            // Si le rôle nécessite une approbation, mettre en attente
+            if ($needsApproval) {
+                $userData['is_approved'] = 0; // En attente
+                $userData['approval_requested_at'] = date('Y-m-d H:i:s');
+            }
 
-            // Nettoyage session
-            unset($_SESSION['pending_registration']);
-            unset($_SESSION['verify_email']);
-            
-            $_SESSION['flash_success'] = "Compte créé et vérifié avec succès ! Bienvenue sur votre tableau de bord.";
-            $this->redirect('dashboard');
+            $userId = $userModel->create($userData);
+
+            if ($userId) {
+                // Notifier les admins si approbation requise
+                if ($needsApproval) {
+                    $this->notifyAdminsNewApprovalRequest($userId, $pendingUser['nom'], $pendingUser['prenom'], $pendingUser['email'], $pendingUser['role']);
+                }
+
+                // Auto-login
+                $_SESSION['user_id'] = $userId;
+                $_SESSION['user_email'] = $pendingUser['email'];
+                $_SESSION['user_nom'] = $pendingUser['nom'];
+                $_SESSION['user_prenom'] = $pendingUser['prenom'];
+                session_regenerate_id(true);
+
+                // Nettoyage session
+                unset($_SESSION['pending_registration']);
+                unset($_SESSION['verify_email']);
+
+                if ($pendingUser['role'] === 'recruteur') {
+                    // Recruteur en attente d'approbation
+                    $_SESSION['user_role'] = 'etudiant'; // Rôle temporaire
+                    $_SESSION['user_role_pending'] = $pendingUser['role'];
+                    $_SESSION['user_is_approved'] = false;
+                    $_SESSION['flash_success'] = "Compte créé et vérifié avec succès ! Veuillez configurer votre entreprise. Votre compte sera activé après validation par un administrateur.";
+                    $this->redirect('recruteur/configurer-entreprise');
+                } elseif ($pendingUser['role'] === 'pilote') {
+                    // Pilote en attente d'approbation
+                    $_SESSION['user_role'] = 'pilote'; // Rôle temporaire avec restrictions
+                    $_SESSION['user_role_pending'] = $pendingUser['role'];
+                    $_SESSION['user_is_approved'] = false;
+                    $_SESSION['flash_success'] = "Compte créé et vérifié avec succès ! Votre demande de compte Pilote est en attente de validation par un administrateur.";
+                    $this->redirect('dashboard');
+                } else {
+                    // Étudiant - accès direct
+                    $_SESSION['user_role'] = $pendingUser['role'];
+                    $_SESSION['flash_success'] = "Compte créé et vérifié avec succès ! Bienvenue sur votre tableau de bord.";
+                    $this->redirect('dashboard');
+                }
+            } else {
+                $_SESSION['flash_error'] = "Erreur lors de la création du compte. Veuillez réessayer.";
+                $this->redirect('register');
+            }
         } else {
             // Code invalide
             $pendingUser['attempts']++;
