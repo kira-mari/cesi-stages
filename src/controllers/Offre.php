@@ -6,6 +6,7 @@ use Models\Offre as OffreModel;
 use Models\Entreprise;
 use Models\Candidature;
 use Models\Wishlist;
+use Models\User;
 
 /**
  * Contrôleur des offres de stage
@@ -109,10 +110,17 @@ class Offre extends Controller
      */
     public function create()
     {
-        $this->requireRole(['admin', 'pilote']);
+        $this->requireRole(['admin', 'pilote', 'recruteur']);
 
         $entrepriseModel = new Entreprise();
-        $entreprises = $entrepriseModel->all();
+        
+        // Si recruteur, ne montrer que ses entreprises assignées
+        if ($_SESSION['user_role'] === 'recruteur') {
+            $userModel = new User();
+            $entreprises = $userModel->getEntreprisesByRecruteur($_SESSION['user_id']);
+        } else {
+            $entreprises = $entrepriseModel->all();
+        }
 
         $this->render('offres/create', [
             'title' => 'Créer une offre - ' . APP_NAME,
@@ -128,10 +136,24 @@ class Offre extends Controller
      */
     public function store()
     {
-        $this->requireRole(['admin', 'pilote']);
+        $this->requireRole(['admin', 'pilote', 'recruteur']);
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $csrfToken = $_POST['csrf_token'] ?? '';
+            
+            // Si recruteur, vérifier que l'entreprise lui est assignée
+            if ($_SESSION['user_role'] === 'recruteur') {
+                $userModel = new User();
+                $entreprisesRecruteur = $userModel->getEntreprisesByRecruteur($_SESSION['user_id']);
+                $entrepriseIds = array_column($entreprisesRecruteur, 'id');
+                $entrepriseId = (int) ($_POST['entreprise_id'] ?? 0);
+                
+                if (!in_array($entrepriseId, $entrepriseIds)) {
+                    $_SESSION['flash_error'] = "Vous n'êtes pas autorisé à créer une offre pour cette entreprise.";
+                    $this->redirect('offres/create');
+                    return;
+                }
+            }
             if (!$this->verifyCsrfToken($csrfToken)) {
                 $_SESSION['flash_error'] = "Token de sécurité invalide.";
                 $this->redirect('offres/create');

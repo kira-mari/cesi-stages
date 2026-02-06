@@ -548,6 +548,11 @@ function isNavLinkActive($uri, $base, $path) {
                     <?php elseif ($_SESSION['user_role'] === 'admin'): ?>
                         <li><a href="<?= BASE_URL ?>/etudiants" class="nav-link-custom <?= isNavLinkActive($currentUri, $basePath, '/etudiants') ? 'active' : '' ?>">Étudiants</a></li>
                         <li><a href="<?= BASE_URL ?>/pilotes" class="nav-link-custom <?= isNavLinkActive($currentUri, $basePath, '/pilotes') ? 'active' : '' ?>">Pilotes</a></li>
+                        <li><a href="<?= BASE_URL ?>/recruteurs" class="nav-link-custom <?= isNavLinkActive($currentUri, $basePath, '/recruteurs') ? 'active' : '' ?>">Recruteurs</a></li>
+                    <?php elseif ($_SESSION['user_role'] === 'recruteur'): ?>
+                        <li><a href="<?= BASE_URL ?>/offres/create" class="nav-link-custom <?= isNavLinkActive($currentUri, $basePath, '/offres/create') ? 'active' : '' ?>">Publier une offre</a></li>
+                        <li><a href="<?= BASE_URL ?>/recruteur/candidatures" class="nav-link-custom <?= isNavLinkActive($currentUri, $basePath, '/recruteur/candidatures') ? 'active' : '' ?>">Candidatures</a></li>
+                        <li><a href="<?= BASE_URL ?>/recruteur/mes-entreprises" class="nav-link-custom <?= isNavLinkActive($currentUri, $basePath, '/recruteur/mes-entreprises') ? 'active' : '' ?>">Mes Entreprises</a></li>
                     <?php endif; ?>
                 <?php endif; ?>
             </ul>
@@ -605,6 +610,10 @@ function isNavLinkActive($uri, $base, $path) {
                             <a href="<?= BASE_URL ?>/profile" class="nav-link-custom w-100 d-flex align-items-center gap-2 px-3">
                                 <i class="fas fa-user-circle opacity-50 w-5"></i> Mon Profil
                             </a>
+                            <a href="<?= BASE_URL ?>/messages" class="nav-link-custom w-100 d-flex align-items-center gap-2 px-3">
+                                <i class="fas fa-envelope opacity-50 w-5"></i> Messagerie
+                                <span id="message-badge" class="badge bg-danger ms-auto" style="display: none;">0</span>
+                            </a>
                             <div class="border-top border-secondary border-opacity-25 my-1"></div>
                             <a href="<?= BASE_URL ?>/logout" class="nav-link-custom w-100 d-flex align-items-center gap-2 px-3 text-danger hover-bg-danger-soft">
                                 <i class="fas fa-sign-out-alt opacity-50 w-5"></i> Déconnexion
@@ -660,6 +669,16 @@ function isNavLinkActive($uri, $base, $path) {
                 </a>
                 <a href="<?= BASE_URL ?>/pilotes" class="mobile-nav-link w-100">
                     <i class="fas fa-chalkboard-teacher w-5 text-center"></i> Pilotes
+                </a>
+                <a href="<?= BASE_URL ?>/recruteurs" class="mobile-nav-link w-100">
+                    <i class="fas fa-user-tie w-5 text-center"></i> Recruteurs
+                </a>
+            <?php elseif ($_SESSION['user_role'] === 'recruteur'): ?>
+                <a href="<?= BASE_URL ?>/recruteur/candidatures" class="mobile-nav-link w-100">
+                    <i class="fas fa-clipboard-list w-5 text-center"></i> Candidatures
+                </a>
+                <a href="<?= BASE_URL ?>/recruteur/mes-entreprises" class="mobile-nav-link w-100">
+                    <i class="fas fa-building w-5 text-center"></i> Mes Entreprises
                 </a>
             <?php endif; ?>
         <?php endif; ?>

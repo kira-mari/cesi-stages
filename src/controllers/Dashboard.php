@@ -6,6 +6,7 @@ use Models\Offre;
 use Models\Entreprise;
 use Models\Candidature;
 use Models\User;
+use Models\Message;
 
 /**
  * Contrôleur du tableau de bord
@@ -19,7 +20,7 @@ class Dashboard extends Controller
      */
     public function index()
     {
-        $this->requireRole(['admin', 'pilote', 'etudiant']);
+        $this->requireRole(['admin', 'pilote', 'etudiant', 'recruteur']);
 
         $stats = [];
         $offreModel = new Offre();
@@ -41,7 +42,16 @@ class Dashboard extends Controller
         } elseif ($_SESSION['user_role'] === 'etudiant') {
             $stats['mes_candidatures'] = $candidatureModel->countByEtudiant($_SESSION['user_id']);
             $stats['wishlist_count'] = (new \Models\Wishlist())->countByEtudiant($_SESSION['user_id']);
+        } elseif ($_SESSION['user_role'] === 'recruteur') {
+            // Le recruteur voit les stats de ses offres et candidatures reçues
+            $stats['total_candidatures'] = $candidatureModel->countByRecruteur($_SESSION['user_id']);
+            $stats['nb_entreprises'] = $userModel->countEntreprisesByRecruteur($_SESSION['user_id']);
+            $stats['candidatures_par_statut'] = $candidatureModel->countByStatutForRecruteur($_SESSION['user_id']);
         }
+
+        // Statistiques de messagerie
+        $messageModel = new Message();
+        $stats['messages'] = $messageModel->getStats($_SESSION['user_id']);
 
         // Dernières offres
         $dernieresOffres = $offreModel->getRecentes(5);
@@ -60,7 +70,7 @@ class Dashboard extends Controller
      */
     public function statistics()
     {
-        $this->requireRole(['admin', 'pilote', 'etudiant']);
+        $this->requireRole(['admin', 'pilote', 'etudiant', 'recruteur']);
 
         $offreModel = new Offre();
         $candidatureModel = new Candidature();
@@ -123,6 +133,19 @@ class Dashboard extends Controller
             }
             arsort($competencesCount);
             $data['repartitionCompetences'] = array_slice($competencesCount, 0, 10); // Top 10
+        }
+        
+        // Rôle Recruteur
+        elseif ($_SESSION['user_role'] === 'recruteur') {
+            $data['totalEntreprises'] = $entrepriseModel->count();
+            $data['totalCandidatures'] = $candidatureModel->count();
+            // Statistiques des candidatures par statut
+            $allCandidatures = $candidatureModel->getAllWithDetails();
+            $statuts = ['en_attente' => 0, 'acceptee' => 0, 'refusee' => 0];
+            foreach ($allCandidatures as $c) {
+                $statuts[$c['statut'] ?? 'en_attente']++;
+            }
+            $data['candidaturesParStatut'] = $statuts;
         }
 
         $this->render('dashboard/statistics', $data);

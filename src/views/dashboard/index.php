@@ -4,6 +4,21 @@
             <h1>Tableau de bord</h1>
             <p>Bienvenue, <?= htmlspecialchars($_SESSION['user_prenom'] . ' ' . $_SESSION['user_nom']) ?> !</p>
         </div>
+
+        <?php if ($_SESSION['user_role'] === 'recruteur' && isset($stats['nb_entreprises']) && $stats['nb_entreprises'] == 0): ?>
+            <div class="alert alert-warning alert-dismissible fade show mb-4">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-exclamation-triangle fa-2x me-3"></i>
+                    <div>
+                        <strong>Configuration requise</strong>
+                        <p class="mb-0">Vous n'êtes pas encore associé à une entreprise. Pour publier des offres et recevoir des candidatures, veuillez configurer votre entreprise.</p>
+                    </div>
+                    <a href="<?= BASE_URL ?>/recruteur/configurer-entreprise" class="btn btn-warning ms-auto">
+                        <i class="fas fa-building me-2"></i>Configurer maintenant
+                    </a>
+                </div>
+            </div>
+        <?php endif; ?>
         
         <!-- Statistiques -->
         <div class="stats-grid">
@@ -77,6 +92,47 @@
                         <span class="stat-label">Offres en wishlist</span>
                     </div>
                 </div>
+            <?php elseif ($_SESSION['user_role'] === 'recruteur'): ?>
+                <div class="stat-card stat-info">
+                    <div class="stat-icon">
+                        <i class="fas fa-file-alt"></i>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-number"><?= $stats['total_candidatures'] ?></span>
+                        <span class="stat-label">Candidatures reçues</span>
+                    </div>
+                </div>
+                
+                <div class="stat-card stat-warning">
+                    <div class="stat-icon">
+                        <i class="fas fa-building"></i>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-number"><?= $stats['nb_entreprises'] ?? 0 ?></span>
+                        <span class="stat-label">Entreprises assignées</span>
+                    </div>
+                </div>
+            <?php endif; ?>
+            
+            <!-- Statistiques Messagerie (pour tous les rôles) -->
+            <?php if (isset($stats['messages'])): ?>
+                <div class="stat-card" style="background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);">
+                    <div class="stat-icon">
+                        <i class="fas fa-envelope"></i>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-number">
+                            <?= $stats['messages']['non_lus'] ?>
+                            <?php if ($stats['messages']['non_lus'] > 0): ?>
+                                <span class="badge bg-danger ms-1" style="font-size: 0.5em; vertical-align: middle;">nouveau</span>
+                            <?php endif; ?>
+                        </span>
+                        <span class="stat-label">Messages non lus</span>
+                        <small style="opacity: 0.8; font-size: 0.75em;">
+                            <?= $stats['messages']['recus'] ?> reçus · <?= $stats['messages']['envoyes'] ?> envoyés
+                        </small>
+                    </div>
+                </div>
             <?php endif; ?>
         </div>
         
@@ -125,6 +181,29 @@
                         <span>Mes candidatures</span>
                     </a>
                 <?php endif; ?>
+                
+                <?php if ($_SESSION['user_role'] === 'recruteur'): ?>
+                    <a href="<?= BASE_URL ?>/offres/create" class="action-card">
+                        <i class="fas fa-plus-circle"></i>
+                        <span>Publier une offre</span>
+                    </a>
+                    <a href="<?= BASE_URL ?>/recruteur/candidatures" class="action-card">
+                        <i class="fas fa-clipboard-list"></i>
+                        <span>Voir les candidatures</span>
+                    </a>
+                    <a href="<?= BASE_URL ?>/recruteur/mes-entreprises" class="action-card">
+                        <i class="fas fa-building"></i>
+                        <span>Mes entreprises</span>
+                    </a>
+                <?php endif; ?>
+                
+                <a href="<?= BASE_URL ?>/messages" class="action-card">
+                    <i class="fas fa-envelope"></i>
+                    <span>Messagerie</span>
+                    <?php if (isset($stats['messages']) && $stats['messages']['non_lus'] > 0): ?>
+                        <span class="badge bg-danger position-absolute" style="top: 10px; right: 10px;"><?= $stats['messages']['non_lus'] ?></span>
+                    <?php endif; ?>
+                </a>
                 
                 <a href="<?= BASE_URL ?>/dashboard/stats" class="action-card">
                     <i class="fas fa-chart-bar"></i>

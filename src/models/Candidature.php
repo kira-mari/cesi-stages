@@ -221,4 +221,97 @@ class Candidature extends Model
         $stmt->execute([':pilote_id' => $piloteId]);
         return $stmt->fetchAll();
     }
+
+    // ============================================================
+    // FONCTIONS RECRUTEUR
+    // ============================================================
+
+    /**
+     * Récupère les candidatures des entreprises d'un recruteur
+     *
+     * @param int $recruteurId
+     * @return array
+     */
+    public function getByRecruteurWithDetails($recruteurId)
+    {
+        $stmt = self::getDB()->prepare(
+            "SELECT c.id, c.etudiant_id, c.offre_id, c.statut, c.lettre_motivation, c.cv_path, c.created_at,
+                    o.titre as offre_titre, o.id as offre_id, e.nom as entreprise_nom, e.id as entreprise_id,
+                    u.nom as etudiant_nom, u.prenom as etudiant_prenom, u.email as etudiant_email, u.telephone as etudiant_telephone
+             FROM {$this->table} c
+             JOIN offres o ON c.offre_id = o.id
+             JOIN entreprises e ON o.entreprise_id = e.id
+             JOIN users u ON c.etudiant_id = u.id
+             JOIN recruteur_entreprise re ON e.id = re.entreprise_id
+             WHERE re.recruteur_id = :recruteur_id
+             ORDER BY c.created_at DESC"
+        );
+        $stmt->execute([':recruteur_id' => $recruteurId]);
+        return $stmt->fetchAll();
+    }
+
+    /**
+     * Compte les candidatures des entreprises d'un recruteur
+     *
+     * @param int $recruteurId
+     * @return int
+     */
+    public function countByRecruteur($recruteurId)
+    {
+        $stmt = self::getDB()->prepare(
+            "SELECT COUNT(*) FROM {$this->table} c
+             JOIN offres o ON c.offre_id = o.id
+             JOIN recruteur_entreprise re ON o.entreprise_id = re.entreprise_id
+             WHERE re.recruteur_id = :recruteur_id"
+        );
+        $stmt->execute([':recruteur_id' => $recruteurId]);
+        return $stmt->fetchColumn();
+    }
+
+    /**
+     * Compte les candidatures par statut pour un recruteur
+     *
+     * @param int $recruteurId
+     * @return array
+     */
+    public function countByStatutForRecruteur($recruteurId)
+    {
+        $stmt = self::getDB()->prepare(
+            "SELECT c.statut, COUNT(*) as count FROM {$this->table} c
+             JOIN offres o ON c.offre_id = o.id
+             JOIN recruteur_entreprise re ON o.entreprise_id = re.entreprise_id
+             WHERE re.recruteur_id = :recruteur_id
+             GROUP BY c.statut"
+        );
+        $stmt->execute([':recruteur_id' => $recruteurId]);
+        $results = $stmt->fetchAll();
+        
+        $stats = ['en_attente' => 0, 'acceptee' => 0, 'refusee' => 0];
+        foreach ($results as $row) {
+            $stats[$row['statut']] = (int) $row['count'];
+        }
+        return $stats;
+    }
+
+    /**
+     * Vérifie si une candidature appartient à un recruteur (via ses entreprises)
+     *
+     * @param int $candidatureId
+     * @param int $recruteurId
+     * @return bool
+     */
+    public function belongsToRecruteur($candidatureId, $recruteurId)
+    {
+        $stmt = self::getDB()->prepare(
+            "SELECT COUNT(*) FROM {$this->table} c
+             JOIN offres o ON c.offre_id = o.id
+             JOIN recruteur_entreprise re ON o.entreprise_id = re.entreprise_id
+             WHERE c.id = :candidature_id AND re.recruteur_id = :recruteur_id"
+        );
+        $stmt->execute([
+            ':candidature_id' => $candidatureId,
+            ':recruteur_id' => $recruteurId
+        ]);
+        return $stmt->fetchColumn() > 0;
+    }
 }

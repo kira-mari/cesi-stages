@@ -79,6 +79,19 @@ $router->add('pilotes/edit/{id:\d+}', ['controller' => 'Pilote', 'action' => 'ed
 $router->add('pilotes/update/{id:\d+}', ['controller' => 'Pilote', 'action' => 'update']);
 $router->add('pilotes/delete/{id:\d+}', ['controller' => 'Pilote', 'action' => 'delete']);
 
+// Routes des recruteurs (gestion admin)
+$router->add('recruteurs', ['controller' => 'Recruteur', 'action' => 'index']);
+$router->add('recruteurs/show/{id:\d+}', ['controller' => 'Recruteur', 'action' => 'show']);
+$router->add('recruteurs/assign-entreprise/{id:\d+}', ['controller' => 'Recruteur', 'action' => 'assignEntreprise']);
+$router->add('recruteurs/remove-entreprise/{recruteurId:\d+}/{entrepriseId:\d+}', ['controller' => 'Recruteur', 'action' => 'removeEntreprise']);
+
+// Routes recruteur (espace recruteur)
+$router->add('recruteur/configurer-entreprise', ['controller' => 'Recruteur', 'action' => 'configurerEntreprise']);
+$router->add('recruteur/candidatures', ['controller' => 'Recruteur', 'action' => 'candidatures']);
+$router->add('recruteur/candidature/{id:\d+}', ['controller' => 'Recruteur', 'action' => 'showCandidature']);
+$router->add('recruteur/candidature/update/{id:\d+}', ['controller' => 'Recruteur', 'action' => 'updateCandidature']);
+$router->add('recruteur/mes-entreprises', ['controller' => 'Recruteur', 'action' => 'mesEntreprises']);
+
 // Routes des candidatures
 $router->add('candidatures', ['controller' => 'Candidature', 'action' => 'index']);
 $router->add('candidatures/etudiant', ['controller' => 'Candidature', 'action' => 'mesCandidatures']);
@@ -92,6 +105,15 @@ $router->add('mentions-legales', ['controller' => 'Page', 'action' => 'mentionsL
 
 // Route de contact
 $router->add('contact', ['controller' => 'Page', 'action' => 'contact']);
+
+// Routes de la messagerie
+$router->add('messages', ['controller' => 'Message', 'action' => 'index']);
+$router->add('messages/envoyes', ['controller' => 'Message', 'action' => 'envoyes']);
+$router->add('messages/nouveau', ['controller' => 'Message', 'action' => 'nouveau']);
+$router->add('messages/envoyer', ['controller' => 'Message', 'action' => 'envoyer']);
+$router->add('messages/show/{id:\d+}', ['controller' => 'Message', 'action' => 'show']);
+$router->add('messages/supprimer/{id:\d+}', ['controller' => 'Message', 'action' => 'supprimer']);
+$router->add('messages/count', ['controller' => 'Message', 'action' => 'countNonLus']);
 
 // Route du chatbot (API JSON)
 $router->add('chatbot/ask', ['controller' => 'Chatbot', 'action' => 'ask']);

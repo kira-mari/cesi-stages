@@ -263,4 +263,111 @@ class User extends Model
         $stmt = self::getDB()->prepare("DELETE FROM pilote_etudiant WHERE etudiant_id = :etudiant_id");
         return $stmt->execute([':etudiant_id' => $etudiantId]);
     }
+
+    // ============================================================
+    // FONCTIONS RECRUTEUR
+    // ============================================================
+
+    /**
+     * Récupère tous les recruteurs
+     * 
+     * @return array
+     */
+    public function getAllRecruteurs()
+    {
+        $stmt = self::getDB()->prepare("SELECT * FROM {$this->table} WHERE role = 'recruteur' ORDER BY nom, prenom");
+        $stmt->execute();
+        return $stmt->fetchAll();
+    }
+
+    /**
+     * Récupère les entreprises assignées à un recruteur
+     * 
+     * @param int $recruteurId
+     * @return array
+     */
+    public function getEntreprisesByRecruteur($recruteurId)
+    {
+        $stmt = self::getDB()->prepare(
+            "SELECT e.* FROM entreprises e
+             JOIN recruteur_entreprise re ON e.id = re.entreprise_id
+             WHERE re.recruteur_id = :recruteur_id
+             ORDER BY e.nom"
+        );
+        $stmt->execute([':recruteur_id' => $recruteurId]);
+        return $stmt->fetchAll();
+    }
+
+    /**
+     * Compte les entreprises assignées à un recruteur
+     * 
+     * @param int $recruteurId
+     * @return int
+     */
+    public function countEntreprisesByRecruteur($recruteurId)
+    {
+        $stmt = self::getDB()->prepare(
+            "SELECT COUNT(*) FROM recruteur_entreprise WHERE recruteur_id = :recruteur_id"
+        );
+        $stmt->execute([':recruteur_id' => $recruteurId]);
+        return $stmt->fetchColumn();
+    }
+
+    /**
+     * Assigne une entreprise à un recruteur
+     * 
+     * @param int $recruteurId
+     * @param int $entrepriseId
+     * @return bool
+     */
+    public function assignEntrepriseToRecruteur($recruteurId, $entrepriseId)
+    {
+        try {
+            $stmt = self::getDB()->prepare(
+                "INSERT INTO recruteur_entreprise (recruteur_id, entreprise_id) VALUES (:recruteur_id, :entreprise_id)"
+            );
+            return $stmt->execute([
+                ':recruteur_id' => $recruteurId,
+                ':entreprise_id' => $entrepriseId
+            ]);
+        } catch (\PDOException $e) {
+            // Relation déjà existante
+            return false;
+        }
+    }
+
+    /**
+     * Supprime l'assignation entreprise pour un recruteur
+     * 
+     * @param int $recruteurId
+     * @param int $entrepriseId
+     * @return bool
+     */
+    public function removeEntrepriseFromRecruteur($recruteurId, $entrepriseId)
+    {
+        $stmt = self::getDB()->prepare(
+            "DELETE FROM recruteur_entreprise WHERE recruteur_id = :recruteur_id AND entreprise_id = :entreprise_id"
+        );
+        return $stmt->execute([
+            ':recruteur_id' => $recruteurId,
+            ':entreprise_id' => $entrepriseId
+        ]);
+    }
+
+    /**
+     * Récupère le recruteur assigné à une entreprise
+     * 
+     * @param int $entrepriseId
+     * @return array|false
+     */
+    public function getRecruteurByEntreprise($entrepriseId)
+    {
+        $stmt = self::getDB()->prepare(
+            "SELECT u.* FROM {$this->table} u
+             JOIN recruteur_entreprise re ON u.id = re.recruteur_id
+             WHERE re.entreprise_id = :entreprise_id"
+        );
+        $stmt->execute([':entreprise_id' => $entrepriseId]);
+        return $stmt->fetch();
+    }
 }

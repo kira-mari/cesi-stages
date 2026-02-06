@@ -110,7 +110,17 @@ class Chatbot extends Controller
         }
 
         // ========================================
-        // 5) QUESTIONS ETUDIANT UNIQUEMENT
+        // 5) QUESTIONS RECRUTEUR UNIQUEMENT
+        // ========================================
+        if ($userRole === 'recruteur') {
+            $recruteurResponse = $this->handleRecruteurQuestions($lower, $message, $userId);
+            if ($recruteurResponse !== null) {
+                return $recruteurResponse;
+            }
+        }
+
+        // ========================================
+        // 6) QUESTIONS ETUDIANT UNIQUEMENT
         // ========================================
         if ($userRole === 'etudiant') {
             $etudiantResponse = $this->handleEtudiantQuestions($lower, $message, $userId);
@@ -120,7 +130,7 @@ class Chatbot extends Controller
         }
 
         // ========================================
-        // 6) QUESTIONS GÉNÉRALES (tous les utilisateurs)
+        // 7) QUESTIONS GÉNÉRALES (tous les utilisateurs)
         // ========================================
 
         // Recherche par durée
@@ -252,6 +262,43 @@ class Chatbot extends Controller
     }
 
     /**
+     * Questions réservées aux recruteurs
+     */
+    protected function handleRecruteurQuestions(string $lower, string $message, int $userId): ?array
+    {
+        // Mes offres
+        if ($this->matchKeywords($lower, ['mes offre', 'mes offres', 'offre']) && 
+            $this->matchKeywords($lower, ['combien', 'nombre', 'liste', 'afficher', 'voir', 'j\'ai', 'j ai', 'mes'])) {
+            return $this->getRecruteurOffres();
+        }
+
+        // Candidatures reçues
+        if ($this->matchKeywords($lower, ['candidature', 'candidat', 'postulation']) && 
+            $this->matchKeywords($lower, ['reçu', 'recu', 'reçues', 'recues', 'combien', 'voir', 'liste', 'mes'])) {
+            return $this->getRecruteurCandidatures();
+        }
+
+        // Comment publier une offre
+        if ($this->matchKeywords($lower, ['publier', 'créer', 'creer', 'ajouter', 'nouvelle']) && 
+            $this->matchKeywords($lower, ['offre', 'stage'])) {
+            return $this->getPublishOfferHelp();
+        }
+
+        // Statistiques recruteur
+        if ($this->matchKeywords($lower, ['statistique', 'stat', 'résumé', 'resume', 'bilan', 'performance'])) {
+            return $this->getRecruteurStats();
+        }
+
+        // Profils des candidats
+        if ($this->matchKeywords($lower, ['profil', 'candidat', 'étudiant', 'etudiant']) && 
+            $this->matchKeywords($lower, ['voir', 'consulter', 'profil', 'information'])) {
+            return ['answer' => "Pour consulter les profils des candidats :\n\n1. Allez dans « Candidatures »\n2. Cliquez sur le nom d'un candidat\n3. Consultez son profil, CV et lettre de motivation\n\nVous pouvez ensuite accepter ou refuser la candidature.", 'needs_admin' => false];
+        }
+
+        return null;
+    }
+
+    /**
      * Questions réservées aux pilotes
      */
     protected function handlePiloteQuestions(string $lower, string $message, int $userId): ?array
@@ -324,6 +371,10 @@ class Chatbot extends Controller
         if ($userRole === 'pilote') {
             return $base . "\n\nVoici des exemples de questions que vous pouvez me poser :\n• « Mes étudiants »\n• « Candidatures de mes étudiants »\n• « Mes statistiques »\n\nDites « aide » pour voir plus d'exemples !";
         }
+
+        if ($userRole === 'recruteur') {
+            return $base . "\n\nVoici des exemples de questions que vous pouvez me poser :\n• « Mes offres »\n• « Candidatures reçues »\n• « Statistiques de mes offres »\n• « Comment publier une offre ? »\n\nDites « aide » pour voir plus d'exemples !";
+        }
         
         return $base . "\n\nVoici des exemples de questions que vous pouvez me poser :\n• « Je cherche un stage à Lyon »\n• « Stage de 6 mois »\n• « Mes candidatures »\n• « Ma wishlist »\n\nDites « aide » pour voir plus d'exemples !";
     }
@@ -340,6 +391,13 @@ class Chatbot extends Controller
             $base .= "• « Candidatures pour l'offre 5 »\n";
             $base .= "• « Statistiques globales »\n";
             $base .= "• « Offres les plus populaires »\n";
+        } elseif ($userRole === 'recruteur') {
+            $base .= "• « Mes offres »\n";
+            $base .= "• « Candidatures reçues »\n";
+            $base .= "• « Statistiques de mes offres »\n";
+            $base .= "• « Comment publier une offre ? »\n";
+            $base .= "• « Offres les plus populaires »\n";
+            $base .= "• « Profils des candidats »\n";
         } elseif ($userRole === 'pilote') {
             $base .= "• « Mes étudiants »\n";
             $base .= "• « Combien d'étudiants j'ai ? »\n";
@@ -504,6 +562,11 @@ class Chatbot extends Controller
             $answer .= "• « Liste des pilotes »\n";
             $answer .= "• « Statistiques globales »\n";
             $answer .= "• « Candidatures pour l'offre 5 »";
+        } elseif ($userRole === 'recruteur') {
+            $answer .= "• « Mes offres »\n";
+            $answer .= "• « Candidatures reçues »\n";
+            $answer .= "• « Statistiques de mes offres »\n";
+            $answer .= "• « Comment publier une offre ? »";
         } elseif ($userRole === 'pilote') {
             $answer .= "• « Mes étudiants »\n";
             $answer .= "• « Candidatures de mes étudiants »\n";
@@ -878,6 +941,137 @@ class Chatbot extends Controller
             $answer .= "• {$nbOffres} offres de stage disponibles\n";
             $answer .= "• {$nbEntreprises} entreprises partenaires\n\n";
             $answer .= "Consultez la page « Offres » pour découvrir toutes les opportunités !";
+
+            return ['answer' => $answer, 'needs_admin' => false];
+        } catch (\Exception $e) {
+            return ['answer' => "Erreur lors de la récupération des statistiques.", 'needs_admin' => false];
+        }
+    }
+
+    // ============================================================
+    // FONCTIONS RECRUTEUR
+    // ============================================================
+
+    protected function getRecruteurOffres(): array
+    {
+        try {
+            $offreModel = new OffreModel();
+            $offres = $offreModel->getAllWithEntreprise(1, 100);
+
+            if (empty($offres)) {
+                return [
+                    'answer' => "Vous n'avez pas encore d'offres publiées.\n\nPour créer une offre, allez dans « Offres » puis cliquez sur « Ajouter une offre ».",
+                    'needs_admin' => false,
+                    'offers' => [],
+                ];
+            }
+
+            $count = count($offres);
+            $offersLinks = [];
+            foreach (array_slice($offres, 0, 5) as $offre) {
+                $offersLinks[] = [
+                    'id' => (int) $offre['id'],
+                    'title' => $offre['titre'] ?? 'Offre',
+                    'url' => BASE_URL . '/offres/' . $offre['id'],
+                ];
+            }
+
+            $answer = "📋 Il y a {$count} offre" . ($count > 1 ? 's' : '') . " sur la plateforme";
+            if ($count > 5) {
+                $answer .= " (voici les 5 premières)";
+            }
+            $answer .= " :";
+
+            return [
+                'answer' => $answer,
+                'needs_admin' => false,
+                'offers' => $offersLinks,
+            ];
+        } catch (\Exception $e) {
+            return ['answer' => "Erreur lors de la récupération des offres.", 'needs_admin' => false];
+        }
+    }
+
+    protected function getRecruteurCandidatures(): array
+    {
+        try {
+            $candidatureModel = new Candidature();
+            $candidatures = $candidatureModel->getAllWithDetails();
+
+            if (empty($candidatures)) {
+                return [
+                    'answer' => "Vous n'avez pas encore reçu de candidatures.\n\nPubliez des offres attractives pour recevoir des candidatures d'étudiants !",
+                    'needs_admin' => false,
+                ];
+            }
+
+            $count = count($candidatures);
+            $statuts = ['en_attente' => 0, 'acceptee' => 0, 'refusee' => 0];
+            foreach ($candidatures as $c) {
+                $statuts[$c['statut'] ?? 'en_attente']++;
+            }
+
+            $answer = "📝 Vous avez {$count} candidature" . ($count > 1 ? 's' : '') . " :\n\n";
+            $answer .= "• ⏳ {$statuts['en_attente']} en attente\n";
+            $answer .= "• ✅ {$statuts['acceptee']} acceptée(s)\n";
+            $answer .= "• ❌ {$statuts['refusee']} refusée(s)\n\n";
+            $answer .= "Consultez le menu « Candidatures » pour traiter les demandes.";
+
+            return ['answer' => $answer, 'needs_admin' => false];
+        } catch (\Exception $e) {
+            return ['answer' => "Erreur lors de la récupération des candidatures.", 'needs_admin' => false];
+        }
+    }
+
+    protected function getPublishOfferHelp(): array
+    {
+        $answer = "📝 Pour publier une nouvelle offre de stage :\n\n";
+        $answer .= "1. Allez dans le menu « Offres »\n";
+        $answer .= "2. Cliquez sur « Ajouter une offre »\n";
+        $answer .= "3. Remplissez les informations :\n";
+        $answer .= "   • Titre du poste\n";
+        $answer .= "   • Description détaillée\n";
+        $answer .= "   • Compétences requises\n";
+        $answer .= "   • Durée et dates\n";
+        $answer .= "   • Rémunération\n";
+        $answer .= "4. Sélectionnez votre entreprise\n";
+        $answer .= "5. Publiez l'offre\n\n";
+        $answer .= "💡 Astuce : Plus l'offre est détaillée, plus vous recevrez de candidatures pertinentes !";
+
+        return ['answer' => $answer, 'needs_admin' => false];
+    }
+
+    protected function getRecruteurStats(): array
+    {
+        try {
+            $offreModel = new OffreModel();
+            $candidatureModel = new Candidature();
+
+            $offres = $offreModel->getAllWithEntreprise(1, 10000);
+            $nbOffres = count($offres);
+            $candidatures = $candidatureModel->getAllWithDetails();
+            $nbCandidatures = count($candidatures);
+
+            $statuts = ['en_attente' => 0, 'acceptee' => 0, 'refusee' => 0];
+            foreach ($candidatures as $c) {
+                $statuts[$c['statut'] ?? 'en_attente']++;
+            }
+
+            $answer = "📊 Statistiques de recrutement :\n\n";
+            $answer .= "📋 {$nbOffres} offre" . ($nbOffres > 1 ? 's' : '') . " publiée" . ($nbOffres > 1 ? 's' : '') . "\n";
+            $answer .= "📝 {$nbCandidatures} candidature" . ($nbCandidatures > 1 ? 's' : '') . " reçue" . ($nbCandidatures > 1 ? 's' : '') . "\n\n";
+
+            if ($nbCandidatures > 0) {
+                $answer .= "Répartition des candidatures :\n";
+                $answer .= "• ⏳ {$statuts['en_attente']} en attente\n";
+                $answer .= "• ✅ {$statuts['acceptee']} acceptée(s)\n";
+                $answer .= "• ❌ {$statuts['refusee']} refusée(s)\n\n";
+
+                if ($nbOffres > 0) {
+                    $moyenne = round($nbCandidatures / $nbOffres, 1);
+                    $answer .= "📈 Moyenne : {$moyenne} candidature(s) par offre";
+                }
+            }
 
             return ['answer' => $answer, 'needs_admin' => false];
         } catch (\Exception $e) {
