@@ -42,7 +42,7 @@
                             
                             <?php if (!empty($user['bio'])): ?>
                                 <div class="text-start p-3 rounded" style="background-color: hsl(var(--input) / 0.3);">
-                                    <label class="text-muted small text-uppercase font-weight-bold mb-2 d-block">À propos</label>
+                                    <strong class="text-muted small text-uppercase font-weight-bold mb-2 d-block">À propos</strong>
                                     <p class="mb-0 small text-secondary font-italic">
                                         "<?= nl2br(htmlspecialchars($user['bio'])) ?>"
                                     </p>
