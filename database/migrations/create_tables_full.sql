@@ -132,3 +132,48 @@ CREATE TABLE pilote_etudiant (
     UNIQUE KEY unique_relation (pilote_id, etudiant_id),
     INDEX idx_pilote (pilote_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+
+-- ============================================
+-- Migration: Table de liaison recruteur-entreprise
+-- ============================================
+
+USE cesi_stages;
+
+-- Table de liaison entre recruteurs et entreprises
+CREATE TABLE IF NOT EXISTS recruteur_entreprise (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    recruteur_id INT NOT NULL,
+    entreprise_id INT NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (recruteur_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (entreprise_id) REFERENCES entreprises(id) ON DELETE CASCADE,
+    UNIQUE KEY unique_relation (recruteur_id, entreprise_id),
+    INDEX idx_recruteur (recruteur_id),
+    INDEX idx_entreprise (entreprise_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ============================================
+-- Migration: Système de messagerie interne
+-- ============================================
+
+USE cesi_stages;
+
+-- Table des messages
+CREATE TABLE IF NOT EXISTS messages (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    expediteur_id INT NOT NULL,
+    destinataire_id INT NOT NULL,
+    sujet VARCHAR(255) NOT NULL,
+    contenu TEXT NOT NULL,
+    lu BOOLEAN DEFAULT FALSE,
+    lu_at DATETIME DEFAULT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (expediteur_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (destinataire_id) REFERENCES users(id) ON DELETE CASCADE,
+    INDEX idx_expediteur (expediteur_id),
+    INDEX idx_destinataire (destinataire_id),
+    INDEX idx_lu (lu),
+    INDEX idx_created (created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
