@@ -1,4 +1,46 @@
-<div class="container py-5" style="margin-top: 80px;">
+<div class="container py-5">
+    <style>
+        .stat-card {
+            transition: all 0.3s ease;
+            transform: translateY(0);
+        }
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1) !important;
+        }
+        .stat-icon-wrapper {
+            flex-shrink: 0;
+        }
+        .stat-icon {
+            transition: all 0.3s ease;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+        }
+        .stat-card:hover .stat-icon {
+            transform: scale(1.1);
+            filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+        }
+        .stat-card h3 {
+            font-size: 1.75rem;
+            line-height: 1;
+            margin-bottom: 0.125rem;
+        }
+        .stat-card small {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .stat-card .card-body {
+            padding: 0rem !important;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 80px;
+        }
+        .stat-card .d-flex {
+            width: 100%;
+            align-items: center;
+        }
+    </style>
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h1 class="h2 fw-bold mb-1">Demandes d'approbation</h1>
@@ -12,45 +54,45 @@
     <!-- Statistiques -->
     <div class="row g-4 mb-4">
         <div class="col-md-4">
-            <div class="card border-0 shadow-sm" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
-                <div class="card-body text-white">
+            <div class="card border-0 shadow-lg stat-card" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 50%, #92400e 100%); border-radius: 15px; overflow: hidden;">
+                <div class="card-body text-white p-4">
                     <div class="d-flex align-items-center">
-                        <div class="rounded-circle bg-white bg-opacity-25 p-3 me-3">
-                            <i class="fas fa-clock fa-lg"></i>
+                        <div class="stat-icon-wrapper me-3">
+                            <i class="fas fa-clock fa-2x text-white stat-icon"></i>
                         </div>
-                        <div>
-                            <h3 class="mb-0"><?= $stats['pending'] ?></h3>
-                            <small class="opacity-75">En attente</small>
+                        <div class="flex-grow-1">
+                            <h3 class="mb-1 fw-bold"><?= $stats['pending'] ?></h3>
+                            <small class="opacity-75 fw-medium">En attente</small>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
         <div class="col-md-4">
-            <div class="card border-0 shadow-sm" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
-                <div class="card-body text-white">
+            <div class="card border-0 shadow-lg stat-card" style="background: linear-gradient(135deg, #10b981 0%, #059669 50%, #047857 100%); border-radius: 15px; overflow: hidden;">
+                <div class="card-body text-white p-4">
                     <div class="d-flex align-items-center">
-                        <div class="rounded-circle bg-white bg-opacity-25 p-3 me-3">
-                            <i class="fas fa-check fa-lg"></i>
+                        <div class="stat-icon-wrapper me-3">
+                            <i class="fas fa-check fa-2x text-white stat-icon"></i>
                         </div>
-                        <div>
-                            <h3 class="mb-0"><?= $stats['approved_today'] ?></h3>
-                            <small class="opacity-75">Approuvés aujourd'hui</small>
+                        <div class="flex-grow-1">
+                            <h3 class="mb-1 fw-bold"><?= $stats['approved_today'] ?></h3>
+                            <small class="opacity-75 fw-medium">Approuvés aujourd'hui</small>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
         <div class="col-md-4">
-            <div class="card border-0 shadow-sm" style="background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);">
-                <div class="card-body text-white">
+            <div class="card border-0 shadow-lg stat-card" style="background: linear-gradient(135deg, #6366f1 0%, #4f46e5 50%, #3730a3 100%); border-radius: 15px; overflow: hidden;">
+                <div class="card-body text-white p-4">
                     <div class="d-flex align-items-center">
-                        <div class="rounded-circle bg-white bg-opacity-25 p-3 me-3">
-                            <i class="fas fa-users fa-lg"></i>
+                        <div class="stat-icon-wrapper me-3">
+                            <i class="fas fa-users fa-2x text-white stat-icon"></i>
                         </div>
-                        <div>
-                            <h3 class="mb-0"><?= $stats['total_approved'] ?></h3>
-                            <small class="opacity-75">Total approuvés</small>
+                        <div class="flex-grow-1">
+                            <h3 class="mb-1 fw-bold"><?= $stats['total_approved'] ?></h3>
+                            <small class="opacity-75 fw-medium">Total approuvés</small>
                         </div>
                     </div>
                 </div>

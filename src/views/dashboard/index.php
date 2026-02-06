@@ -26,7 +26,20 @@
                     <i class="fas fa-paper-plane fa-2x me-3"></i>
                     <div>
                         <strong>Demande d'assignation requise</strong>
-                        <p class="mb-0">Vous n'êtes pas encore associé à une entreprise. Pour publier des offres et recevoir des candidatures, envoyez une demande d'assignation aux administrateurs.</p>
+                        <p class="mb-0 p-3">Vous n'êtes pas encore associé à une entreprise. Pour publier des offres et recevoir des candidatures, envoyez une demande d'assignation aux administrateurs.</p>
+                    </div>
+                    <a href="<?= BASE_URL ?>/recruteur/configurer-entreprise" class="btn btn-primary ms-auto">
+                        <i class="fas fa-paper-plane me-2"></i>Envoyer une demande
+                    </a>
+                </div>
+            </div>
+        <?php elseif (isset($stats['pending_recruteur']) && $stats['pending_recruteur'] && isset($stats['nb_entreprises']) && $stats['nb_entreprises'] == 0): ?>
+            <div class="alert alert-info alert-dismissible fade show mb-4">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-paper-plane fa-2x me-3"></i>
+                    <div>
+                        <strong>Demande d'assignation requise</strong>
+                        <p class="mb-0 p-3">Vous n'êtes pas encore associé à une entreprise. Pour publier des offres et recevoir des candidatures, envoyez une demande d'assignation aux administrateurs.</p>
                     </div>
                     <a href="<?= BASE_URL ?>/recruteur/configurer-entreprise" class="btn btn-primary ms-auto">
                         <i class="fas fa-paper-plane me-2"></i>Envoyer une demande
@@ -77,36 +90,54 @@
                         <span class="stat-label">Pilotes</span>
                     </div>
                 </div>
-            <?php elseif ($_SESSION['user_role'] === 'pilote'): ?>
-                <div class="stat-card stat-info">
-                    <div class="stat-icon">
-                        <i class="fas fa-file-alt"></i>
-                    </div>
-                    <div class="stat-info">
-                        <span class="stat-number"><?= $stats['candidatures_etudiants'] ?></span>
-                        <span class="stat-label">Candidatures de mes étudiants</span>
-                    </div>
-                </div>
-            <?php elseif ($_SESSION['user_role'] === 'etudiant'): ?>
-                <div class="stat-card stat-info">
-                    <div class="stat-icon">
-                        <i class="fas fa-file-alt"></i>
-                    </div>
-                    <div class="stat-info">
-                        <span class="stat-number"><?= $stats['mes_candidatures'] ?></span>
-                        <span class="stat-label">Mes candidatures</span>
-                    </div>
-                </div>
                 
-                <div class="stat-card stat-warning">
+                <div class="stat-card stat-danger">
                     <div class="stat-icon">
-                        <i class="fas fa-heart"></i>
+                        <i class="fas fa-clock"></i>
                     </div>
                     <div class="stat-info">
-                        <span class="stat-number"><?= $stats['wishlist_count'] ?></span>
-                        <span class="stat-label">Offres en wishlist</span>
+                        <span class="stat-number"><?= $stats['pending_approvals'] ?? 0 ?></span>
+                        <span class="stat-label">Approbations en attente</span>
                     </div>
                 </div>
+            <?php elseif ($_SESSION['user_role'] === 'pilote'): ?>
+                <?php if (isset($stats['pending_pilote']) && $stats['pending_pilote']): ?>
+                    <!-- Pilote en attente : pas de stats spécifiques, juste les communes -->
+                <?php else: ?>
+                    <div class="stat-card stat-info">
+                        <div class="stat-icon">
+                            <i class="fas fa-file-alt"></i>
+                        </div>
+                        <div class="stat-info">
+                            <span class="stat-number"><?= $stats['candidatures_etudiants'] ?></span>
+                            <span class="stat-label">Candidatures de mes étudiants</span>
+                        </div>
+                    </div>
+                <?php endif; ?>
+            <?php elseif ($_SESSION['user_role'] === 'etudiant'): ?>
+                <?php if (isset($stats['pending_recruteur']) && $stats['pending_recruteur']): ?>
+                    <!-- Recruteur en attente : pas de stats spécifiques, juste les communes -->
+                <?php else: ?>
+                    <div class="stat-card stat-info">
+                        <div class="stat-icon">
+                            <i class="fas fa-file-alt"></i>
+                        </div>
+                        <div class="stat-info">
+                            <span class="stat-number"><?= $stats['mes_candidatures'] ?></span>
+                            <span class="stat-label">Mes candidatures</span>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card stat-warning">
+                        <div class="stat-icon">
+                            <i class="fas fa-heart"></i>
+                        </div>
+                        <div class="stat-info">
+                            <span class="stat-number"><?= $stats['wishlist_count'] ?></span>
+                            <span class="stat-label">Offres en wishlist</span>
+                        </div>
+                    </div>
+                <?php endif; ?>
             <?php elseif ($_SESSION['user_role'] === 'recruteur'): ?>
                 <div class="stat-card stat-info">
                     <div class="stat-icon">
@@ -145,7 +176,7 @@
                     <span>Voir les entreprises</span>
                 </a>
                 
-                <?php if ($_SESSION['user_role'] === 'admin' || $_SESSION['user_role'] === 'pilote'): ?>
+                <?php if ($_SESSION['user_role'] === 'admin' || ($_SESSION['user_role'] === 'pilote' && (!isset($_SESSION['user_is_approved']) || $_SESSION['user_is_approved'] !== false))): ?>
                     <a href="<?= BASE_URL ?>/entreprises/create" class="action-card">
                         <i class="fas fa-plus-circle"></i>
                         <span>Ajouter une entreprise</span>
@@ -165,17 +196,23 @@
                         <i class="fas fa-user-plus"></i>
                         <span>Ajouter un pilote</span>
                     </a>
+                    <a href="<?= BASE_URL ?>/approbations" class="action-card">
+                        <i class="fas fa-check-circle"></i>
+                        <span>Gérer les approbations</span>
+                    </a>
                 <?php endif; ?>
                 
                 <?php if ($_SESSION['user_role'] === 'etudiant'): ?>
-                    <a href="<?= BASE_URL ?>/wishlist" class="action-card">
-                        <i class="fas fa-heart"></i>
-                        <span>Ma wishlist</span>
-                    </a>
-                    <a href="<?= BASE_URL ?>/candidatures/etudiant" class="action-card">
-                        <i class="fas fa-file-alt"></i>
-                        <span>Mes candidatures</span>
-                    </a>
+                    <?php if (!isset($stats['pending_recruteur']) || !$stats['pending_recruteur']): ?>
+                        <a href="<?= BASE_URL ?>/wishlist" class="action-card">
+                            <i class="fas fa-heart"></i>
+                            <span>Ma wishlist</span>
+                        </a>
+                        <a href="<?= BASE_URL ?>/candidatures/etudiant" class="action-card">
+                            <i class="fas fa-file-alt"></i>
+                            <span>Mes candidatures</span>
+                        </a>
+                    <?php endif; ?>
                 <?php endif; ?>
                 
                 <?php if ($_SESSION['user_role'] === 'recruteur'): ?>

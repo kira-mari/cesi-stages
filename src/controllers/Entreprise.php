@@ -87,6 +87,11 @@ class Entreprise extends Controller
      */
     public function create()
     {
+        // Vérifier l'approbation pour les pilotes
+        if ($_SESSION['user_role'] === 'pilote' && isset($_SESSION['user_is_approved']) && $_SESSION['user_is_approved'] === false) {
+            $this->redirect('dashboard');
+            return;
+        }
         $this->requireRole(['admin', 'pilote']);
 
         $this->render('entreprises/create', [
@@ -102,6 +107,11 @@ class Entreprise extends Controller
      */
     public function store()
     {
+        // Vérifier l'approbation pour les pilotes
+        if ($_SESSION['user_role'] === 'pilote' && isset($_SESSION['user_is_approved']) && $_SESSION['user_is_approved'] === false) {
+            $this->redirect('dashboard');
+            return;
+        }
         $this->requireRole(['admin', 'pilote']);
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -151,6 +161,11 @@ class Entreprise extends Controller
      */
     public function edit()
     {
+        // Vérifier l'approbation pour les pilotes
+        if ($_SESSION['user_role'] === 'pilote' && isset($_SESSION['user_is_approved']) && $_SESSION['user_is_approved'] === false) {
+            $this->redirect('dashboard');
+            return;
+        }
         $this->requireRole(['admin', 'pilote']);
 
         $id = $this->routeParams['id'] ?? 0;
@@ -176,6 +191,11 @@ class Entreprise extends Controller
      */
     public function update()
     {
+        // Vérifier l'approbation pour les pilotes
+        if ($_SESSION['user_role'] === 'pilote' && isset($_SESSION['user_is_approved']) && $_SESSION['user_is_approved'] === false) {
+            $this->redirect('dashboard');
+            return;
+        }
         $this->requireRole(['admin', 'pilote']);
 
         $id = $this->routeParams['id'] ?? 0;
@@ -227,6 +247,11 @@ class Entreprise extends Controller
      */
     public function delete()
     {
+        // Vérifier l'approbation pour les pilotes
+        if ($_SESSION['user_role'] === 'pilote' && isset($_SESSION['user_is_approved']) && $_SESSION['user_is_approved'] === false) {
+            $this->redirect('dashboard');
+            return;
+        }
         $this->requireRole(['admin', 'pilote']);
 
         $id = $this->routeParams['id'] ?? 0;

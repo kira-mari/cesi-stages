@@ -20,19 +20,21 @@
                                 </a>
                             </div>
                             <?php if (isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'etudiant'): ?>
-                                <?php 
-                                    $btnClass = $inWishlist ? 'btn-primary text-white' : 'btn-outline-secondary';
-                                    $iconClass = $inWishlist ? 'fas fa-star' : 'far fa-star';
-                                    $title = $inWishlist ? 'Retirer de la wishlist' : 'Ajouter à la wishlist';
-                                    $action = $inWishlist ? 'removeFromWishlist' : 'addToWishlist';
-                                ?>
-                                <a href="<?= BASE_URL ?>/offres/<?= $action ?>/<?= $offre['id'] ?>" 
-                                   class="btn btn-icon <?= $btnClass ?> wishlist-btn" 
-                                   title="<?= $title ?>"
-                                   data-id="<?= $offre['id'] ?>"
-                                   data-in-wishlist="<?= $inWishlist ? 'true' : 'false' ?>">
-                                    <i class="<?= $iconClass ?>"></i>
-                                </a>
+                                <?php if (!isset($_SESSION['user_role_pending']) || $_SESSION['user_role_pending'] !== 'recruteur'): ?>
+                                    <?php 
+                                        $btnClass = $inWishlist ? 'btn-primary text-white' : 'btn-outline-secondary';
+                                        $iconClass = $inWishlist ? 'fas fa-star' : 'far fa-star';
+                                        $title = $inWishlist ? 'Retirer de la wishlist' : 'Ajouter à la wishlist';
+                                        $action = $inWishlist ? 'removeFromWishlist' : 'addToWishlist';
+                                    ?>
+                                    <a href="<?= BASE_URL ?>/offres/<?= $action ?>/<?= $offre['id'] ?>" 
+                                       class="btn btn-icon <?= $btnClass ?> wishlist-btn" 
+                                       title="<?= $title ?>"
+                                       data-id="<?= $offre['id'] ?>"
+                                       data-in-wishlist="<?= $inWishlist ? 'true' : 'false' ?>">
+                                        <i class="<?= $iconClass ?>"></i>
+                                    </a>
+                                <?php endif; ?>
                             <?php endif; ?>
                         </div>
 
@@ -127,7 +129,7 @@
                                 <?php endif; ?>
                             </div>
                         </div>
-                    <?php elseif (in_array($_SESSION['user_role'], ['admin', 'pilote'])): ?>
+                    <?php elseif ($canAdminister): ?>
                         <div class="card mb-4">
                             <div class="card-header">
                                 <h3 class="h5 m-0">Administration</h3>

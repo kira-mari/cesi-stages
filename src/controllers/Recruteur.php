@@ -287,7 +287,12 @@ class Recruteur extends Controller
      */
     public function configurerEntreprise()
     {
-        $this->requireRole(['recruteur']);
+        // Autoriser l'accès aux recruteurs et aux étudiants en attente de validation recruteur
+        if ($_SESSION['user_role'] !== 'recruteur' && 
+            !($_SESSION['user_role'] === 'etudiant' && isset($_SESSION['user_role_pending']) && $_SESSION['user_role_pending'] === 'recruteur')) {
+            $this->redirect('dashboard');
+            return;
+        }
 
         $userModel = new User();
         $entrepriseModel = new Entreprise();
