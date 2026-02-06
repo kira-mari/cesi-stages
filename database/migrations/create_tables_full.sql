@@ -22,7 +22,7 @@ CREATE TABLE users (
     telephone VARCHAR(20) DEFAULT NULL,
     adresse TEXT DEFAULT NULL,
     bio TEXT DEFAULT NULL,
-    role ENUM('admin', 'pilote', 'etudiant') NOT NULL DEFAULT 'etudiant',
+    role ENUM('admin', 'pilote', 'etudiant', 'recruteur') NOT NULL DEFAULT 'etudiant',
     is_verified BOOLEAN DEFAULT 0,
     verification_code VARCHAR(6) DEFAULT NULL,
     remember_token VARCHAR(255) NULL DEFAULT NULL,

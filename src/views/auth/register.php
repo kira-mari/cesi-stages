@@ -45,6 +45,28 @@
                 </div>
             </div>
 
+            <!-- Choix du rôle -->
+            <div class="auth-form-group">
+                <label class="auth-label">Je suis</label>
+                <div class="role-selector" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; margin-top: 0.5rem;">
+                    <label class="role-option" style="display: flex; flex-direction: column; align-items: center; padding: 1rem; border: 2px solid rgba(255,255,255,0.1); border-radius: 12px; cursor: pointer; transition: all 0.3s ease;">
+                        <input type="radio" name="role" value="etudiant" style="display: none;" <?= ($_POST['role'] ?? 'etudiant') === 'etudiant' ? 'checked' : '' ?>>
+                        <i class="fas fa-user-graduate" style="font-size: 1.5rem; margin-bottom: 0.5rem; color: #10b981;"></i>
+                        <span style="font-size: 0.85rem; font-weight: 500;">Étudiant</span>
+                    </label>
+                    <label class="role-option" style="display: flex; flex-direction: column; align-items: center; padding: 1rem; border: 2px solid rgba(255,255,255,0.1); border-radius: 12px; cursor: pointer; transition: all 0.3s ease;">
+                        <input type="radio" name="role" value="recruteur" style="display: none;" <?= ($_POST['role'] ?? '') === 'recruteur' ? 'checked' : '' ?>>
+                        <i class="fas fa-briefcase" style="font-size: 1.5rem; margin-bottom: 0.5rem; color: #8b5cf6;"></i>
+                        <span style="font-size: 0.85rem; font-weight: 500;">Recruteur</span>
+                    </label>
+                    <label class="role-option" style="display: flex; flex-direction: column; align-items: center; padding: 1rem; border: 2px solid rgba(255,255,255,0.1); border-radius: 12px; cursor: pointer; transition: all 0.3s ease;">
+                        <input type="radio" name="role" value="pilote" style="display: none;" <?= ($_POST['role'] ?? '') === 'pilote' ? 'checked' : '' ?>>
+                        <i class="fas fa-chalkboard-teacher" style="font-size: 1.5rem; margin-bottom: 0.5rem; color: #0ea5e9;"></i>
+                        <span style="font-size: 0.85rem; font-weight: 500;">Pilote</span>
+                    </label>
+                </div>
+            </div>
+
             <div class="auth-form-group">
                 <label for="email" class="auth-label">Adresse email</label>
                 <div class="input-wrapper">
@@ -211,6 +233,33 @@ function checkPasswordMatch() {
         feedback.classList.remove('visible');
     }
 }
+
+// Gestion de la sélection de rôle
+document.addEventListener('DOMContentLoaded', function() {
+    const roleOptions = document.querySelectorAll('.role-option');
+    
+    function updateRoleSelection() {
+        roleOptions.forEach(option => {
+            const radio = option.querySelector('input[type="radio"]');
+            if (radio.checked) {
+                option.style.borderColor = '#6366f1';
+                option.style.background = 'rgba(99, 102, 241, 0.1)';
+                option.style.transform = 'scale(1.02)';
+            } else {
+                option.style.borderColor = 'rgba(255,255,255,0.1)';
+                option.style.background = 'transparent';
+                option.style.transform = 'scale(1)';
+            }
+        });
+    }
+    
+    roleOptions.forEach(option => {
+        option.addEventListener('click', updateRoleSelection);
+    });
+    
+    // Initialiser
+    updateRoleSelection();
+});
 </script>
 
     </div>

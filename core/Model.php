@@ -60,6 +60,16 @@ abstract class Model
     }
 
     /**
+     * Récupère la connexion à la base de données (version publique statique)
+     *
+     * @return PDO
+     */
+    public static function getDBStatic()
+    {
+        return self::getDB();
+    }
+
+    /**
      * Récupère tous les enregistrements
      *
      * @return array

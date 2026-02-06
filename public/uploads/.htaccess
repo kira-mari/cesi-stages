@@ -1,0 +1,29 @@
+# Permettre l'accès aux fichiers uploadés
+<IfModule mod_headers.c>
+    # Autoriser l'affichage dans les iframes du même domaine
+    Header set X-Frame-Options "SAMEORIGIN"
+    Header set Content-Security-Policy "frame-ancestors 'self'"
+</IfModule>
+
+# Types MIME pour les fichiers
+<IfModule mod_mime.c>
+    AddType application/pdf .pdf
+    AddType image/jpeg .jpg .jpeg
+    AddType image/png .png
+    AddType image/gif .gif
+    AddType image/webp .webp
+    AddType application/msword .doc
+    AddType application/vnd.openxmlformats-officedocument.wordprocessingml.document .docx
+</IfModule>
+
+# Désactiver l'exécution PHP dans ce dossier pour la sécurité
+<FilesMatch "\.php$">
+    Order Deny,Allow
+    Deny from all
+</FilesMatch>
+
+# Permettre la lecture des fichiers
+<FilesMatch "\.(pdf|jpg|jpeg|png|gif|webp|doc|docx)$">
+    Order Allow,Deny
+    Allow from all
+</FilesMatch>

@@ -58,6 +58,9 @@
                             <a href="<?= BASE_URL ?>/etudiants/show/<?= $etudiant['id'] ?>" class="btn btn-action-primary" title="Voir le profil">
                                 <i class="fas fa-eye me-2"></i> Profil
                             </a>
+                            <a href="<?= BASE_URL ?>/messages/nouveau?destinataire=<?= $etudiant['id'] ?>" class="btn btn-action-icon btn-action-info" title="Contacter" style="background: linear-gradient(135deg, #0ea5e9 0%, #06b6d4 100%);">
+                                <i class="fas fa-envelope"></i>
+                            </a>
                             <a href="<?= BASE_URL ?>/etudiants/edit/<?= $etudiant['id'] ?>" class="btn btn-action-icon btn-action-warning" title="Modifier">
                                 <i class="fas fa-pen"></i>
                             </a>

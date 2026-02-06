@@ -12,6 +12,10 @@ USE cesi_stages;
 INSERT INTO users (nom, prenom, email, password, role, is_verified) VALUES
 ('Admin', 'CESI', 'admin@cesi.fr', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'admin', 1);
 
+-- 1bis. Recruteur de démo
+INSERT INTO users (nom, prenom, email, password, role, is_verified) VALUES
+('Recruteur', 'Demo', 'recruteur@cesi.fr', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'recruteur', 1);
+
 -- 2-5. Pilotes (Smail, Myriam, Rim, Sonia)
 INSERT INTO users (nom, prenom, email, password, role, is_verified) VALUES
 ('Ben Hamed', 'Smail', 'smail@cesi.fr', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'pilote', 1),

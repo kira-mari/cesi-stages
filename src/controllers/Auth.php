@@ -277,8 +277,12 @@ class Auth extends Controller
                 $email = filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL);
                 $password = $_POST['password'] ?? '';
                 $confirm_password = $_POST['confirm_password'] ?? '';
-                // Par défaut, l'inscription publique crée un étudiant
-                $role = 'etudiant';
+                
+                // Récupérer le rôle choisi (par défaut étudiant)
+                $roleChoisi = $_POST['role'] ?? 'etudiant';
+                // Valider que le rôle est autorisé (pas admin)
+                $rolesAutorises = ['etudiant', 'pilote', 'recruteur'];
+                $role = in_array($roleChoisi, $rolesAutorises) ? $roleChoisi : 'etudiant';
 
                 // Validation
                 if (empty($nom) || empty($prenom) || empty($email) || empty($password)) {
@@ -304,31 +308,33 @@ class Auth extends Controller
                     if ($userModel->findByEmail($email)) {
                         $errors[] = "Cet email est déjà utilisé.";
                     } else {
-                        // Génération du code de vérification à 6 chiffres
-                        $verificationCode = (string) rand(100000, 999999);
-
-                        // Stockage temporaire des données d'inscription en session
-                        // On ne crée PAS l'utilisateur en base de données tout de suite
-                        $_SESSION['pending_registration'] = [
+                        // TEMPORAIRE: Création directe sans vérification email (Brevo pas activé)
+                        // TODO: Réactiver la vérification email quand SMTP sera fonctionnel
+                        $userId = $userModel->create([
                             'nom' => $nom,
                             'prenom' => $prenom,
                             'email' => $email,
                             'password' => password_hash($password, PASSWORD_BCRYPT),
                             'role' => $role,
-                            'verification_code' => $verificationCode,
-                            'expires_at' => time() + (15 * 60), // 15 minutes
-                            'attempts' => 0
-                        ];
+                            'is_verified' => 1 // Directement vérifié
+                        ]);
 
-                        // Envoi de l'email
-                        if ($this->sendVerificationEmail($email, $prenom, $verificationCode)) {
-                            $_SESSION['verify_email'] = $email;
-                            $_SESSION['flash_success'] = "Veuillez entrer le code reçu par email pour finaliser votre inscription.";
-                            $this->redirect('verify');
+                        if ($userId) {
+                            // Si c'est un recruteur, le connecter et rediriger vers la config entreprise
+                            if ($role === 'recruteur') {
+                                $_SESSION['user_id'] = $userId;
+                                $_SESSION['user_email'] = $email;
+                                $_SESSION['user_role'] = $role;
+                                $_SESSION['user_nom'] = $nom;
+                                $_SESSION['user_prenom'] = $prenom;
+                                $_SESSION['flash_info'] = "Bienvenue ! Veuillez maintenant renseigner votre entreprise.";
+                                $this->redirect('recruteur/configurer-entreprise');
+                            } else {
+                                $_SESSION['flash_success'] = "Compte créé avec succès ! Vous pouvez maintenant vous connecter.";
+                                $this->redirect('login');
+                            }
                         } else {
-                            // Si l'envoi échoue, on annule tout
-                            unset($_SESSION['pending_registration']);
-                            $errors[] = "Erreur lors de l'envoi de l'email. Veuillez réessayer.";
+                            $errors[] = "Erreur lors de la création du compte. Veuillez réessayer.";
                         }
                     }
                 }

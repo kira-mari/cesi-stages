@@ -51,6 +51,9 @@
         <div class="d-flex justify-content-between">
             <a href="<?= BASE_URL ?>/etudiants" class="btn btn-secondary">Retour à la liste</a>
             <div>
+                <a href="<?= BASE_URL ?>/messages/nouveau?destinataire=<?= $etudiant['id'] ?>" class="btn btn-info text-white">
+                    <i class="fas fa-envelope me-1"></i>Contacter
+                </a>
                 <a href="<?= BASE_URL ?>/etudiants/edit/<?= $etudiant['id'] ?>" class="btn btn-warning">Modifier</a>
                 <a href="<?= BASE_URL ?>/etudiants/delete/<?= $etudiant['id'] ?>" class="btn btn-danger" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet étudiant ?');">Supprimer</a>
             </div>

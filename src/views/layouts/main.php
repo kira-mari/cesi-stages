@@ -82,8 +82,35 @@
     <!-- Variables globales pour le chatbot -->
     <script>
         window.CHATBOT_USER_ID = <?= isset($_SESSION['user_id']) ? (int)$_SESSION['user_id'] : 'null' ?>;
+        window.BASE_URL = '<?= BASE_URL ?>';
     </script>
     <!-- Chatbot JS (dans le dossier public/js car le vhost pointe déjà sur public) -->
     <script src="<?= BASE_URL ?>/js/chatbot.js"></script>
+    
+    <!-- Badge messages non lus -->
+    <?php if (isset($_SESSION['user_id'])): ?>
+    <script>
+        // Charger le compteur de messages non lus
+        function loadMessageCount() {
+            fetch(window.BASE_URL + '/messages/count')
+                .then(response => response.json())
+                .then(data => {
+                    const badge = document.getElementById('message-badge');
+                    if (badge && data.count > 0) {
+                        badge.textContent = data.count;
+                        badge.style.display = 'inline';
+                    } else if (badge) {
+                        badge.style.display = 'none';
+                    }
+                })
+                .catch(() => {});
+        }
+        // Charger au démarrage et toutes les 30 secondes
+        document.addEventListener('DOMContentLoaded', function() {
+            loadMessageCount();
+            setInterval(loadMessageCount, 30000);
+        });
+    </script>
+    <?php endif; ?>
 </body>
 </html>
