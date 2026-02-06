@@ -1,6 +1,9 @@
 <?php
 /**
- * Script de peuplement de la base de données
+ * Script de configuration complète de la base de données
+ * - Détecte si la base existe, la supprime si oui et la recrée
+ * - Sinon, la crée directement
+ * - Exécute les migrations et seeds
  * Usage: php scripts/seed_db.php
  */
 
@@ -13,10 +16,11 @@ $dotenv->safeLoad();
 
 require_once ROOT_PATH . '/config/config.php';
 
-echo "=== Initialisation du peuplement de la base de données ===\n";
+echo "=== Configuration complète de la base de données ===\n";
 
 try {
-    $dsn = "mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=" . DB_CHARSET;
+    // Connexion sans spécifier la base de données pour pouvoir la créer
+    $dsn = "mysql:host=" . DB_HOST . ";charset=" . DB_CHARSET;
     $options = [
         PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
         PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
@@ -24,20 +28,29 @@ try {
     ];
 
     $pdo = new PDO($dsn, DB_USER, DB_PASS, $options);
-    echo "Connexion à la base de données réussie.\n";
+    echo "Connexion au serveur MySQL réussie.\n";
 
-    // Désactiver les contraintes de clés étrangères
-    $pdo->exec("SET FOREIGN_KEY_CHECKS = 0");
+    // Vérifier si la base de données existe
+    $stmt = $pdo->query("SHOW DATABASES LIKE '" . DB_NAME . "'");
+    $dbExists = $stmt->fetch();
 
-    // Liste des tables à supprimer (ordre inverse des dépendances)
-    $tables = ['wishlist', 'candidatures', 'pilote_etudiant', 'evaluations', 'offres', 'entreprises', 'users'];
-    
-    foreach ($tables as $table) {
-        echo "Suppression de la table $table...\n";
-        $pdo->exec("DROP TABLE IF EXISTS $table");
+    if ($dbExists) {
+        echo "La base de données '" . DB_NAME . "' existe. Suppression en cours...\n";
+        $pdo->exec("DROP DATABASE `" . DB_NAME . "`");
+        echo "Base de données supprimée.\n";
+    } else {
+        echo "La base de données '" . DB_NAME . "' n'existe pas.\n";
     }
 
-    // Lire et executer le fichier de migration (création des tables)
+    // Créer la base de données
+    echo "Création de la base de données '" . DB_NAME . "'...\n";
+    $pdo->exec("CREATE DATABASE `" . DB_NAME . "` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
+    echo "Base de données créée.\n";
+
+    // Se connecter à la base de données nouvellement créée
+    $pdo->exec("USE `" . DB_NAME . "`");
+
+    // Lire et exécuter le fichier de migration (création des tables)
     $migrationFile = ROOT_PATH . '/database/migrations/create_tables_full.sql';
     if (!file_exists($migrationFile)) {
         throw new Exception("Le fichier de migration n'existe pas : $migrationFile");
@@ -54,21 +67,11 @@ try {
 
     $sql = file_get_contents($sqlFile);
 
-    // Exécuter les requêtes
-    // Note: PDO ne permet pas toujours d'exécuter plusieurs requêtes d'un coup de manière fiable avec exec()
-    // On va nettoyer le SQL des commentaires et le diviser si nécessaire, 
-    // ou simplement utiliser exec() qui supporte souvent le multi-statement si configuré (MySQL le supporte par défaut via PDO quand emulate prepares est off ou avec config spécifique)
-    
-    // Pour être sûr, on execute le gros bloc. Si ça échoue, on découpera.
-    // Le fichier contient "USE cesi_stages;", cela peut poser problème si la DB est différente, on va le retirer ou l'ignorer.
-    
+    // Exécuter les requêtes de seed
     echo "Importation des données depuis insert_data_full.sql...\n";
     $pdo->exec($sql);
 
-    // Réactiver les contraintes
-    $pdo->exec("SET FOREIGN_KEY_CHECKS = 1");
-
-    echo "=== Peuplement terminé avec succès ! ===\n";
+    echo "=== Configuration de la base de données terminée avec succès ! ===\n";
 
 } catch (PDOException $e) {
     echo "Erreur Base de Données : " . $e->getMessage() . "\n";

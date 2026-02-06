@@ -64,6 +64,11 @@ class Auth extends Controller
                     } else {
                         $_SESSION['user_role'] = $user['role'];
                         $_SESSION['user_is_approved'] = true;
+                        
+                        // Pour les recruteurs, compter le nombre d'entreprises assignées
+                        if ($user['role'] === 'recruteur') {
+                            $_SESSION['user_nb_entreprises'] = $userModel->countEntreprisesByRecruteur($user['id']);
+                        }
                     }
 
                     // Gestion du "Se souvenir de moi"
@@ -657,9 +662,16 @@ class Auth extends Controller
             $this->redirect('login');
         }
 
+        // Pour les recruteurs, récupérer les entreprises assignées
+        $entreprises = [];
+        if ($user['role'] === 'recruteur') {
+            $entreprises = $userModel->getEntreprisesByRecruteur($user['id']);
+        }
+
         $this->render('auth/profile', [
             'title' => 'Mon Profil - ' . APP_NAME,
-            'user' => $user
+            'user' => $user,
+            'entreprises' => $entreprises
         ]);
     }
 

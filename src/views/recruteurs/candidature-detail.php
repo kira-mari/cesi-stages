@@ -1,4 +1,4 @@
-<div class="container py-5" style="margin-top: 80px; max-width: 1400px;">
+<div class="container pb-5" >
     <!-- Breadcrumb centré -->
     <nav aria-label="breadcrumb" class="mb-4">
         <ol class="breadcrumb justify-content-center">
@@ -50,27 +50,28 @@
         </div>
     </div>
 
-    <!-- Actions rapides centrées -->
-    <div class="row justify-content-center mb-5">
-        <div class="col-lg-8 col-xl-6">
+    <!-- Actions et Profil en deux colonnes -->
+    <div class="row justify-content-center g-4 mb-4">
+        <!-- Colonne gauche : Actions -->
+        <div class="col-lg-3 col-xl-2">
             <div class="card shadow-sm border-0" style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);">
-                <div class="card-body p-4">
-                    <h5 class="text-white text-center mb-4"><i class="fas fa-gavel me-2"></i>Actions</h5>
+                <div class="card-body p-3">
+                    <h5 class="text-white text-center mb-3"><i class="fas fa-gavel me-2"></i>Actions</h5>
                     <form action="<?= BASE_URL ?>/recruteur/candidature/update/<?= $candidature['id'] ?>" method="POST">
                         <input type="hidden" name="csrf_token" value="<?= $csrf_token ?>">
-                        <div class="d-flex justify-content-center gap-3 flex-wrap">
+                        <div class="d-flex flex-column gap-2">
                             <?php if ($candidature['statut'] !== 'acceptee'): ?>
-                                <button type="submit" name="statut" value="acceptee" class="btn btn-success btn-lg px-4">
+                                <button type="submit" name="statut" value="acceptee" class="btn btn-success px-3 py-2">
                                     <i class="fas fa-check me-2"></i>Accepter
                                 </button>
                             <?php endif; ?>
                             <?php if ($candidature['statut'] !== 'refusee'): ?>
-                                <button type="submit" name="statut" value="refusee" class="btn btn-danger btn-lg px-4">
+                                <button type="submit" name="statut" value="refusee" class="btn btn-danger px-3 py-2">
                                     <i class="fas fa-times me-2"></i>Refuser
                                 </button>
                             <?php endif; ?>
                             <?php if ($candidature['statut'] !== 'en_attente'): ?>
-                                <button type="submit" name="statut" value="en_attente" class="btn btn-outline-light btn-lg px-4">
+                                <button type="submit" name="statut" value="en_attente" class="btn btn-outline-light px-3 py-2">
                                     <i class="fas fa-undo me-2"></i>Remettre en attente
                                 </button>
                             <?php endif; ?>
@@ -79,12 +80,10 @@
                 </div>
             </div>
         </div>
-    </div>
 
-    <div class="row justify-content-center g-4">
-        <!-- Colonne gauche : Candidat -->
+        <!-- Colonne droite : Profil Candidat -->
         <div class="col-lg-4 col-xl-3">
-            <div class="card shadow-sm border-0 h-100">
+            <div class="card shadow-sm border-0 h-80">
                 <div class="card-header text-center py-3" style="background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);">
                     <h5 class="mb-0 text-white"><i class="fas fa-user me-2"></i>Candidat</h5>
                 </div>
@@ -148,9 +147,11 @@
                 <?php endif; ?>
             </div>
         </div>
+    </div>
 
-        <!-- Colonne droite : Offre + Documents -->
-        <div class="col-lg-8 col-xl-7">
+    <!-- Section principale : Offre + Documents -->
+    <div class="row justify-content-center g-4">
+        <div class="col-lg-10 col-xl-8">
             <!-- Offre de stage -->
             <div class="card shadow-sm border-0 mb-4">
                 <div class="card-header py-3" style="background: linear-gradient(135deg, #0ea5e9 0%, #06b6d4 100%);">

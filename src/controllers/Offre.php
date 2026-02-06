@@ -112,6 +112,17 @@ class Offre extends Controller
     {
         $this->requireRole(['admin', 'pilote', 'recruteur']);
 
+        // Vérifier que le recruteur a au moins une entreprise assignée
+        if ($_SESSION['user_role'] === 'recruteur') {
+            $userModel = new User();
+            $entreprisesRecruteur = $userModel->getEntreprisesByRecruteur($_SESSION['user_id']);
+            if (empty($entreprisesRecruteur)) {
+                $_SESSION['flash_error'] = "Vous devez d'abord être assigné à une entreprise par un administrateur avant de pouvoir créer des offres.";
+                $this->redirect('recruteur/configurer-entreprise');
+                return;
+            }
+        }
+
         $entrepriseModel = new Entreprise();
         
         // Si recruteur, ne montrer que ses entreprises assignées
@@ -137,6 +148,17 @@ class Offre extends Controller
     public function store()
     {
         $this->requireRole(['admin', 'pilote', 'recruteur']);
+
+        // Vérifier que le recruteur a au moins une entreprise assignée
+        if ($_SESSION['user_role'] === 'recruteur') {
+            $userModel = new User();
+            $entreprisesRecruteur = $userModel->getEntreprisesByRecruteur($_SESSION['user_id']);
+            if (empty($entreprisesRecruteur)) {
+                $_SESSION['flash_error'] = "Vous devez d'abord être assigné à une entreprise par un administrateur avant de pouvoir créer des offres.";
+                $this->redirect('recruteur/configurer-entreprise');
+                return;
+            }
+        }
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $csrfToken = $_POST['csrf_token'] ?? '';

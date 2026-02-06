@@ -85,14 +85,15 @@ $router->add('recruteurs', ['controller' => 'Recruteur', 'action' => 'index']);
 $router->add('recruteurs/show/{id:\d+}', ['controller' => 'Recruteur', 'action' => 'show']);
 $router->add('recruteurs/delete/{id:\d+}', ['controller' => 'Recruteur', 'action' => 'delete']);
 $router->add('recruteurs/assign-entreprise/{id:\d+}', ['controller' => 'Recruteur', 'action' => 'assignEntreprise']);
-$router->add('recruteurs/remove-entreprise/{recruteurId:\d+}/{entrepriseId:\d+}', ['controller' => 'Recruteur', 'action' => 'removeEntreprise']);
+$router->add('recruteurs/remove-entreprise/{id:\d+}/{eid:\d+}', ['controller' => 'Recruteur', 'action' => 'removeEntreprise']);
+$router->add('recruteurs/approve-request', ['controller' => 'Recruteur', 'action' => 'approveRequest']);
+$router->add('recruteurs/reject-request', ['controller' => 'Recruteur', 'action' => 'rejectRequest']);
 
 // Routes recruteur (espace recruteur)
 $router->add('recruteur/configurer-entreprise', ['controller' => 'Recruteur', 'action' => 'configurerEntreprise']);
 $router->add('recruteur/candidatures', ['controller' => 'Recruteur', 'action' => 'candidatures']);
 $router->add('recruteur/candidature/{id:\d+}', ['controller' => 'Recruteur', 'action' => 'showCandidature']);
 $router->add('recruteur/candidature/update/{id:\d+}', ['controller' => 'Recruteur', 'action' => 'updateCandidature']);
-$router->add('recruteur/mes-entreprises', ['controller' => 'Recruteur', 'action' => 'mesEntreprises']);
 
 // Routes des candidatures
 $router->add('candidatures', ['controller' => 'Candidature', 'action' => 'index']);

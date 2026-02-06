@@ -21,15 +21,15 @@
         <?php endif; ?>
 
         <?php if ($_SESSION['user_role'] === 'recruteur' && isset($stats['nb_entreprises']) && $stats['nb_entreprises'] == 0): ?>
-            <div class="alert alert-warning alert-dismissible fade show mb-4">
+            <div class="alert alert-info alert-dismissible fade show mb-4">
                 <div class="d-flex align-items-center">
-                    <i class="fas fa-exclamation-triangle fa-2x me-3"></i>
+                    <i class="fas fa-paper-plane fa-2x me-3"></i>
                     <div>
-                        <strong>Configuration requise</strong>
-                        <p class="mb-0">Vous n'êtes pas encore associé à une entreprise. Pour publier des offres et recevoir des candidatures, veuillez configurer votre entreprise.</p>
+                        <strong>Demande d'assignation requise</strong>
+                        <p class="mb-0">Vous n'êtes pas encore associé à une entreprise. Pour publier des offres et recevoir des candidatures, envoyez une demande d'assignation aux administrateurs.</p>
                     </div>
-                    <a href="<?= BASE_URL ?>/recruteur/configurer-entreprise" class="btn btn-warning ms-auto">
-                        <i class="fas fa-building me-2"></i>Configurer maintenant
+                    <a href="<?= BASE_URL ?>/recruteur/configurer-entreprise" class="btn btn-primary ms-auto">
+                        <i class="fas fa-paper-plane me-2"></i>Envoyer une demande
                     </a>
                 </div>
             </div>
@@ -128,32 +128,13 @@
                     </div>
                 </div>
             <?php endif; ?>
-            
-            <!-- Statistiques Messagerie (pour tous les rôles) -->
-            <?php if (isset($stats['messages'])): ?>
-                <div class="stat-card" style="background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);">
-                    <div class="stat-icon">
-                        <i class="fas fa-envelope"></i>
-                    </div>
-                    <div class="stat-info">
-                        <span class="stat-number">
-                            <?= $stats['messages']['non_lus'] ?>
-                            <?php if ($stats['messages']['non_lus'] > 0): ?>
-                                <span class="badge bg-danger ms-1" style="font-size: 0.5em; vertical-align: middle;">nouveau</span>
-                            <?php endif; ?>
-                        </span>
-                        <span class="stat-label">Messages non lus</span>
-                        <small style="opacity: 0.8; font-size: 0.75em;">
-                            <?= $stats['messages']['recus'] ?> reçus · <?= $stats['messages']['envoyes'] ?> envoyés
-                        </small>
-                    </div>
-                </div>
-            <?php endif; ?>
         </div>
         
         <!-- Actions rapides -->
         <div class="quick-actions">
-            <h2>Actions rapides</h2>
+            <div class="section-header">
+                <h2>Actions rapides</h2>
+            </div>
             <div class="actions-grid">
                 <a href="<?= BASE_URL ?>/offres" class="action-card">
                     <i class="fas fa-search"></i>
@@ -198,18 +179,16 @@
                 <?php endif; ?>
                 
                 <?php if ($_SESSION['user_role'] === 'recruteur'): ?>
-                    <a href="<?= BASE_URL ?>/offres/create" class="action-card">
-                        <i class="fas fa-plus-circle"></i>
-                        <span>Publier une offre</span>
-                    </a>
-                    <a href="<?= BASE_URL ?>/recruteur/candidatures" class="action-card">
-                        <i class="fas fa-clipboard-list"></i>
-                        <span>Voir les candidatures</span>
-                    </a>
-                    <a href="<?= BASE_URL ?>/recruteur/mes-entreprises" class="action-card">
-                        <i class="fas fa-building"></i>
-                        <span>Mes entreprises</span>
-                    </a>
+                    <?php if (isset($stats['nb_entreprises']) && $stats['nb_entreprises'] > 0): ?>
+                        <a href="<?= BASE_URL ?>/offres/create" class="action-card">
+                            <i class="fas fa-plus-circle"></i>
+                            <span>Publier une offre</span>
+                        </a>
+                        <a href="<?= BASE_URL ?>/recruteur/candidatures" class="action-card">
+                            <i class="fas fa-clipboard-list"></i>
+                            <span>Voir les candidatures</span>
+                        </a>
+                    <?php endif; ?>
                 <?php endif; ?>
                 
                 <a href="<?= BASE_URL ?>/messages" class="action-card">
@@ -226,6 +205,57 @@
                 </a>
             </div>
         </div>
+        
+        <!-- Mes entreprises assignées (pour recruteurs) -->
+        <?php if ($_SESSION['user_role'] === 'recruteur' && isset($stats['entreprises_assignees']) && !empty($stats['entreprises_assignees'])): ?>
+        <div class="my-companies">
+            <div class="section-header">
+                <h2>Mes entreprises assignées</h2>
+            </div>
+            
+            <div class="companies-grid">
+                <?php foreach ($stats['entreprises_assignees'] as $entreprise): ?>
+                    <div class="company-card">
+                        <div class="company-header">
+                            <h3><?= htmlspecialchars($entreprise['nom']) ?></h3>
+                            <?php if ($entreprise['secteur']): ?>
+                                <span class="badge bg-primary"><?= htmlspecialchars($entreprise['secteur']) ?></span>
+                            <?php endif; ?>
+                        </div>
+                        
+                        <div class="company-body">
+                            <?php if ($entreprise['description']): ?>
+                                <p class="company-description">
+                                    <?= htmlspecialchars(substr($entreprise['description'], 0, 120)) ?>...
+                                </p>
+                            <?php endif; ?>
+                            
+                            <div class="company-contact">
+                                <?php if ($entreprise['email']): ?>
+                                    <div class="contact-item">
+                                        <i class="fas fa-envelope"></i>
+                                        <span><?= htmlspecialchars($entreprise['email']) ?></span>
+                                    </div>
+                                <?php endif; ?>
+                                <?php if ($entreprise['telephone']): ?>
+                                    <div class="contact-item">
+                                        <i class="fas fa-phone"></i>
+                                        <span><?= htmlspecialchars($entreprise['telephone']) ?></span>
+                                    </div>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                        
+                        <div class="company-footer">
+                            <a href="<?= BASE_URL ?>/entreprises/<?= $entreprise['id'] ?>" class="btn btn-outline btn-sm">
+                                <i class="fas fa-eye me-1"></i>Voir les offres
+                            </a>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+        </div>
+        <?php endif; ?>
         
         <!-- Dernières offres -->
         <div class="recent-offers">

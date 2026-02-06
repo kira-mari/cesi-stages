@@ -6,6 +6,7 @@ use Models\User;
 use Models\Candidature;
 use Models\Entreprise;
 use Models\Offre;
+use Models\Message;
 
 /**
  * Contrôleur pour les recruteurs
@@ -104,8 +105,14 @@ class Recruteur extends Controller
     {
         $this->requireRole(['admin']);
 
-        $recruteurId = $this->routeParams['recruteurId'] ?? null;
-        $entrepriseId = $this->routeParams['entrepriseId'] ?? null;
+        $recruteurId = $this->routeParams['id'] ?? null;
+        $entrepriseId = $this->routeParams['eid'] ?? null;
+
+        if (!$recruteurId || !$entrepriseId) {
+            $_SESSION['flash_error'] = "Paramètres manquants.";
+            $this->redirect('dashboard');
+            return;
+        }
 
         $userModel = new User();
         
@@ -133,6 +140,14 @@ class Recruteur extends Controller
         $candidatureModel = new Candidature();
         $userModel = new User();
 
+        // Vérifier que le recruteur a au moins une entreprise assignée
+        $entreprises = $userModel->getEntreprisesByRecruteur($recruteurId);
+        if (empty($entreprises)) {
+            $_SESSION['flash_error'] = "Vous devez d'abord être assigné à une entreprise par un administrateur avant de pouvoir gérer les candidatures.";
+            $this->redirect('recruteur/configurer-entreprise');
+            return;
+        }
+
         // Filtre par statut
         $statut = $_GET['statut'] ?? 'all';
         
@@ -147,7 +162,6 @@ class Recruteur extends Controller
 
         // Statistiques
         $stats = $candidatureModel->countByStatutForRecruteur($recruteurId);
-        $entreprises = $userModel->getEntreprisesByRecruteur($recruteurId);
 
         $this->render('recruteurs/candidatures', [
             'title' => 'Mes candidatures - ' . APP_NAME,
@@ -166,8 +180,18 @@ class Recruteur extends Controller
     {
         $this->requireRole(['recruteur']);
 
-        $id = $this->routeParams['id'] ?? null;
         $recruteurId = $_SESSION['user_id'];
+        $userModel = new User();
+
+        // Vérifier que le recruteur a au moins une entreprise assignée
+        $entreprises = $userModel->getEntreprisesByRecruteur($recruteurId);
+        if (empty($entreprises)) {
+            $_SESSION['flash_error'] = "Vous devez d'abord être assigné à une entreprise par un administrateur avant de pouvoir gérer les candidatures.";
+            $this->redirect('recruteur/configurer-entreprise');
+            return;
+        }
+
+        $id = $this->routeParams['id'] ?? null;
         $candidatureModel = new Candidature();
 
         // Vérifier que la candidature appartient au recruteur
@@ -209,6 +233,17 @@ class Recruteur extends Controller
     {
         $this->requireRole(['recruteur']);
 
+        $recruteurId = $_SESSION['user_id'];
+        $userModel = new User();
+
+        // Vérifier que le recruteur a au moins une entreprise assignée
+        $entreprises = $userModel->getEntreprisesByRecruteur($recruteurId);
+        if (empty($entreprises)) {
+            $_SESSION['flash_error'] = "Vous devez d'abord être assigné à une entreprise par un administrateur avant de pouvoir gérer les candidatures.";
+            $this->redirect('recruteur/configurer-entreprise');
+            return;
+        }
+
         $id = $this->routeParams['id'] ?? null;
 
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -248,24 +283,6 @@ class Recruteur extends Controller
     }
 
     /**
-     * Mes entreprises assignées
-     */
-    public function mesEntreprises()
-    {
-        $this->requireRole(['recruteur']);
-
-        $recruteurId = $_SESSION['user_id'];
-        $userModel = new User();
-
-        $entreprises = $userModel->getEntreprisesByRecruteur($recruteurId);
-
-        $this->render('recruteurs/mes-entreprises', [
-            'title' => 'Mes entreprises - ' . APP_NAME,
-            'entreprises' => $entreprises
-        ]);
-    }
-
-    /**
      * Configuration de l'entreprise pour un nouveau recruteur
      */
     public function configurerEntreprise()
@@ -290,16 +307,16 @@ class Recruteur extends Controller
             $action = $_POST['action'] ?? '';
             
             if ($action === 'select_existing') {
-                // Sélectionner une entreprise existante
+                // Demander l'association à une entreprise existante
                 $entrepriseId = (int) ($_POST['entreprise_id'] ?? 0);
                 
                 if ($entrepriseId > 0) {
                     // Vérifier que l'entreprise existe
                     $entreprise = $entrepriseModel->find($entrepriseId);
                     if ($entreprise) {
-                        // Assigner l'entreprise au recruteur
-                        $userModel->assignEntrepriseToRecruteur($recruteurId, $entrepriseId);
-                        $_SESSION['flash_success'] = "Vous avez été associé à l'entreprise " . $entreprise['nom'] . ".";
+                        // Envoyer une demande aux administrateurs
+                        $this->sendAssignmentRequest($recruteurId, $entrepriseId, 'existing');
+                        $_SESSION['flash_success'] = "Votre demande d'association à l'entreprise " . $entreprise['nom'] . " a été envoyée aux administrateurs.";
                         $this->redirect('dashboard');
                         return;
                     }
@@ -326,15 +343,15 @@ class Recruteur extends Controller
                 // Vérifier si l'entreprise existe déjà (par nom)
                 $existante = $entrepriseModel->where('nom', $nom);
                 if (!empty($existante)) {
-                    // L'entreprise existe, proposer de s'y associer
-                    $userModel->assignEntrepriseToRecruteur($recruteurId, $existante[0]['id']);
-                    $_SESSION['flash_success'] = "L'entreprise " . $nom . " existait déjà. Vous y avez été associé.";
+                    // L'entreprise existe, envoyer une demande d'association
+                    $this->sendAssignmentRequest($recruteurId, $existante[0]['id'], 'existing');
+                    $_SESSION['flash_success'] = "L'entreprise " . $nom . " existait déjà. Votre demande d'association a été envoyée aux administrateurs.";
                     $this->redirect('dashboard');
                     return;
                 }
 
-                // Créer l'entreprise
-                $entrepriseId = $entrepriseModel->create([
+                // Envoyer une demande de création d'entreprise
+                $this->sendAssignmentRequest($recruteurId, null, 'new', [
                     'nom' => $nom,
                     'adresse' => $adresse,
                     'email' => $email,
@@ -343,16 +360,9 @@ class Recruteur extends Controller
                     'description' => $description,
                     'secteur' => $secteur
                 ]);
-
-                if ($entrepriseId) {
-                    // Assigner au recruteur
-                    $userModel->assignEntrepriseToRecruteur($recruteurId, $entrepriseId);
-                    $_SESSION['flash_success'] = "Entreprise créée avec succès ! Vous pouvez maintenant publier des offres.";
-                    $this->redirect('dashboard');
-                    return;
-                } else {
-                    $_SESSION['flash_error'] = "Erreur lors de la création de l'entreprise.";
-                }
+                $_SESSION['flash_success'] = "Votre demande de création de l'entreprise " . $nom . " a été envoyée aux administrateurs.";
+                $this->redirect('dashboard');
+                return;
             }
         }
 
@@ -398,5 +408,179 @@ class Recruteur extends Controller
         }
 
         $this->redirect('recruteurs');
+    }
+
+    /**
+     * Approuve une demande d'assignation d'entreprise
+     */
+    public function approveRequest()
+    {
+        $this->requireRole(['admin']);
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            $this->redirect('messages');
+        }
+
+        $csrfToken = $_POST['csrf_token'] ?? '';
+        if (!$this->verifyCsrfToken($csrfToken)) {
+            $_SESSION['flash_error'] = "Token de sécurité invalide.";
+            $this->redirect('messages');
+            return;
+        }
+
+        $messageId = (int) ($_POST['message_id'] ?? 0);
+        $messageModel = new Message();
+        $userModel = new User();
+        $entrepriseModel = new Entreprise();
+
+        // Récupérer le message
+        $message = $messageModel->find($messageId);
+        if (!$message || $message['sujet'] !== "Demande d'assignation d'entreprise") {
+            $_SESSION['flash_error'] = "Message non trouvé ou invalide.";
+            $this->redirect('messages');
+            return;
+        }
+
+        // Parser le contenu du message pour extraire les informations
+        $contenu = $message['contenu'];
+        $recruteurId = $message['expediteur_id'];
+
+        // Extraire le type de demande
+        if (strpos($contenu, 'Association à une entreprise existante') !== false) {
+            // Extraire l'ID de l'entreprise
+            if (preg_match('/ID entreprise: (\d+)/', $contenu, $matches)) {
+                $entrepriseId = (int) $matches[1];
+                // Assigner l'entreprise
+                if ($userModel->assignEntrepriseToRecruteur($recruteurId, $entrepriseId)) {
+                    $_SESSION['flash_success'] = "Demande approuvée : Le recruteur a été assigné à l'entreprise.";
+                } else {
+                    $_SESSION['flash_error'] = "Erreur lors de l'assignation.";
+                }
+            }
+        } elseif (strpos($contenu, 'Création d\'une nouvelle entreprise') !== false) {
+            // Extraire les données de la nouvelle entreprise
+            $nom = $this->extractFromMessage($contenu, 'Nom: ');
+            $adresse = $this->extractFromMessage($contenu, 'Adresse: ');
+            $email = $this->extractFromMessage($contenu, 'Email: ');
+            $telephone = $this->extractFromMessage($contenu, 'Téléphone: ');
+            $site_web = $this->extractFromMessage($contenu, 'Site web: ');
+            $description = $this->extractFromMessage($contenu, 'Description: ');
+            $secteur = $this->extractFromMessage($contenu, 'Secteur: ');
+
+            // Créer l'entreprise
+            $entrepriseId = $entrepriseModel->create([
+                'nom' => $nom,
+                'adresse' => $adresse,
+                'email' => $email,
+                'telephone' => $telephone,
+                'site_web' => $site_web,
+                'description' => $description,
+                'secteur' => $secteur
+            ]);
+
+            if ($entrepriseId) {
+                // Assigner au recruteur
+                $userModel->assignEntrepriseToRecruteur($recruteurId, $entrepriseId);
+                $_SESSION['flash_success'] = "Demande approuvée : L'entreprise a été créée et le recruteur y a été assigné.";
+            } else {
+                $_SESSION['flash_error'] = "Erreur lors de la création de l'entreprise.";
+            }
+        }
+
+        $this->redirect('messages');
+    }
+
+    /**
+     * Rejette une demande d'assignation d'entreprise
+     */
+    public function rejectRequest()
+    {
+        $this->requireRole(['admin']);
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            $this->redirect('messages');
+        }
+
+        $csrfToken = $_POST['csrf_token'] ?? '';
+        if (!$this->verifyCsrfToken($csrfToken)) {
+            $_SESSION['flash_error'] = "Token de sécurité invalide.";
+            $this->redirect('messages');
+            return;
+        }
+
+        $messageId = (int) ($_POST['message_id'] ?? 0);
+        $messageModel = new Message();
+
+        // Récupérer le message
+        $message = $messageModel->find($messageId);
+        if (!$message || $message['sujet'] !== "Demande d'assignation d'entreprise") {
+            $_SESSION['flash_error'] = "Message non trouvé ou invalide.";
+            $this->redirect('messages');
+            return;
+        }
+
+        // Marquer le message comme traité (on pourrait ajouter un champ, mais pour l'instant on le laisse)
+        $_SESSION['flash_success'] = "Demande rejetée.";
+
+        $this->redirect('messages');
+    }
+
+    /**
+     * Extrait une valeur d'un message
+     */
+    private function extractFromMessage($contenu, $label)
+    {
+        $lines = explode("\n", $contenu);
+        foreach ($lines as $line) {
+            if (strpos($line, $label) === 0) {
+                return trim(substr($line, strlen($label)));
+            }
+        }
+        return '';
+    }
+
+    /**
+     * Envoie une demande d'assignation d'entreprise aux administrateurs
+     */
+    private function sendAssignmentRequest($recruteurId, $entrepriseId = null, $type = 'existing', $newEntrepriseData = null)
+    {
+        $userModel = new User();
+        $messageModel = new Message();
+        $entrepriseModel = new Entreprise();
+
+        // Récupérer les informations du recruteur
+        $recruteur = $userModel->find($recruteurId);
+        if (!$recruteur) return;
+
+        // Récupérer tous les administrateurs
+        $admins = $userModel->getByRolePaginated('admin', 1, 100); // Récupérer jusqu'à 100 admins
+
+        if (empty($admins)) return;
+
+        $sujet = "Demande d'assignation d'entreprise";
+        $contenu = "Le recruteur " . $recruteur['prenom'] . " " . $recruteur['nom'] . " (" . $recruteur['email'] . ") fait une demande d'assignation.\n\n";
+
+        if ($type === 'existing') {
+            $entreprise = $entrepriseModel->find($entrepriseId);
+            $contenu .= "Type: Association à une entreprise existante\n";
+            $contenu .= "Entreprise: " . $entreprise['nom'] . "\n";
+            $contenu .= "ID entreprise: " . $entrepriseId . "\n";
+        } elseif ($type === 'new') {
+            $contenu .= "Type: Création d'une nouvelle entreprise\n";
+            $contenu .= "Nom: " . $newEntrepriseData['nom'] . "\n";
+            if (!empty($newEntrepriseData['adresse'])) $contenu .= "Adresse: " . $newEntrepriseData['adresse'] . "\n";
+            if (!empty($newEntrepriseData['email'])) $contenu .= "Email: " . $newEntrepriseData['email'] . "\n";
+            if (!empty($newEntrepriseData['telephone'])) $contenu .= "Téléphone: " . $newEntrepriseData['telephone'] . "\n";
+            if (!empty($newEntrepriseData['site_web'])) $contenu .= "Site web: " . $newEntrepriseData['site_web'] . "\n";
+            if (!empty($newEntrepriseData['description'])) $contenu .= "Description: " . $newEntrepriseData['description'] . "\n";
+            if (!empty($newEntrepriseData['secteur'])) $contenu .= "Secteur: " . $newEntrepriseData['secteur'] . "\n";
+        }
+
+        $contenu .= "\nVeuillez traiter cette demande dans l'interface d'administration.";
+
+        // Envoyer le message à tous les administrateurs
+        foreach ($admins as $admin) {
+            $messageModel->envoyer($recruteurId, $admin['id'], $sujet, $contenu);
+        }
     }
 }
