@@ -150,7 +150,7 @@ class Approbation extends Controller
             $sujet = "Votre compte $roleLabel a été approuvé";
             $contenu = "Bonjour " . $user['prenom'] . ",\n\n";
             $contenu .= "Bonne nouvelle ! Votre demande de compte $roleLabel a été approuvée par notre équipe.\n\n";
-            $contenu .= "Vous pouvez maintenant vous reconnecter pour accéder à toutes les fonctionnalités de votre compte.\n\n";
+            $contenu .= "Veuillez vous déconnecter et vous reconnecter pour accéder à toutes les fonctionnalités de votre compte.\n\n";
             $contenu .= "Bienvenue sur CesiStages !\n\n";
             $contenu .= "Cordialement,\nL'équipe CesiStages";
         } else {

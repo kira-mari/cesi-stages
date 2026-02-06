@@ -47,6 +47,17 @@
     background-color: #1e1e2e;
 }
 
+[data-theme="light"] .btn-gradient {
+    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+    color: white;
+    box-shadow: 0 4px 15px rgba(79, 70, 229, 0.35);
+}
+
+[data-theme="light"] .btn-gradient:hover {
+    box-shadow: 0 8px 25px rgba(79, 70, 229, 0.5);
+    color: white;
+}
+
 [data-theme="light"] #avatarBtn {
     color: #1e1e2e !important;
 }
@@ -809,9 +820,11 @@ $basePath = parse_url(BASE_URL, PHP_URL_PATH) ?? '';
 
 function isNavLinkActive($uri, $base, $path) {
     if ($path === '' || $path === '/') {
-        return $uri === $base || $uri === $base . '/'; 
+        return $uri === $base || $uri === $base . '/';
     }
-    return strpos($uri, $base . $path) !== false;
+
+    $fullPath = $base . $path;
+    return $uri === $fullPath || $uri === $fullPath . '/';
 }
 ?>
 
@@ -839,18 +852,19 @@ function isNavLinkActive($uri, $base, $path) {
                 <?php if (isset($_SESSION['user_role'])): ?>
                     <?php if ($_SESSION['user_role'] === 'etudiant'): ?>
                         <li><a href="<?= BASE_URL ?>/wishlist" class="nav-link-custom <?= isNavLinkActive($currentUri, $basePath, '/wishlist') ? 'active' : '' ?>">Wishlist</a></li>
-                        <li><a href="<?= BASE_URL ?>/candidatures/etudiant" class="nav-link-custom <?= isNavLinkActive($currentUri, $basePath, '/candidatures') ? 'active' : '' ?>">Candidatures</a></li>
+                        <li><a href="<?= BASE_URL ?>/candidatures/etudiant" class="nav-link-custom <?= isNavLinkActive($currentUri, $basePath, '/candidatures/etudiant') ? 'active' : '' ?>">Candidatures</a></li>
                     <?php elseif ($_SESSION['user_role'] === 'pilote'): ?>
                         <li><a href="<?= BASE_URL ?>/etudiants" class="nav-link-custom <?= isNavLinkActive($currentUri, $basePath, '/etudiants') ? 'active' : '' ?>">Mes Étudiants</a></li>
-                        <li><a href="<?= BASE_URL ?>/candidatures/pilote" class="nav-link-custom <?= isNavLinkActive($currentUri, $basePath, '/candidatures') ? 'active' : '' ?>">Candidatures</a></li>
+                        <li><a href="<?= BASE_URL ?>/candidatures/pilote" class="nav-link-custom <?= isNavLinkActive($currentUri, $basePath, '/candidatures/pilote') ? 'active' : '' ?>">Candidatures</a></li>
                     <?php elseif ($_SESSION['user_role'] === 'admin'): ?>
                         <li><a href="<?= BASE_URL ?>/etudiants" class="nav-link-custom <?= isNavLinkActive($currentUri, $basePath, '/etudiants') ? 'active' : '' ?>">Étudiants</a></li>
                         <li><a href="<?= BASE_URL ?>/pilotes" class="nav-link-custom <?= isNavLinkActive($currentUri, $basePath, '/pilotes') ? 'active' : '' ?>">Pilotes</a></li>
                         <li><a href="<?= BASE_URL ?>/recruteurs" class="nav-link-custom <?= isNavLinkActive($currentUri, $basePath, '/recruteurs') ? 'active' : '' ?>">Recruteurs</a></li>
                     <?php elseif ($_SESSION['user_role'] === 'recruteur'): ?>
+                        <?php if (isset($_SESSION['user_nb_entreprises']) && $_SESSION['user_nb_entreprises'] > 0): ?>
                         <li><a href="<?= BASE_URL ?>/offres/create" class="nav-link-custom <?= isNavLinkActive($currentUri, $basePath, '/offres/create') ? 'active' : '' ?>">Publier une offre</a></li>
                         <li><a href="<?= BASE_URL ?>/recruteur/candidatures" class="nav-link-custom <?= isNavLinkActive($currentUri, $basePath, '/recruteur/candidatures') ? 'active' : '' ?>">Candidatures</a></li>
-                        <li><a href="<?= BASE_URL ?>/recruteur/mes-entreprises" class="nav-link-custom <?= isNavLinkActive($currentUri, $basePath, '/recruteur/mes-entreprises') ? 'active' : '' ?>">Mes Entreprises</a></li>
+                        <?php endif; ?>
                     <?php endif; ?>
                 <?php endif; ?>
             </ul>
@@ -1000,9 +1014,6 @@ function isNavLinkActive($uri, $base, $path) {
             <?php elseif ($_SESSION['user_role'] === 'recruteur'): ?>
                 <a href="<?= BASE_URL ?>/recruteur/candidatures" class="mobile-nav-link w-100">
                     <i class="fas fa-clipboard-list w-5 text-center"></i> Candidatures
-                </a>
-                <a href="<?= BASE_URL ?>/recruteur/mes-entreprises" class="mobile-nav-link w-100">
-                    <i class="fas fa-building w-5 text-center"></i> Mes Entreprises
                 </a>
             <?php endif; ?>
         <?php endif; ?>

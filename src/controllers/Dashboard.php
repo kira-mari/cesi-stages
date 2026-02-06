@@ -6,7 +6,6 @@ use Models\Offre;
 use Models\Entreprise;
 use Models\Candidature;
 use Models\User;
-use Models\Message;
 
 /**
  * Contrôleur du tableau de bord
@@ -47,11 +46,12 @@ class Dashboard extends Controller
             $stats['total_candidatures'] = $candidatureModel->countByRecruteur($_SESSION['user_id']);
             $stats['nb_entreprises'] = $userModel->countEntreprisesByRecruteur($_SESSION['user_id']);
             $stats['candidatures_par_statut'] = $candidatureModel->countByStatutForRecruteur($_SESSION['user_id']);
+            
+            // Récupérer les entreprises assignées pour affichage dans le dashboard
+            if ($stats['nb_entreprises'] > 0) {
+                $stats['entreprises_assignees'] = $userModel->getEntreprisesByRecruteur($_SESSION['user_id']);
+            }
         }
-
-        // Statistiques de messagerie
-        $messageModel = new Message();
-        $stats['messages'] = $messageModel->getStats($_SESSION['user_id']);
 
         // Dernières offres
         $dernieresOffres = $offreModel->getRecentes(5);

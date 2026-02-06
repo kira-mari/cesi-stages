@@ -1,4 +1,4 @@
-<div class="container py-5" style="margin-top: 80px;">
+<div class="container py-5" >
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1 class="h2 fw-bold">
             <i class="fas fa-clipboard-list me-2 text-primary"></i>Candidatures reçues
@@ -134,7 +134,7 @@
                                     <td>
                                         <?php
                                         $badgeClass = [
-                                            'en_attente' => 'bg-warning text-dark',
+                                            'en_attente' => 'bg-warning',
                                             'acceptee' => 'bg-success',
                                             'refusee' => 'bg-danger'
                                         ][$c['statut']] ?? 'bg-secondary';
@@ -147,13 +147,13 @@
                                         <span class="badge <?= $badgeClass ?>"><?= $statutLabel ?></span>
                                     </td>
                                     <td>
-                                        <div class="btn-group" role="group">
-                                            <a href="<?= BASE_URL ?>/recruteur/candidature/<?= $c['id'] ?>" 
-                                               class="btn btn-sm btn-outline-primary" title="Voir les détails">
-                                                <i class="fas fa-eye"></i>
-                                            </a>
-                                            <?php if ($c['statut'] === 'en_attente'): ?>
-                                                <form action="<?= BASE_URL ?>/recruteur/candidature/update/<?= $c['id'] ?>" method="POST" class="d-inline">
+                                        <a href="<?= BASE_URL ?>/recruteur/candidature/<?= $c['id'] ?>" 
+                                           class="btn btn-sm btn-outline-primary" title="Voir les détails">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <?php if ($c['statut'] === 'en_attente'): ?>
+                                            <div class="btn-group" role="group">
+                                                <form action="<?= BASE_URL ?>/recruteur/candidature/update/<?= $c['id'] ?>" method="POST" class="d-inline me-1">
                                                     <input type="hidden" name="csrf_token" value="<?= $csrf_token ?>">
                                                     <input type="hidden" name="redirect" value="list">
                                                     <button type="submit" name="statut" value="acceptee" class="btn btn-sm btn-success" title="Accepter">
@@ -167,8 +167,8 @@
                                                         <i class="fas fa-times"></i>
                                                     </button>
                                                 </form>
-                                            <?php endif; ?>
-                                        </div>
+                                            </div>
+                                        <?php endif; ?>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>

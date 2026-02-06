@@ -1,13 +1,6 @@
 -- ============================================
--- CesiStages - Script de création de la base de données complet
+-- CesiStages - Script de création des tables
 -- ============================================
-
--- Création de la base de données
-CREATE DATABASE IF NOT EXISTS cesi_stages 
-    CHARACTER SET utf8mb4 
-    COLLATE utf8mb4_unicode_ci;
-
-USE cesi_stages;
 
 -- ============================================
 -- Table: users (utilisateurs)
@@ -26,10 +19,15 @@ CREATE TABLE users (
     is_verified BOOLEAN DEFAULT 0,
     verification_code VARCHAR(6) DEFAULT NULL,
     remember_token VARCHAR(255) NULL DEFAULT NULL,
+    is_approved TINYINT(1) DEFAULT NULL,
+    approval_requested_at DATETIME DEFAULT NULL,
+    approved_at DATETIME DEFAULT NULL,
+    approved_by INT DEFAULT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     INDEX idx_email (email),
-    INDEX idx_role (role)
+    INDEX idx_role (role),
+    INDEX idx_is_approved (is_approved)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ============================================
@@ -131,4 +129,39 @@ CREATE TABLE pilote_etudiant (
     FOREIGN KEY (etudiant_id) REFERENCES users(id) ON DELETE CASCADE,
     UNIQUE KEY unique_relation (pilote_id, etudiant_id),
     INDEX idx_pilote (pilote_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ============================================
+-- Table: recruteur_entreprise (relation recruteur-entreprise)
+-- ============================================
+CREATE TABLE recruteur_entreprise (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    recruteur_id INT NOT NULL,
+    entreprise_id INT NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (recruteur_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (entreprise_id) REFERENCES entreprises(id) ON DELETE CASCADE,
+    UNIQUE KEY unique_relation (recruteur_id, entreprise_id),
+    INDEX idx_recruteur (recruteur_id),
+    INDEX idx_entreprise (entreprise_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ============================================
+-- Table: messages (système de messagerie interne)
+-- ============================================
+CREATE TABLE messages (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    expediteur_id INT NOT NULL,
+    destinataire_id INT NOT NULL,
+    sujet VARCHAR(255) NOT NULL,
+    contenu TEXT NOT NULL,
+    lu BOOLEAN DEFAULT FALSE,
+    lu_at DATETIME DEFAULT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (expediteur_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (destinataire_id) REFERENCES users(id) ON DELETE CASCADE,
+    INDEX idx_expediteur (expediteur_id),
+    INDEX idx_destinataire (destinataire_id),
+    INDEX idx_lu (lu),
+    INDEX idx_created (created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

@@ -99,6 +99,60 @@
                                 </div>
                             </div>
 
+                            <?php if ($user['role'] === 'recruteur' && !empty($entreprises)): ?>
+                            <h5 class="text-primary border-bottom pb-2 mb-4 mt-5" style="border-color: hsl(var(--border)) !important;">
+                                <i class="fas fa-building me-2"></i>Entreprises assignées
+                            </h5>
+                            
+                            <div class="entreprises-list">
+                                <?php foreach ($entreprises as $entreprise): ?>
+                                    <div class="entreprise-item p-3 mb-3 rounded border" style="background-color: hsl(var(--input) / 0.3); border-color: hsl(var(--border)) !important;">
+                                        <div class="d-flex justify-content-between align-items-start">
+                                            <div class="flex-grow-1">
+                                                <h6 class="mb-1 text-primary font-weight-bold">
+                                                    <i class="fas fa-building me-2"></i><?= htmlspecialchars($entreprise['nom']) ?>
+                                                </h6>
+                                                <?php if ($entreprise['secteur']): ?>
+                                                    <span class="badge bg-secondary mb-2"><?= htmlspecialchars($entreprise['secteur']) ?></span>
+                                                <?php endif; ?>
+                                                
+                                                <div class="entreprise-details small text-muted mt-2">
+                                                    <?php if ($entreprise['email']): ?>
+                                                        <div class="mb-1">
+                                                            <i class="fas fa-envelope me-2"></i><?= htmlspecialchars($entreprise['email']) ?>
+                                                        </div>
+                                                    <?php endif; ?>
+                                                    <?php if ($entreprise['telephone']): ?>
+                                                        <div class="mb-1">
+                                                            <i class="fas fa-phone me-2"></i><?= htmlspecialchars($entreprise['telephone']) ?>
+                                                        </div>
+                                                    <?php endif; ?>
+                                                    <?php if ($entreprise['adresse']): ?>
+                                                        <div class="mb-1">
+                                                            <i class="fas fa-map-marker-alt me-2"></i><?= htmlspecialchars($entreprise['adresse']) ?>
+                                                        </div>
+                                                    <?php endif; ?>
+                                                </div>
+                                                
+                                                <?php if ($entreprise['description']): ?>
+                                                    <div class="mt-2">
+                                                        <small class="text-muted">
+                                                            <?= htmlspecialchars(substr($entreprise['description'], 0, 150)) ?>...
+                                                        </small>
+                                                    </div>
+                                                <?php endif; ?>
+                                            </div>
+                                            <div class="ms-3">
+                                                <a href="<?= BASE_URL ?>/entreprises/<?= $entreprise['id'] ?>" class="btn btn-outline-primary btn-sm">
+                                                    <i class="fas fa-eye me-1"></i>Voir les offres
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                <?php endforeach; ?>
+                            </div>
+                            <?php endif; ?>
+
                             <div class="mt-5 d-flex justify-content-between align-items-center">
                                 <button type="button" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteAccountModal">
                                     <i class="fas fa-trash-alt me-2"></i> Supprimer mon compte
@@ -162,4 +216,30 @@
 /* Petits ajustements inline pour forcer les bordures si Bootstrap interfère */
 .border-end { border-right: 1px solid hsl(var(--border)) !important; }
 .hover-danger:hover { background-color: hsl(var(--destructive)) !important; color: white !important; border-color: hsl(var(--destructive)) !important; }
+
+/* Styles pour la section entreprises */
+.entreprises-list {
+    margin-top: 1rem;
+}
+
+.entreprise-item {
+    transition: all 0.2s ease;
+}
+
+.entreprise-item:hover {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    transform: translateY(-1px);
+}
+
+.entreprise-details div {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.25rem;
+}
+
+.entreprise-details i {
+    color: hsl(var(--primary));
+    width: 1rem;
+    margin-right: 0.5rem;
+}
 </style>

@@ -83,6 +83,38 @@
         </div>
     </div>
 
+    <!-- Actions spéciales pour les demandes d'assignation (admin uniquement) -->
+    <?php if ($_SESSION['user_role'] === 'admin' && $message['sujet'] === "Demande d'assignation d'entreprise"): ?>
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-header py-3 bg-success">
+                <h5 class="mb-0 text-white">
+                    <i class="fas fa-check-circle me-2"></i>Actions de validation
+                </h5>
+            </div>
+            <div class="card-body p-4">
+                <p class="text-muted mb-4">Traitez cette demande d'assignation d'entreprise :</p>
+                <div class="d-flex gap-3">
+                    <form action="<?= BASE_URL ?>/recruteurs/approve-request" method="POST" class="d-inline">
+                        <input type="hidden" name="csrf_token" value="<?= $csrf_token ?? '' ?>">
+                        <input type="hidden" name="message_id" value="<?= $message['id'] ?>">
+                        <input type="hidden" name="action" value="approve">
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-check me-2"></i>Approuver
+                        </button>
+                    </form>
+                    <form action="<?= BASE_URL ?>/recruteurs/reject-request" method="POST" class="d-inline">
+                        <input type="hidden" name="csrf_token" value="<?= $csrf_token ?? '' ?>">
+                        <input type="hidden" name="message_id" value="<?= $message['id'] ?>">
+                        <input type="hidden" name="action" value="reject">
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-times me-2"></i>Rejeter
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    <?php endif; ?>
+
     <!-- Actions -->
     <div class="d-flex justify-content-between">
         <a href="<?= BASE_URL ?>/messages" class="btn btn-outline-secondary">
