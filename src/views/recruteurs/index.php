@@ -74,12 +74,41 @@
                                     </td>
                                     <td><?= date('d/m/Y', strtotime($recruteur['created_at'])) ?></td>
                                     <td>
-                                        <a href="<?= BASE_URL ?>/recruteurs/show/<?= $recruteur['id'] ?>" 
-                                           class="btn btn-sm btn-outline-primary">
-                                            <i class="fas fa-eye"></i> Gérer
-                                        </a>
+                                        <div class="btn-group" role="group">
+                                            <a href="<?= BASE_URL ?>/recruteurs/show/<?= $recruteur['id'] ?>" 
+                                               class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-eye me-1"></i>Gérer
+                                            </a>
+                                            <button type="button" class="btn btn-sm btn-outline-danger" 
+                                                    data-bs-toggle="modal" 
+                                                    data-bs-target="#deleteModal<?= $recruteur['id'] ?>">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
+                                
+                                <!-- Modal de suppression -->
+                                <div class="modal fade" id="deleteModal<?= $recruteur['id'] ?>" tabindex="-1">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header bg-danger text-white">
+                                                <h5 class="modal-title">Supprimer le recruteur</h5>
+                                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <p>Êtes-vous sûr de vouloir supprimer le recruteur <strong><?= htmlspecialchars($recruteur['prenom'] . ' ' . $recruteur['nom']) ?></strong> ?</p>
+                                                <p class="text-muted small">Cette action est irréversible.</p>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                                                <a href="<?= BASE_URL ?>/recruteurs/delete/<?= $recruteur['id'] ?>" class="btn btn-danger">
+                                                    <i class="fas fa-trash me-2"></i>Supprimer
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             <?php endforeach; ?>
                         </tbody>
                     </table>

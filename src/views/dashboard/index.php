@@ -5,6 +5,21 @@
             <p>Bienvenue, <?= htmlspecialchars($_SESSION['user_prenom'] . ' ' . $_SESSION['user_nom']) ?> !</p>
         </div>
 
+        <?php if (isset($_SESSION['user_is_approved']) && $_SESSION['user_is_approved'] === false): ?>
+            <div class="alert alert-info alert-dismissible fade show mb-4">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-hourglass-half fa-2x me-3"></i>
+                    <div>
+                        <strong>Compte en attente de validation</strong>
+                        <p class="mb-0">
+                            Votre demande de compte <strong><?= ucfirst($_SESSION['user_role_pending'] ?? 'pilote/recruteur') ?></strong> est en cours d'examen par un administrateur.
+                            En attendant, vous avez accès aux fonctionnalités de base.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        <?php endif; ?>
+
         <?php if ($_SESSION['user_role'] === 'recruteur' && isset($stats['nb_entreprises']) && $stats['nb_entreprises'] == 0): ?>
             <div class="alert alert-warning alert-dismissible fade show mb-4">
                 <div class="d-flex align-items-center">
