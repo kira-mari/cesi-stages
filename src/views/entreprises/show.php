@@ -115,13 +115,23 @@
 
     <!-- Unified Evaluation Section -->
     <div class="card border-0 shadow-sm overflow-hidden" style="background: linear-gradient(145deg, hsl(var(--card)), rgba(20, 20, 35, 0.6));">
+        <style>
+            @media (min-width: 768px) {
+                #toggleReviewForm {
+                    position: absolute !important;
+                    right: 10px !important;
+                    top: 50% !important;
+                    transform: translateY(-50%) !important;
+                }
+            }
+        </style>
         <div class="card-header bg-transparent border-bottom border-secondary p-4">
-            <div class="d-flex justify-content-between align-items-center">
-                <h3 class="mb-0 fw-bold text-white"><i class="fas fa-star text-warning me-2"></i>Avis et Évaluations</h3>
+            <div class="d-flex justify-content-between align-items-center position-relative w-100 flex-column flex-md-row">
+                <h3 class="mb-0 fw-bold text-white mb-3 mb-md-0"><i class="fas fa-star text-warning me-2"></i>Avis et Évaluations</h3>
                 
                 <?php if (isset($_SESSION['user_role']) && in_array($_SESSION['user_role'], ['pilote', 'etudiant'])): ?>
                     <button type="button" class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm" id="toggleReviewForm">
-                        <i class="fas fa-pen-nib me-2"></i>Donner mon avis
+                        <i class="fas fa-pen-nib me-2 text-white"></i>Donner mon avis
                     </button>
                 <?php endif; ?>
             </div>

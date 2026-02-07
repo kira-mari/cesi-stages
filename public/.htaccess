@@ -5,8 +5,8 @@
 RewriteEngine On
 
 # Force HTTPS (Décommenter pour activer en production ou si le vhost 443 est configuré)
-RewriteCond %{HTTPS} off
-RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+# RewriteCond %{HTTPS} off
+# RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 
 # Si le fichier ou dossier existe, ne pas réécrire
 RewriteCond %{REQUEST_FILENAME} !-f

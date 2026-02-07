@@ -19,6 +19,11 @@ const APP_ENV = 'development'; // development, production
 $protocol = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? 'https' : 'http';
 $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
 
+// Forcer HTTPS pour les URLs ngrok (car ngrok tunnelise HTTPS vers HTTP local)
+if (strpos($host, 'ngrok') !== false) {
+    $protocol = 'https';
+}
+
 // Redirection automatique : localhost → cesi-site.local (pour cohérence du domaine)
 // Uniquement si on n'est pas en ligne de commande (CLI)
 if (php_sapi_name() !== 'cli' && $host !== 'cesi-site.local' && strpos($host, 'localhost') !== false) {
@@ -30,8 +35,8 @@ if (php_sapi_name() !== 'cli' && $host !== 'cesi-site.local' && strpos($host, 'l
 }
 
 // Configuration spécifique pour les Virtual Hosts
-if ($host === 'cesi-site.local') {
-    define('BASE_URL', $protocol . '://cesi-site.local');
+if ($host === 'cesi-site.local' || strpos($host, 'ngrok') !== false) {
+    define('BASE_URL', $protocol . '://' . $host);
     
     // En développement local avec HTTPS, les navigateurs bloquent souvent les ressources d'un autre domaine (CORS/Certificat)
     // On utilise donc le même domaine pour les assets en HTTPS pour éviter que le style saute

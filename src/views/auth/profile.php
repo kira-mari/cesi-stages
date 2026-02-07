@@ -6,7 +6,7 @@
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h4 class="mb-0 text-foreground"><i class="fas fa-id-card me-2"></i>Mon Profil</h4>
                     <a href="<?= BASE_URL ?>/profile/edit" class="btn btn-primary btn-sm">
-                        <i class="fas fa-edit me-1"></i> Modifier
+                        <i class="fas fa-edit me-1 text-white"></i> Modifier
                     </a>
                 </div>
                 <div class="card-body p-4">
