@@ -333,7 +333,7 @@ $title = "Accueil";
     </div>
 
     <!-- Main Content -->
-    <div class="container position-relative z-2">
+    <div class="container position-relative z-2" >
         <div class="row align-items-center">
             <div class="col-lg-8 mx-auto text-center pt-5">
                 <div class="animate-on-scroll visible">
@@ -382,7 +382,7 @@ $title = "Accueil";
 </div>
 
 <!-- Features Section (Updated) -->
-<div class="py-5 position-relative z-2">
+<div class="py-5 position-relative z-2" style="background: hsl(var(--background));">
     <div class="container py-5">
         
         <!-- Section Header -->
