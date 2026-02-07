@@ -24,6 +24,7 @@ if (strpos($host, 'ngrok') !== false) {
     $protocol = 'https';
 }
 
+<<<<<<< Updated upstream
 // Redirection automatique : localhost → cesi-site.local (pour cohérence du domaine)
 // Uniquement si on n'est pas en ligne de commande (CLI)
 if (php_sapi_name() !== 'cli' && $host !== 'cesi-site.local' && strpos($host, 'localhost') !== false) {
@@ -33,6 +34,15 @@ if (php_sapi_name() !== 'cli' && $host !== 'cesi-site.local' && strpos($host, 'l
     header('Location: ' . $protocol . '://cesi-site.local' . $uri);
     exit;
 }
+=======
+// Redirection automatique : localhost → cesi-site.local (DÉSACTIVÉ pour le développement)
+// Décommentez si vous voulez forcer l'utilisation de cesi-site.local
+// if ($host !== 'cesi-site.local' && strpos($host, 'localhost') !== false) {
+//     $uri = str_replace('/cesi-stages', '', $_SERVER['REQUEST_URI']);
+//     header('Location: ' . $protocol . '://cesi-site.local' . $uri);
+//     exit;
+// }
+>>>>>>> Stashed changes
 
 // Configuration spécifique pour les Virtual Hosts
 if ($host === 'cesi-site.local' || strpos($host, 'ngrok') !== false) {
@@ -56,7 +66,7 @@ else {
 define('GOOGLE_OAUTH_ENABLED', true); // mettre à true après configuration
 define('GOOGLE_CLIENT_ID', $_ENV['GOOGLE_CLIENT_ID'] ?? '');
 define('GOOGLE_CLIENT_SECRET', $_ENV['GOOGLE_CLIENT_SECRET'] ?? '');
-// Par défaut on utilise localhost pour le développement local
+// Google n'accepte que localhost pour le dev local (pas les domaines .local)
 if (!defined('GOOGLE_REDIRECT')) {
     define('GOOGLE_REDIRECT', 'http://localhost/cesi-stages/auth/google-callback');
 }
