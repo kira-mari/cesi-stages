@@ -24,17 +24,6 @@ if (strpos($host, 'ngrok') !== false) {
     $protocol = 'https';
 }
 
-<<<<<<< Updated upstream
-// Redirection automatique : localhost → cesi-site.local (pour cohérence du domaine)
-// Uniquement si on n'est pas en ligne de commande (CLI)
-if (php_sapi_name() !== 'cli' && $host !== 'cesi-site.local' && strpos($host, 'localhost') !== false) {
-    // Vérification de l'existence de REQUEST_URI pour éviter les erreurs
-    $requestUri = $_SERVER['REQUEST_URI'] ?? '/';
-    $uri = str_replace('/cesi-stages', '', $requestUri);
-    header('Location: ' . $protocol . '://cesi-site.local' . $uri);
-    exit;
-}
-=======
 // Redirection automatique : localhost → cesi-site.local (DÉSACTIVÉ pour le développement)
 // Décommentez si vous voulez forcer l'utilisation de cesi-site.local
 // if ($host !== 'cesi-site.local' && strpos($host, 'localhost') !== false) {
@@ -42,7 +31,6 @@ if (php_sapi_name() !== 'cli' && $host !== 'cesi-site.local' && strpos($host, 'l
 //     header('Location: ' . $protocol . '://cesi-site.local' . $uri);
 //     exit;
 // }
->>>>>>> Stashed changes
 
 // Configuration spécifique pour les Virtual Hosts
 if ($host === 'cesi-site.local' || strpos($host, 'ngrok') !== false) {
