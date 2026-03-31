@@ -4,6 +4,7 @@ namespace Controllers;
 use Core\Controller;
 use Models\User;
 use Models\Candidature;
+use Models\Groupe;
 
 /**
  * Contrôleur des étudiants
@@ -53,13 +54,25 @@ class Etudiant extends Controller
 
         $totalPages = ceil($total / ITEMS_PER_PAGE);
 
+        // Charger les groupes pour les pilotes
+        $groupes = [];
+        $sansGroupe = [];
+        if ($isPilote) {
+            $groupeModel = new Groupe();
+            $groupes = $groupeModel->getByPiloteWithEtudiants($currentUserId);
+            $sansGroupe = $groupeModel->getEtudiantsSansGroupe($currentUserId);
+        }
+
         $this->render('etudiants/index', [
             'title' => 'Étudiants - ' . APP_NAME,
             'etudiants' => $etudiants,
             'search' => $search,
             'page' => $page,
             'totalPages' => $totalPages,
-            'total' => $total
+            'total' => $total,
+            'groupes' => $groupes,
+            'sansGroupe' => $sansGroupe,
+            'isPilote' => $isPilote
         ]);
     }
 

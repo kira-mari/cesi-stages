@@ -34,10 +34,12 @@ composer install
    ```bash
    php run_messages_migration.php
    php run_approval_migration.php
+   php run_groupes_migration.php
    ```
    Ou importez manuellement depuis phpMyAdmin :
    - `database/migrations/007_add_messages_table.sql`
    - `database/migrations/008_add_approval_system.sql`
+   - `database/migrations/009_add_groupes.sql`
 
 ---
 👉 **Étape suivante :** [Configuration des variables d'environnement](02_CONFIGURATION_ENV.md)

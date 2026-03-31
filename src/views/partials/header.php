@@ -956,6 +956,14 @@ function isNavLinkActive($uri, $base, $path) {
                             <a href="<?= BASE_URL ?>/messages" class="nav-link-custom w-100 d-flex align-items-center gap-2 px-3">
                                 <i class="fas fa-envelope opacity-50 w-5"></i> Messagerie
                             </a>
+                            <?php if ($_SESSION['user_role'] === 'pilote' && (!isset($_SESSION['user_is_approved']) || $_SESSION['user_is_approved'] !== false)): ?>
+                            <a href="<?= BASE_URL ?>/groupes" class="nav-link-custom w-100 d-flex align-items-center gap-2 px-3">
+                                <i class="fas fa-users opacity-50 w-5"></i> Mes Groupes
+                            </a>
+                            <a href="<?= BASE_URL ?>/groupes/create" class="nav-link-custom w-100 d-flex align-items-center gap-2 px-3">
+                                <i class="fas fa-plus-circle opacity-50 w-5"></i> Créer un groupe
+                            </a>
+                            <?php endif; ?>
                             <div class="border-top border-secondary border-opacity-25 my-1"></div>
                             <a href="<?= BASE_URL ?>/logout" class="nav-link-custom w-100 d-flex align-items-center gap-2 px-3 text-danger hover-bg-danger-soft">
                                 <i class="fas fa-sign-out-alt opacity-50 w-5"></i> Déconnexion
