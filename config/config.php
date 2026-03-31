@@ -19,19 +19,27 @@ const APP_ENV = 'development'; // development, production
 $protocol = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? 'https' : 'http';
 $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
 
-// Redirection automatique : localhost → cesi-site.local (pour cohérence du domaine)
-// Uniquement si on n'est pas en ligne de commande (CLI)
-if (php_sapi_name() !== 'cli' && $host !== 'cesi-site.local' && strpos($host, 'localhost') !== false) {
-    // Vérification de l'existence de REQUEST_URI pour éviter les erreurs
+// Forcer HTTPS pour cesi-site.local et ngrok
+if ($host === 'cesi-site.local') {
+    $protocol = 'https';
+} elseif (strpos($host, 'ngrok') !== false) {
+    $protocol = 'https';
+}
+
+// Redirection automatique : localhost → cesi-site.local (DÉSACTIVÉ pour le développement)
+// Décommentez si vous voulez forcer l'utilisation de cesi-site.local
+ if ($host !== 'cesi-site.local' && strpos($host, 'localhost') !== false) {
     $requestUri = $_SERVER['REQUEST_URI'] ?? '/';
     $uri = str_replace('/cesi-stages', '', $requestUri);
-    header('Location: ' . $protocol . '://cesi-site.local' . $uri);
-    exit;
-}
+    if (php_sapi_name() !== 'cli') {
+        header('Location: ' . $protocol . '://cesi-site.local' . $uri);
+        exit;
+    }
+ }
 
 // Configuration spécifique pour les Virtual Hosts
 if ($host === 'cesi-site.local') {
-    define('BASE_URL', $protocol . '://cesi-site.local');
+    define('BASE_URL', 'https://cesi-site.local');
     
     // En développement local avec HTTPS, les navigateurs bloquent souvent les ressources d'un autre domaine (CORS/Certificat)
     // On utilise donc le même domaine pour les assets en HTTPS pour éviter que le style saute
@@ -40,6 +48,9 @@ if ($host === 'cesi-site.local') {
     } else {
         define('ASSETS_URL', $protocol . '://cesi-static.local/assets');
     }
+} elseif (strpos($host, 'ngrok') !== false) {
+    define('BASE_URL', 'https://' . $host);
+    define('ASSETS_URL', BASE_URL . '/assets');
 } 
 // Configuration par défaut (Localhost / IP)
 else {
@@ -51,10 +62,10 @@ else {
 define('GOOGLE_OAUTH_ENABLED', true); // mettre à true après configuration
 define('GOOGLE_CLIENT_ID', $_ENV['GOOGLE_CLIENT_ID'] ?? '');
 define('GOOGLE_CLIENT_SECRET', $_ENV['GOOGLE_CLIENT_SECRET'] ?? '');
-// Par défaut on utilise localhost pour le développement local
-if (!defined('GOOGLE_REDIRECT')) {
-    define('GOOGLE_REDIRECT', 'http://localhost/cesi-stages/auth/google-callback');
-}
+
+// Google n'accepte que localhost pour le dev local (pas les domaines .local)
+// Le callback doit toujours être sur localhost, puis on redirige vers le bon domaine
+define('GOOGLE_REDIRECT', 'http://localhost/cesi-stages/auth/google-callback');
 
 // Sécurité
 const SESSION_LIFETIME = 3600; // 1 heure

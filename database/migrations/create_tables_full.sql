@@ -1,13 +1,6 @@
 -- ============================================
--- CesiStages - Script de création de la base de données complet
+-- CesiStages - Script de création des tables
 -- ============================================
-
--- Création de la base de données
-CREATE DATABASE IF NOT EXISTS cesi_stages 
-    CHARACTER SET utf8mb4 
-    COLLATE utf8mb4_unicode_ci;
-
-USE cesi_stages;
 
 -- ============================================
 -- Table: users (utilisateurs)
@@ -26,10 +19,15 @@ CREATE TABLE users (
     is_verified BOOLEAN DEFAULT 0,
     verification_code VARCHAR(6) DEFAULT NULL,
     remember_token VARCHAR(255) NULL DEFAULT NULL,
+    is_approved TINYINT(1) DEFAULT NULL,
+    approval_requested_at DATETIME DEFAULT NULL,
+    approved_at DATETIME DEFAULT NULL,
+    approved_by INT DEFAULT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     INDEX idx_email (email),
-    INDEX idx_role (role)
+    INDEX idx_role (role),
+    INDEX idx_is_approved (is_approved)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ============================================
@@ -133,16 +131,10 @@ CREATE TABLE pilote_etudiant (
     INDEX idx_pilote (pilote_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-
-
 -- ============================================
--- Migration: Table de liaison recruteur-entreprise
+-- Table: recruteur_entreprise (relation recruteur-entreprise)
 -- ============================================
-
-USE cesi_stages;
-
--- Table de liaison entre recruteurs et entreprises
-CREATE TABLE IF NOT EXISTS recruteur_entreprise (
+CREATE TABLE recruteur_entreprise (
     id INT AUTO_INCREMENT PRIMARY KEY,
     recruteur_id INT NOT NULL,
     entreprise_id INT NOT NULL,
@@ -155,13 +147,9 @@ CREATE TABLE IF NOT EXISTS recruteur_entreprise (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ============================================
--- Migration: Système de messagerie interne
+-- Table: messages (système de messagerie interne)
 -- ============================================
-
-USE cesi_stages;
-
--- Table des messages
-CREATE TABLE IF NOT EXISTS messages (
+CREATE TABLE messages (
     id INT AUTO_INCREMENT PRIMARY KEY,
     expediteur_id INT NOT NULL,
     destinataire_id INT NOT NULL,
@@ -176,4 +164,32 @@ CREATE TABLE IF NOT EXISTS messages (
     INDEX idx_destinataire (destinataire_id),
     INDEX idx_lu (lu),
     INDEX idx_created (created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+-- ============================================
+-- Groupes d'étudiants par pilote
+-- ============================================
+
+-- Table: groupes (créés par les pilotes)
+CREATE TABLE IF NOT EXISTS groupes (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    pilote_id INT NOT NULL,
+    nom VARCHAR(255) NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (pilote_id) REFERENCES users(id) ON DELETE CASCADE,
+    INDEX idx_pilote (pilote_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Table: groupe_etudiant (étudiants dans chaque groupe)
+CREATE TABLE IF NOT EXISTS groupe_etudiant (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    groupe_id INT NOT NULL,
+    etudiant_id INT NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (groupe_id) REFERENCES groupes(id) ON DELETE CASCADE,
+    FOREIGN KEY (etudiant_id) REFERENCES users(id) ON DELETE CASCADE,
+    UNIQUE KEY unique_groupe_etudiant (groupe_id, etudiant_id),
+    -- Un étudiant ne peut être que dans un seul groupe par pilote (groupe appartient à un pilote)
+    INDEX idx_groupe (groupe_id),
+    INDEX idx_etudiant (etudiant_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

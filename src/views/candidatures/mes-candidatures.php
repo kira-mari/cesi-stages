@@ -44,8 +44,8 @@
 
 [data-theme="light"] .candidature-date {
     color: #6b7280 !important;
-    background: #f3f4f6 !important;
-    border-color: #e5e7eb !important;
+    background: transparent !important;
+    border-color: transparent !important;
 }
 
 /* Buttons in Card */

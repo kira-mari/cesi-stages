@@ -21,6 +21,17 @@ class Chatbot extends Controller
      */
     public function ask()
     {
+        // Headers CORS pour permettre les requêtes cross-origin (nécessaire pour ngrok)
+        header('Access-Control-Allow-Origin: *');
+        header('Access-Control-Allow-Methods: POST, OPTIONS');
+        header('Access-Control-Allow-Headers: Content-Type, X-Requested-With');
+
+        // Gérer les requêtes preflight OPTIONS
+        if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+            http_response_code(200);
+            exit;
+        }
+
         header('Content-Type: application/json');
 
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -815,7 +826,7 @@ class Chatbot extends Controller
     protected function getCandidaturesForOffre(int $offreId): array
     {
         try {
-            $db = Model::getDB();
+            $db = Model::getDBStatic();
             $stmt = $db->prepare("SELECT id, titre FROM offres WHERE id = :id");
             $stmt->execute([':id' => $offreId]);
             $offre = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -1405,7 +1416,7 @@ class Chatbot extends Controller
 
     protected function storeInteraction(?int $userId, string $question, string $answer, bool $needsAdmin): void
     {
-        $db = Model::getDB();
+        $db = Model::getDBStatic();
 
         $stmt = $db->prepare(
             "INSERT INTO chatbot_interactions (user_id, question, answer, needs_admin, created_at)

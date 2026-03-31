@@ -1,10 +1,10 @@
 /**
  * Chatbot flottant - gestion de l'UI et des appels AJAX
- * URL cible : https://cesi-site.local/chatbot/ask
+ * URL cible : /chatbot/ask (URL relative)
  */
 
 (function () {
-    const CHATBOT_ENDPOINT = 'https://cesi-site.local/chatbot/ask';
+    const CHATBOT_ENDPOINT = '/chatbot/ask';
     // Clé d'historique unique par utilisateur
     const getHistoryKey = () => {
         const userId = window.CHATBOT_USER_ID || 'guest';
@@ -23,7 +23,7 @@
         const wrapper = document.createElement('div');
         wrapper.className = 'chatbot-widget';
         wrapper.innerHTML = `
-            <div class="chatbot-panel" id="chatbotPanel" aria-hidden="true">
+            <div class="chatbot-panel" id="chatbotPanel" inert>
                 <div class="chatbot-header">
                     <div class="chatbot-header-main">
                         <div class="chatbot-avatar">
@@ -467,7 +467,11 @@
             const widget = document.querySelector('.chatbot-widget');
             const isActive = widget.classList.toggle('active');
             
-            panel.setAttribute('aria-hidden', !isActive);
+            if (isActive) {
+                panel.removeAttribute('inert');
+            } else {
+                panel.setAttribute('inert', '');
+            }
             
             if (isActive) {
                 input.focus();
@@ -477,7 +481,7 @@
         function closePanel() {
             const widget = document.querySelector('.chatbot-widget');
             widget.classList.remove('active');
-            panel.setAttribute('aria-hidden', 'true');
+            panel.setAttribute('inert', '');
         }
 
         toggleBtn.addEventListener('click', togglePanel);

@@ -370,4 +370,69 @@ class User extends Model
         $stmt->execute([':entreprise_id' => $entrepriseId]);
         return $stmt->fetch();
     }
+
+    /**
+     * Récupère les demandes d'approbation en attente
+     * 
+     * @return array
+     */
+    public function getPendingApprovals()
+    {
+        $stmt = self::getDB()->prepare(
+            "SELECT * FROM {$this->table} 
+             WHERE is_approved = 0 
+             ORDER BY approval_requested_at DESC"
+        );
+        $stmt->execute();
+        return $stmt->fetchAll();
+    }
+
+    /**
+     * Compte les approbations faites aujourd'hui
+     * 
+     * @return int
+     */
+    public function countApprovedToday()
+    {
+        $stmt = self::getDB()->prepare(
+            "SELECT COUNT(*) as count FROM {$this->table} 
+             WHERE is_approved = 1 
+             AND DATE(approved_at) = CURDATE()"
+        );
+        $stmt->execute();
+        $result = $stmt->fetch();
+        return (int) ($result['count'] ?? 0);
+    }
+
+    /**
+     * Compte le total des comptes approuvés
+     * 
+     * @return int
+     */
+    public function countTotalApproved()
+    {
+        $stmt = self::getDB()->prepare(
+            "SELECT COUNT(*) as count FROM {$this->table} 
+             WHERE is_approved = 1"
+        );
+        $stmt->execute();
+        $result = $stmt->fetch();
+        return (int) ($result['count'] ?? 0);
+    }
+
+    /**
+     * Compte les demandes en attente d'approbation
+     * 
+     * @return int
+     */
+    public function countPendingApprovals()
+    {
+        $stmt = self::getDB()->prepare(
+            "SELECT COUNT(*) as count FROM {$this->table} 
+             WHERE is_approved = 0"
+        );
+        $stmt->execute();
+        $result = $stmt->fetch();
+        return (int) ($result['count'] ?? 0);
+    }
 }

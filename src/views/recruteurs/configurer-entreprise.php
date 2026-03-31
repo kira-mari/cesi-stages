@@ -3,8 +3,8 @@
         <div class="mb-4">
             <i class="fas fa-building fa-4x text-primary"></i>
         </div>
-        <h1 class="h2 fw-bold">Configurer votre entreprise</h1>
-        <p class="text-muted">Pour publier des offres et recevoir des candidatures, vous devez être associé à une entreprise.</p>
+        <h1 class="h2 fw-bold">Demander une assignation d'entreprise</h1>
+        <p class="text-muted">Pour publier des offres et recevoir des candidatures, vous devez être associé à une entreprise. Envoyez une demande aux administrateurs.</p>
     </div>
 
     <?php if (isset($_SESSION['flash_error'])): ?>
@@ -36,11 +36,11 @@
             <div class="card shadow-sm border-0 h-100">
                 <div class="card-header py-3" style="background: linear-gradient(135deg, #0ea5e9 0%, #06b6d4 100%);">
                     <h5 class="mb-0 text-white">
-                        <i class="fas fa-search me-2"></i>Rejoindre une entreprise existante
+                        <i class="fas fa-search me-2"></i>Demander à rejoindre une entreprise existante
                     </h5>
                 </div>
                 <div class="card-body p-4">
-                    <p class="text-muted mb-4">Si votre entreprise est déjà référencée sur notre plateforme, sélectionnez-la dans la liste.</p>
+                    <p class="text-muted mb-4">Si votre entreprise est déjà référencée sur notre plateforme, demandez à y être associé.</p>
                     
                     <form action="<?= BASE_URL ?>/recruteur/configurer-entreprise" method="POST">
                         <input type="hidden" name="csrf_token" value="<?= $csrf_token ?>">
@@ -53,16 +53,13 @@
                                 <?php foreach ($toutesEntreprises as $e): ?>
                                     <option value="<?= $e['id'] ?>">
                                         <?= htmlspecialchars($e['nom']) ?>
-                                        <?php if (!empty($e['adresse'])): ?>
-                                            - <?= htmlspecialchars($e['adresse']) ?>
-                                        <?php endif; ?>
                                     </option>
                                 <?php endforeach; ?>
                             </select>
                         </div>
                         
                         <button type="submit" class="btn btn-primary w-100">
-                            <i class="fas fa-link me-2"></i>Rejoindre cette entreprise
+                            <i class="fas fa-paper-plane me-2"></i>Envoyer la demande
                         </button>
                     </form>
                 </div>
@@ -74,11 +71,11 @@
             <div class="card shadow-sm border-0 h-100">
                 <div class="card-header py-3" style="background: linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%);">
                     <h5 class="mb-0 text-white">
-                        <i class="fas fa-plus-circle me-2"></i>Créer une nouvelle entreprise
+                        <i class="fas fa-plus-circle me-2"></i>Demander la création d'une nouvelle entreprise
                     </h5>
                 </div>
                 <div class="card-body p-4">
-                    <p class="text-muted mb-4">Si votre entreprise n'est pas encore référencée, créez-la maintenant.</p>
+                    <p class="text-muted mb-4">Si votre entreprise n'est pas encore référencée, demandez sa création.</p>
                     
                     <form action="<?= BASE_URL ?>/recruteur/configurer-entreprise" method="POST">
                         <input type="hidden" name="csrf_token" value="<?= $csrf_token ?>">
@@ -121,7 +118,7 @@
                         </div>
                         
                         <button type="submit" class="btn btn-success w-100">
-                            <i class="fas fa-building me-2"></i>Créer l'entreprise
+                            <i class="fas fa-paper-plane me-2"></i>Envoyer la demande de création
                         </button>
                     </form>
                 </div>

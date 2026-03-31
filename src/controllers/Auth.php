@@ -48,9 +48,32 @@ class Auth extends Controller
                     // Connexion réussie
                     $_SESSION['user_id'] = $user['id'];
                     $_SESSION['user_email'] = $user['email'];
-                    $_SESSION['user_role'] = $user['role'];
                     $_SESSION['user_nom'] = $user['nom'];
                     $_SESSION['user_prenom'] = $user['prenom'];
+                    
+                    // Vérifier si le compte nécessite une approbation
+                    $needsApproval = in_array($user['role'], ['pilote', 'recruteur']);
+                    $isApproved = isset($user['is_approved']) ? (bool) $user['is_approved'] : true;
+                    
+                    if ($needsApproval && !$isApproved) {
+                        // Compte en attente d'approbation - accès limité
+                        if ($user['role'] === 'pilote') {
+                            $_SESSION['user_role'] = 'pilote'; // Rôle temporaire avec restrictions
+                        } else {
+                            $_SESSION['user_role'] = 'etudiant'; // Pour les recruteurs
+                        }
+                        $_SESSION['user_role_pending'] = $user['role'];
+                        $_SESSION['user_is_approved'] = false;
+                        $_SESSION['flash_info'] = "Votre demande de compte " . ucfirst($user['role']) . " est en attente de validation par un administrateur.";
+                    } else {
+                        $_SESSION['user_role'] = $user['role'];
+                        $_SESSION['user_is_approved'] = true;
+                        
+                        // Pour les recruteurs, compter le nombre d'entreprises assignées
+                        if ($user['role'] === 'recruteur') {
+                            $_SESSION['user_nb_entreprises'] = $userModel->countEntreprisesByRecruteur($user['id']);
+                        }
+                    }
 
                     // Gestion du "Se souvenir de moi"
                     if ($remember) {
@@ -89,13 +112,20 @@ class Auth extends Controller
             exit;
         }
 
+        // Transmettre le domaine d'origine via le paramètre state de Google
+        $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+        $protocol = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? 'https' : 'http';
+        $origin = $protocol . '://' . $host;
+        $state = base64_encode(json_encode(['origin' => $origin]));
+
         $params = [
             'client_id' => GOOGLE_CLIENT_ID,
             'redirect_uri' => GOOGLE_REDIRECT,
             'response_type' => 'code',
             'scope' => 'openid email profile',
             'access_type' => 'offline',
-            'prompt' => 'select_account'
+            'prompt' => 'select_account',
+            'state' => $state
         ];
 
         $url = 'https://accounts.google.com/o/oauth2/v2/auth?' . http_build_query($params);
@@ -206,6 +236,34 @@ class Auth extends Controller
             $_SESSION['user_prenom'] = $user['prenom'];
             session_regenerate_id(true);
             $_SESSION['flash_success'] = "Connexion via Google réussie. Bienvenue, " . ($user['prenom'] ?? '') . ".";
+            
+            // Si l'utilisateur vient d'un autre domaine (ex: cesi-site.local),
+            // transférer la session via un token temporaire
+            $state = $_GET['state'] ?? null;
+            if ($state) {
+                $stateData = json_decode(base64_decode($state), true);
+                if (isset($stateData['origin']) && $stateData['origin'] !== BASE_URL) {
+                    // Générer un token temporaire unique
+                    $token = bin2hex(random_bytes(32));
+                    $tokenFile = ROOT_PATH . '/tmp/oauth_token_' . $token . '.json';
+                    
+                    // Créer le dossier tmp si nécessaire
+                    if (!is_dir(ROOT_PATH . '/tmp')) {
+                        mkdir(ROOT_PATH . '/tmp', 0755, true);
+                    }
+                    
+                    // Stocker les infos utilisateur dans le token
+                    file_put_contents($tokenFile, json_encode([
+                        'user_id' => $user['id'],
+                        'expires' => time() + 30 // Token valide 30 secondes
+                    ]));
+                    
+                    // Rediriger vers le domaine d'origine avec le token
+                    header('Location: ' . $stateData['origin'] . '/auth/token-login?token=' . $token);
+                    exit;
+                }
+            }
+            
             $this->redirect('dashboard');
         }
 
@@ -308,33 +366,31 @@ class Auth extends Controller
                     if ($userModel->findByEmail($email)) {
                         $errors[] = "Cet email est déjà utilisé.";
                     } else {
-                        // TEMPORAIRE: Création directe sans vérification email (Brevo pas activé)
-                        // TODO: Réactiver la vérification email quand SMTP sera fonctionnel
-                        $userId = $userModel->create([
+                        // Générer un code de vérification
+                        $verificationCode = (string) rand(100000, 999999);
+
+                        // Stocker les données en session pour vérification
+                        $_SESSION['pending_registration'] = [
                             'nom' => $nom,
                             'prenom' => $prenom,
                             'email' => $email,
                             'password' => password_hash($password, PASSWORD_BCRYPT),
                             'role' => $role,
-                            'is_verified' => 1 // Directement vérifié
-                        ]);
+                            'verification_code' => $verificationCode,
+                            'expires_at' => time() + (15 * 60), // 15 minutes
+                            'attempts' => 0
+                        ];
+                        $_SESSION['verify_email'] = $email;
 
-                        if ($userId) {
-                            // Si c'est un recruteur, le connecter et rediriger vers la config entreprise
-                            if ($role === 'recruteur') {
-                                $_SESSION['user_id'] = $userId;
-                                $_SESSION['user_email'] = $email;
-                                $_SESSION['user_role'] = $role;
-                                $_SESSION['user_nom'] = $nom;
-                                $_SESSION['user_prenom'] = $prenom;
-                                $_SESSION['flash_info'] = "Bienvenue ! Veuillez maintenant renseigner votre entreprise.";
-                                $this->redirect('recruteur/configurer-entreprise');
-                            } else {
-                                $_SESSION['flash_success'] = "Compte créé avec succès ! Vous pouvez maintenant vous connecter.";
-                                $this->redirect('login');
-                            }
+                        // Envoyer l'email de vérification
+                        if ($this->sendVerificationEmail($email, $prenom, $verificationCode)) {
+                            $_SESSION['flash_success'] = "Un code de vérification a été envoyé à votre adresse email.";
+                            $this->redirect('verify');
                         } else {
-                            $errors[] = "Erreur lors de la création du compte. Veuillez réessayer.";
+                            $errors[] = "Erreur lors de l'envoi de l'email de vérification. Veuillez réessayer.";
+                            // Nettoyer la session en cas d'erreur
+                            unset($_SESSION['pending_registration']);
+                            unset($_SESSION['verify_email']);
                         }
                     }
                 }
@@ -409,7 +465,7 @@ class Auth extends Controller
         if ($pendingUser['verification_code'] === $code) {
             // Code valide : création finale du compte
             $userModel = new User();
-            
+
             if ($userModel->findByEmail($email)) {
                 $_SESSION['flash_error'] = "Cet email est déjà utilisé par un compte actif.";
                 unset($_SESSION['pending_registration']);
@@ -417,30 +473,68 @@ class Auth extends Controller
                 $this->redirect('login');
             }
 
-            $userId = $userModel->create([
+            // Déterminer si le compte nécessite une approbation
+            $needsApproval = in_array($pendingUser['role'], ['pilote', 'recruteur']);
+
+            $userData = [
                 'nom' => $pendingUser['nom'],
                 'prenom' => $pendingUser['prenom'],
                 'email' => $pendingUser['email'],
-                'password' => $pendingUser['password'], 
+                'password' => $pendingUser['password'],
                 'role' => $pendingUser['role'],
-                'is_verified' => 1, 
+                'is_verified' => 1,
                 'verification_code' => null
-            ]);
+            ];
 
-            // Auto-login
-            $_SESSION['user_id'] = $userId;
-            $_SESSION['user_email'] = $pendingUser['email'];
-            $_SESSION['user_role'] = $pendingUser['role'];
-            $_SESSION['user_nom'] = $pendingUser['nom'];
-            $_SESSION['user_prenom'] = $pendingUser['prenom'];
-            session_regenerate_id(true);
+            // Si le rôle nécessite une approbation, mettre en attente
+            if ($needsApproval) {
+                $userData['is_approved'] = 0; // En attente
+                $userData['approval_requested_at'] = date('Y-m-d H:i:s');
+            }
 
-            // Nettoyage session
-            unset($_SESSION['pending_registration']);
-            unset($_SESSION['verify_email']);
-            
-            $_SESSION['flash_success'] = "Compte créé et vérifié avec succès ! Bienvenue sur votre tableau de bord.";
-            $this->redirect('dashboard');
+            $userId = $userModel->create($userData);
+
+            if ($userId) {
+                // Notifier les admins si approbation requise
+                if ($needsApproval) {
+                    $this->notifyAdminsNewApprovalRequest($userId, $pendingUser['nom'], $pendingUser['prenom'], $pendingUser['email'], $pendingUser['role']);
+                }
+
+                // Auto-login
+                $_SESSION['user_id'] = $userId;
+                $_SESSION['user_email'] = $pendingUser['email'];
+                $_SESSION['user_nom'] = $pendingUser['nom'];
+                $_SESSION['user_prenom'] = $pendingUser['prenom'];
+                session_regenerate_id(true);
+
+                // Nettoyage session
+                unset($_SESSION['pending_registration']);
+                unset($_SESSION['verify_email']);
+
+                if ($pendingUser['role'] === 'recruteur') {
+                    // Recruteur en attente d'approbation
+                    $_SESSION['user_role'] = 'etudiant'; // Rôle temporaire
+                    $_SESSION['user_role_pending'] = $pendingUser['role'];
+                    $_SESSION['user_is_approved'] = false;
+                    $_SESSION['flash_success'] = "Compte créé et vérifié avec succès ! Veuillez configurer votre entreprise. Votre compte sera activé après validation par un administrateur.";
+                    $this->redirect('recruteur/configurer-entreprise');
+                } elseif ($pendingUser['role'] === 'pilote') {
+                    // Pilote en attente d'approbation
+                    $_SESSION['user_role'] = 'pilote'; // Rôle temporaire avec restrictions
+                    $_SESSION['user_role_pending'] = $pendingUser['role'];
+                    $_SESSION['user_is_approved'] = false;
+                    $_SESSION['flash_success'] = "Compte créé et vérifié avec succès ! Votre demande de compte Pilote est en attente de validation par un administrateur.";
+                    $this->redirect('dashboard');
+                } else {
+                    // Étudiant - accès direct
+                    $_SESSION['user_role'] = $pendingUser['role'];
+                    $_SESSION['flash_success'] = "Compte créé et vérifié avec succès ! Bienvenue sur votre tableau de bord.";
+                    $this->redirect('dashboard');
+                }
+            } else {
+                $_SESSION['flash_error'] = "Erreur lors de la création du compte. Veuillez réessayer.";
+                $this->redirect('register');
+            }
         } else {
             // Code invalide
             $pendingUser['attempts']++;
@@ -563,6 +657,37 @@ class Auth extends Controller
     }
 
     /**
+     * Notifier les admins d'une nouvelle demande d'approbation
+     */
+    private function notifyAdminsNewApprovalRequest($userId, $nom, $prenom, $email, $role)
+    {
+        $messageModel = new \Models\Message();
+        $userModel = new User();
+        
+        // Récupérer tous les admins
+        $admins = $userModel->where('role', 'admin');
+        
+        $roleLabel = $role === 'pilote' ? 'Pilote' : 'Recruteur';
+        $sujet = "Nouvelle demande d'inscription : $roleLabel";
+        $contenu = "Bonjour,\n\n";
+        $contenu .= "Un nouvel utilisateur souhaite s'inscrire en tant que $roleLabel :\n\n";
+        $contenu .= "Nom : $nom\n";
+        $contenu .= "Prénom : $prenom\n";
+        $contenu .= "Email : $email\n\n";
+        $contenu .= "Veuillez vous rendre dans la section 'Approbations' du tableau de bord pour valider ou refuser cette demande.\n\n";
+        $contenu .= "Cordialement,\nLe système CesiStages";
+        
+        foreach ($admins as $admin) {
+            $messageModel->envoyer(
+                $userId, // Le nouveau utilisateur
+                $admin['id'],
+                $sujet,
+                $contenu
+            );
+        }
+    }
+
+    /**
      * Page de profil utilisateur
      */
     public function profile()
@@ -581,9 +706,16 @@ class Auth extends Controller
             $this->redirect('login');
         }
 
+        // Pour les recruteurs, récupérer les entreprises assignées
+        $entreprises = [];
+        if ($user['role'] === 'recruteur') {
+            $entreprises = $userModel->getEntreprisesByRecruteur($user['id']);
+        }
+
         $this->render('auth/profile', [
             'title' => 'Mon Profil - ' . APP_NAME,
-            'user' => $user
+            'user' => $user,
+            'entreprises' => $entreprises
         ]);
     }
 
@@ -876,5 +1008,125 @@ class Auth extends Controller
             // error_log("Mail Error: {$mail->ErrorInfo}");
             return false;
         }
+    }
+
+    /**
+     * Connexion via token temporaire (transfert de session entre domaines après Google OAuth)
+     */
+    public function tokenLogin()
+    {
+        $token = $_GET['token'] ?? null;
+        if (!$token || !preg_match('/^[a-f0-9]{64}$/', $token)) {
+            $_SESSION['flash_error'] = "Token invalide.";
+            $this->redirect('login');
+            return;
+        }
+
+        $tokenFile = ROOT_PATH . '/tmp/oauth_token_' . $token . '.json';
+        
+        if (!file_exists($tokenFile)) {
+            $_SESSION['flash_error'] = "Token expiré ou invalide.";
+            $this->redirect('login');
+            return;
+        }
+
+        $data = json_decode(file_get_contents($tokenFile), true);
+        
+        // Supprimer le token immédiatement (usage unique)
+        unlink($tokenFile);
+        
+        // Vérifier l'expiration
+        if (!$data || $data['expires'] < time()) {
+            $_SESSION['flash_error'] = "Token expiré.";
+            $this->redirect('login');
+            return;
+        }
+
+        // Récupérer l'utilisateur et créer la session
+        $userModel = new User();
+        $user = $userModel->find($data['user_id']);
+        
+        if (!$user) {
+            $_SESSION['flash_error'] = "Utilisateur introuvable.";
+            $this->redirect('login');
+            return;
+        }
+
+        $_SESSION['user_id'] = $user['id'];
+        $_SESSION['user_email'] = $user['email'];
+        $_SESSION['user_role'] = $user['role'];
+        $_SESSION['user_nom'] = $user['nom'];
+        $_SESSION['user_prenom'] = $user['prenom'];
+        session_regenerate_id(true);
+        
+        // Vérifier l'approbation pour pilote/recruteur
+        if (in_array($user['role'], ['pilote', 'recruteur']) && isset($user['is_approved']) && $user['is_approved'] == 0) {
+            $_SESSION['user_role'] = 'etudiant';
+            $_SESSION['user_role_pending'] = $user['role'];
+            $_SESSION['user_is_approved'] = false;
+        } else {
+            $_SESSION['user_is_approved'] = true;
+        }
+
+        $_SESSION['flash_success'] = "Connexion via Google réussie. Bienvenue, " . ($user['prenom'] ?? '') . ".";
+        $this->redirect('dashboard');
+    }
+
+    /**
+     * Suppression du compte utilisateur (par l'utilisateur lui-même)
+     */
+    public function deleteAccount()
+    {
+        if (!$this->isAuthenticated()) {
+            $this->redirect('login');
+            return;
+        }
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            $this->redirect('profile');
+            return;
+        }
+
+        // Vérification CSRF
+        $csrfToken = $_POST['csrf_token'] ?? '';
+        if (!$this->verifyCsrfToken($csrfToken)) {
+            $_SESSION['flash_error'] = "Token de sécurité invalide.";
+            $this->redirect('profile');
+            return;
+        }
+
+        // Vérification du mot de passe pour confirmer
+        $password = $_POST['password'] ?? '';
+        $userModel = new User();
+        $user = $userModel->find($_SESSION['user_id']);
+
+        if (!$user || !password_verify($password, $user['password'])) {
+            $_SESSION['flash_error'] = "Mot de passe incorrect. La suppression a été annulée.";
+            $this->redirect('profile');
+            return;
+        }
+
+        // Empêcher la suppression du dernier admin
+        if ($user['role'] === 'admin') {
+            $adminCount = count($userModel->where('role', 'admin'));
+            if ($adminCount <= 1) {
+                $_SESSION['flash_error'] = "Impossible de supprimer le dernier compte administrateur.";
+                $this->redirect('profile');
+                return;
+            }
+        }
+
+        $userId = $_SESSION['user_id'];
+
+        // Supprimer le compte
+        $userModel->delete($userId);
+
+        // Déconnexion
+        session_destroy();
+
+        // Redirection avec message
+        session_start();
+        $_SESSION['flash_success'] = "Votre compte a été supprimé avec succès.";
+        $this->redirect('');
     }
 }

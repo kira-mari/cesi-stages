@@ -15,6 +15,7 @@ $router->add('register', ['controller' => 'Auth', 'action' => 'register']);
 $router->add('profile', ['controller' => 'Auth', 'action' => 'profile']);
 $router->add('profile/edit', ['controller' => 'Auth', 'action' => 'editProfile']);
 $router->add('profile/update', ['controller' => 'Auth', 'action' => 'updateProfile']);
+$router->add('profile/delete', ['controller' => 'Auth', 'action' => 'deleteAccount']);
 // Verification
 $router->add('verify', ['controller' => 'Auth', 'action' => 'verify']);
 $router->add('verify/submit', ['controller' => 'Auth', 'action' => 'verifyCode']);
@@ -30,6 +31,7 @@ $router->add('forgot-password/update', ['controller' => 'Auth', 'action' => 'res
 // Google SSO
 $router->add('auth/google', ['controller' => 'Auth', 'action' => 'googleRedirect']);
 $router->add('auth/google-callback', ['controller' => 'Auth', 'action' => 'googleCallback']);
+$router->add('auth/token-login', ['controller' => 'Auth', 'action' => 'tokenLogin']);
 
 // Routes du tableau de bord
 $router->add('dashboard', ['controller' => 'Dashboard', 'action' => 'index']);
@@ -72,6 +74,16 @@ $router->add('etudiants/delete/{id:\d+}', ['controller' => 'Etudiant', 'action' 
 
 // Routes des pilotes
 $router->add('pilotes', ['controller' => 'Pilote', 'action' => 'index']);
+
+// Routes des groupes (pilotes uniquement)
+$router->add('groupes', ['controller' => 'Groupes', 'action' => 'index']);
+$router->add('groupes/create', ['controller' => 'Groupes', 'action' => 'create']);
+$router->add('groupes/show/{id:\d+}', ['controller' => 'Groupes', 'action' => 'show']);
+$router->add('groupes/edit/{id:\d+}', ['controller' => 'Groupes', 'action' => 'edit']);
+$router->add('groupes/delete/{id:\d+}', ['controller' => 'Groupes', 'action' => 'delete']);
+$router->add('groupes/add-etudiant/{id:\d+}', ['controller' => 'Groupes', 'action' => 'addEtudiant']);
+$router->add('groupes/remove/{id:\d+}/{eid:\d+}', ['controller' => 'Groupes', 'action' => 'removeEtudiant']);
+$router->add('groupes/move-etudiant', ['controller' => 'Groupes', 'action' => 'moveEtudiant']);
 $router->add('pilotes/create', ['controller' => 'Pilote', 'action' => 'create']);
 $router->add('pilotes/store', ['controller' => 'Pilote', 'action' => 'store']);
 $router->add('pilotes/show/{id:\d+}', ['controller' => 'Pilote', 'action' => 'show']);
@@ -82,15 +94,17 @@ $router->add('pilotes/delete/{id:\d+}', ['controller' => 'Pilote', 'action' => '
 // Routes des recruteurs (gestion admin)
 $router->add('recruteurs', ['controller' => 'Recruteur', 'action' => 'index']);
 $router->add('recruteurs/show/{id:\d+}', ['controller' => 'Recruteur', 'action' => 'show']);
+$router->add('recruteurs/delete/{id:\d+}', ['controller' => 'Recruteur', 'action' => 'delete']);
 $router->add('recruteurs/assign-entreprise/{id:\d+}', ['controller' => 'Recruteur', 'action' => 'assignEntreprise']);
-$router->add('recruteurs/remove-entreprise/{recruteurId:\d+}/{entrepriseId:\d+}', ['controller' => 'Recruteur', 'action' => 'removeEntreprise']);
+$router->add('recruteurs/remove-entreprise/{id:\d+}/{eid:\d+}', ['controller' => 'Recruteur', 'action' => 'removeEntreprise']);
+$router->add('recruteurs/approve-request', ['controller' => 'Recruteur', 'action' => 'approveRequest']);
+$router->add('recruteurs/reject-request', ['controller' => 'Recruteur', 'action' => 'rejectRequest']);
 
 // Routes recruteur (espace recruteur)
 $router->add('recruteur/configurer-entreprise', ['controller' => 'Recruteur', 'action' => 'configurerEntreprise']);
 $router->add('recruteur/candidatures', ['controller' => 'Recruteur', 'action' => 'candidatures']);
 $router->add('recruteur/candidature/{id:\d+}', ['controller' => 'Recruteur', 'action' => 'showCandidature']);
 $router->add('recruteur/candidature/update/{id:\d+}', ['controller' => 'Recruteur', 'action' => 'updateCandidature']);
-$router->add('recruteur/mes-entreprises', ['controller' => 'Recruteur', 'action' => 'mesEntreprises']);
 
 // Routes des candidatures
 $router->add('candidatures', ['controller' => 'Candidature', 'action' => 'index']);
@@ -114,6 +128,16 @@ $router->add('messages/envoyer', ['controller' => 'Message', 'action' => 'envoye
 $router->add('messages/show/{id:\d+}', ['controller' => 'Message', 'action' => 'show']);
 $router->add('messages/supprimer/{id:\d+}', ['controller' => 'Message', 'action' => 'supprimer']);
 $router->add('messages/count', ['controller' => 'Message', 'action' => 'countNonLus']);
+
+// Routes des notifications
+$router->add('notifications/count', ['controller' => 'Notification', 'action' => 'count']);
+$router->add('notifications/list', ['controller' => 'Notification', 'action' => 'list']);
+$router->add('notifications/mark-all-read', ['controller' => 'Notification', 'action' => 'markAllRead']);
+
+// Routes des approbations (admin)
+$router->add('approbations', ['controller' => 'Approbation', 'action' => 'index']);
+$router->add('approbations/approve/{id:\d+}', ['controller' => 'Approbation', 'action' => 'approve']);
+$router->add('approbations/reject/{id:\d+}', ['controller' => 'Approbation', 'action' => 'reject']);
 
 // Route du chatbot (API JSON)
 $router->add('chatbot/ask', ['controller' => 'Chatbot', 'action' => 'ask']);
