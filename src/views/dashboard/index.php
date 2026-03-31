@@ -1,4 +1,4 @@
-<section class="dashboard-section">
+<section class="dashboard-section" style="margin-top: 80px;">
     <div class="container">
         <div class="dashboard-header">
             <h1>Tableau de bord</h1>
@@ -184,6 +184,12 @@
                     <a href="<?= BASE_URL ?>/offres/create" class="action-card">
                         <i class="fas fa-plus-circle"></i>
                         <span>Ajouter une offre</span>
+                    </a>
+                <?php endif; ?>
+                <?php if ($_SESSION['user_role'] === 'pilote' && (!isset($_SESSION['user_is_approved']) || $_SESSION['user_is_approved'] !== false)): ?>
+                    <a href="<?= BASE_URL ?>/groupes" class="action-card">
+                        <i class="fas fa-users"></i>
+                        <span>Mes groupes</span>
                     </a>
                 <?php endif; ?>
                 

@@ -31,6 +31,7 @@ $router->add('forgot-password/update', ['controller' => 'Auth', 'action' => 'res
 // Google SSO
 $router->add('auth/google', ['controller' => 'Auth', 'action' => 'googleRedirect']);
 $router->add('auth/google-callback', ['controller' => 'Auth', 'action' => 'googleCallback']);
+$router->add('auth/token-login', ['controller' => 'Auth', 'action' => 'tokenLogin']);
 
 // Routes du tableau de bord
 $router->add('dashboard', ['controller' => 'Dashboard', 'action' => 'index']);
@@ -73,6 +74,16 @@ $router->add('etudiants/delete/{id:\d+}', ['controller' => 'Etudiant', 'action' 
 
 // Routes des pilotes
 $router->add('pilotes', ['controller' => 'Pilote', 'action' => 'index']);
+
+// Routes des groupes (pilotes uniquement)
+$router->add('groupes', ['controller' => 'Groupes', 'action' => 'index']);
+$router->add('groupes/create', ['controller' => 'Groupes', 'action' => 'create']);
+$router->add('groupes/show/{id:\d+}', ['controller' => 'Groupes', 'action' => 'show']);
+$router->add('groupes/edit/{id:\d+}', ['controller' => 'Groupes', 'action' => 'edit']);
+$router->add('groupes/delete/{id:\d+}', ['controller' => 'Groupes', 'action' => 'delete']);
+$router->add('groupes/add-etudiant/{id:\d+}', ['controller' => 'Groupes', 'action' => 'addEtudiant']);
+$router->add('groupes/remove/{id:\d+}/{eid:\d+}', ['controller' => 'Groupes', 'action' => 'removeEtudiant']);
+$router->add('groupes/move-etudiant', ['controller' => 'Groupes', 'action' => 'moveEtudiant']);
 $router->add('pilotes/create', ['controller' => 'Pilote', 'action' => 'create']);
 $router->add('pilotes/store', ['controller' => 'Pilote', 'action' => 'store']);
 $router->add('pilotes/show/{id:\d+}', ['controller' => 'Pilote', 'action' => 'show']);
