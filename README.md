@@ -1,5 +1,5 @@
 <div align="center">
-<img src="docs/logo_black_wb.png" alt="CesiStages Logo" >
+<img src="docs/logo_black_wb.png" alt="CesiStages Logo" width="50%">
 
 ---
 **La Plateforme de Gestion de Stages pour le Campus CESI**
