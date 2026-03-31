@@ -1,8 +1,7 @@
 <div align="center">
+<img src="docs/logo_black_wb.png" alt="CesiStages Logo" >
 
-<img src="https://via.placeholder.com/150x150.png?text=Logo+CesiStages" alt="CesiStages Logo" width="120" height="120">
-
-# 🎓 CesiStages
+---
 **La Plateforme de Gestion de Stages pour le Campus CESI**
 
 [![PHP](https://img.shields.io/badge/PHP-8.0%2B-777BB4?style=for-the-badge&logo=php&logoColor=white)](https://www.php.net/)
