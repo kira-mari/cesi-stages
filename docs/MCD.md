@@ -1,165 +1,238 @@
-# Modèle Conceptuel de Données (MCD)
+# 🗄️ Modèle Conceptuel de Données (MCD) - CesiStages
 
-## Entités et Attributs
+Ce document détaille l'architecture et la structure des données pour l'application **CesiStages**. Il sert de référence pour comprendre les entités, leurs attributs et les relations qui les unissent.
 
-### 1. USER (Utilisateur)
-| Attribut | Type | Description |
-|----------|------|-------------|
-| id | INT (PK) | Identifiant unique |
-| nom | VARCHAR(100) | Nom de l'utilisateur |
-| prenom | VARCHAR(100) | Prénom de l'utilisateur |
-| email | VARCHAR(255) | Adresse email (unique) |
-| password | VARCHAR(255) | Mot de passe hashé |
-| role | ENUM | Rôle : admin, pilote, etudiant |
-| created_at | DATETIME | Date de création |
-| updated_at | DATETIME | Date de mise à jour |
+---
 
-### 2. ENTREPRISE
-| Attribut | Type | Description |
-|----------|------|-------------|
-| id | INT (PK) | Identifiant unique |
-| nom | VARCHAR(255) | Nom de l'entreprise |
-| description | TEXT | Description de l'entreprise |
-| email | VARCHAR(255) | Email de contact |
-| telephone | VARCHAR(20) | Téléphone de contact |
-| adresse | TEXT | Adresse postale |
-| secteur | VARCHAR(100) | Secteur d'activité |
-| created_at | DATETIME | Date de création |
-| updated_at | DATETIME | Date de mise à jour |
+## 📊 Diagramme Conceptuel (Mermaid)
 
-### 3. OFFRE (Offre de stage)
-| Attribut | Type | Description |
-|----------|------|-------------|
-| id | INT (PK) | Identifiant unique |
-| entreprise_id | INT (FK) | Référence vers l'entreprise |
-| titre | VARCHAR(255) | Titre de l'offre |
-| description | TEXT | Description du stage |
-| competences | JSON | Liste des compétences requises |
-| remuneration | DECIMAL | Rémunération mensuelle |
-| duree | INT | Durée en mois |
-| date_debut | DATE | Date de début |
-| date_fin | DATE | Date de fin |
-| created_at | DATETIME | Date de création |
-| updated_at | DATETIME | Date de mise à jour |
+Ce diagramme illustre les entités et leurs relations (cardinalités). Les tables de liaison (issues des relations *Many-to-Many*) sont représentées comme des entités associatives pour plus de clarté.
 
-### 4. EVALUATION
-| Attribut | Type | Description |
-|----------|------|-------------|
-| id | INT (PK) | Identifiant unique |
-| entreprise_id | INT (FK) | Référence vers l'entreprise |
-| user_id | INT (FK) | Référence vers l'utilisateur |
-| note | INT | Note de 1 à 5 |
-| commentaire | TEXT | Commentaire libre |
-| created_at | DATETIME | Date de création |
+```mermaid
+erDiagram
+    %% ==========================================
+    %% ENTITÉS PRINCIPALES
+    %% ==========================================
+    UTILISATEUR {
+        int id PK
+        string nom
+        string prenom
+        string email UK
+        string password
+        int age
+        string telephone
+        text adresse
+        text bio
+        enum role "admin, pilote, etudiant, recruteur"
+        boolean is_verified
+        string verification_code
+        string remember_token
+        boolean is_approved
+        datetime approval_requested_at
+        datetime approved_at
+        int approved_by
+        datetime created_at
+        datetime updated_at
+    }
 
-### 5. CANDIDATURE
-| Attribut | Type | Description |
-|----------|------|-------------|
-| id | INT (PK) | Identifiant unique |
-| offre_id | INT (FK) | Référence vers l'offre |
-| etudiant_id | INT (FK) | Référence vers l'étudiant |
-| lettre_motivation | TEXT | Lettre de motivation |
-| cv_path | VARCHAR(255) | Chemin vers le CV |
-| statut | ENUM | Statut : en_attente, acceptee, refusee |
-| created_at | DATETIME | Date de création |
-| updated_at | DATETIME | Date de mise à jour |
+    ENTREPRISE {
+        int id PK
+        string nom
+        text description
+        string email
+        string telephone
+        text adresse
+        string site_web
+        string secteur
+        datetime created_at
+        datetime updated_at
+    }
 
-### 6. WISHLIST
-| Attribut | Type | Description |
-|----------|------|-------------|
-| id | INT (PK) | Identifiant unique |
-| etudiant_id | INT (FK) | Référence vers l'étudiant |
-| offre_id | INT (FK) | Référence vers l'offre |
-| created_at | DATETIME | Date d'ajout |
+    OFFRE {
+        int id PK
+        int entreprise_id FK
+        string titre
+        text description
+        json competences
+        decimal remuneration
+        int duree "en mois"
+        date date_debut
+        date date_fin
+        datetime created_at
+        datetime updated_at
+    }
 
-### 7. PILOTE_ETUDIANT (Relation)
-| Attribut | Type | Description |
-|----------|------|-------------|
-| id | INT (PK) | Identifiant unique |
-| pilote_id | INT (FK) | Référence vers le pilote |
-| etudiant_id | INT (FK) | Référence vers l'étudiant |
-| created_at | DATETIME | Date de création |
+    GROUPE {
+        int id PK
+        int pilote_id FK
+        string nom
+        datetime created_at
+        datetime updated_at
+    }
 
-## Relations
+    %% ==========================================
+    %% ENTITÉS ASSOCIATIVES (Tables de liaison)
+    %% ==========================================
+    CANDIDATURE {
+        int id PK
+        int offre_id FK
+        int etudiant_id FK
+        text lettre_motivation
+        string cv_path
+        enum statut "en_attente, acceptee, refusee"
+        datetime created_at
+        datetime updated_at
+    }
 
+    EVALUATION {
+        int id PK
+        int entreprise_id FK
+        int user_id FK
+        int note "1 à 5"
+        text commentaire
+        datetime created_at
+    }
+
+    MESSAGE {
+        int id PK
+        int expediteur_id FK
+        int destinataire_id FK
+        string sujet
+        text contenu
+        boolean lu
+        datetime lu_at
+        datetime created_at
+    }
+
+    WISHLIST {
+        int id PK
+        int etudiant_id FK
+        int offre_id FK
+        datetime created_at
+    }
+
+    PILOTE_ETUDIANT {
+        int id PK
+        int pilote_id FK
+        int etudiant_id FK
+        datetime created_at
+    }
+
+    RECRUTEUR_ENTREPRISE {
+        int id PK
+        int recruteur_id FK
+        int entreprise_id FK
+        datetime created_at
+    }
+
+    GROUPE_ETUDIANT {
+        int id PK
+        int groupe_id FK
+        int etudiant_id FK
+        datetime created_at
+    }
+
+    %% ==========================================
+    %% RELATIONS (Cardinalités)
+    %% ==========================================
+    ENTREPRISE ||--o{ OFFRE : "publie"
+    OFFRE ||--o{ CANDIDATURE : "reçoit"
+    UTILISATEUR ||--o{ CANDIDATURE : "soumet (étudiant)"
+    ENTREPRISE ||--o{ EVALUATION : "est notée par"
+    UTILISATEUR ||--o{ EVALUATION : "rédige"
+    UTILISATEUR ||--o{ WISHLIST : "ajoute aux favoris (étudiant)"
+    OFFRE ||--o{ WISHLIST : "est favorisée"
+    UTILISATEUR ||--o{ MESSAGE : "envoie (expéditeur)"
+    UTILISATEUR ||--o{ MESSAGE : "reçoit (destinataire)"
+    UTILISATEUR ||--o{ PILOTE_ETUDIANT : "est assigné (pilote/étudiant)"
+    UTILISATEUR ||--o{ RECRUTEUR_ENTREPRISE : "représente (recruteur)"
+    ENTREPRISE ||--o{ RECRUTEUR_ENTREPRISE : "emploie"
+    UTILISATEUR ||--o{ GROUPE : "crée et gère (pilote)"
+    GROUPE ||--o{ GROUPE_ETUDIANT : "contient"
+    UTILISATEUR ||--o{ GROUPE_ETUDIANT : "est membre (étudiant)"
 ```
-USER (1) ----< (N) CANDIDATURE >---- (1) OFFRE
-                    
-USER (1) ----< (N) WISHLIST >---- (1) OFFRE
 
-USER (1) ----< (N) EVALUATION >---- (1) ENTREPRISE
+---
 
-ENTREPRISE (1) ----< (N) OFFRE
+## 📖 Dictionnaire des Données
 
-USER (1) ----< (N) PILOTE_ETUDIANT >---- (N) USER
-```
+### 1. Entités Principales
 
-## Cardinalités
+**UTILISATEUR (`users`)**
+| Attribut | Type | Contraintes | Description |
+|---|---|---|---|
+| `id` | INT | Primary Key, Auto Increment | Identifiant unique |
+| `nom` / `prenom` | VARCHAR(100) | Not Null | Identité de l'utilisateur |
+| `email` | VARCHAR(255) | Unique, Not Null | Adresse email (sert d'identifiant de connexion) |
+| `password` | VARCHAR(255) | Not Null | Mot de passe hashé |
+| `age` | INT | Nullable | Âge de l'utilisateur |
+| `telephone` | VARCHAR(20) | Nullable | Numéro de téléphone |
+| `adresse` | TEXT | Nullable | Adresse postale |
+| `bio` | TEXT | Nullable | Courte biographie/présentation |
+| `role` | ENUM | Défaut: 'etudiant' | Rôle (`admin`, `pilote`, `etudiant`, `recruteur`) |
+| `is_verified` / `verification_code` | BOOL / VARCHAR | - | Gestion de la vérification de l'email |
+| `is_approved` / `approved_at` | TINYINT / DATETIME| - | Validation manuelle du compte (par un admin/pilote) |
 
-- **USER - CANDIDATURE** : Un utilisateur peut avoir plusieurs candidatures (1,N)
-- **OFFRE - CANDIDATURE** : Une offre peut avoir plusieurs candidatures (1,N)
-- **USER - WISHLIST** : Un étudiant peut avoir plusieurs offres en wishlist (1,N)
-- **OFFRE - WISHLIST** : Une offre peut être dans plusieurs wishlists (1,N)
-- **ENTREPRISE - OFFRE** : Une entreprise peut avoir plusieurs offres (1,N)
-- **ENTREPRISE - EVALUATION** : Une entreprise peut avoir plusieurs évaluations (1,N)
-- **USER - EVALUATION** : Un utilisateur peut évaluer plusieurs entreprises (1,N)
-- **USER - PILOTE_ETUDIANT** : Un pilote peut gérer plusieurs étudiants (1,N)
+**ENTREPRISE (`entreprises`)**
+| Attribut | Type | Contraintes | Description |
+|---|---|---|---|
+| `id` | INT | Primary Key, Auto Increment | Identifiant unique |
+| `nom` | VARCHAR(255) | Not Null | Raison sociale de l'entreprise |
+| `description` | TEXT | Nullable | Description de l'entreprise |
+| `email` / `telephone` | VARCHAR | Nullable | Coordonnées de contact génériques |
+| `adresse` | TEXT | Nullable | Adresse du siège ou de l'agence |
+| `site_web` | VARCHAR(255) | Nullable | URL du site internet |
+| `secteur` | VARCHAR(100) | Nullable | Secteur d'activité principal |
 
-## Schéma visuel du MCD
+**OFFRE (`offres`)**
+| Attribut | Type | Contraintes | Description |
+|---|---|---|---|
+| `id` | INT | Primary Key, Auto Increment | Identifiant unique |
+| `entreprise_id` | INT | Foreign Key | Lien vers l'entreprise émettrice |
+| `titre` | VARCHAR(255) | Not Null | Intitulé du stage |
+| `description` | TEXT | Not Null | Détail des missions |
+| `competences` | JSON | Nullable | Liste structurée des compétences requises |
+| `remuneration` | DECIMAL(10,2) | Défaut: 0 | Gratification mensuelle |
+| `duree` | INT | Nullable | Durée du stage en mois |
+| `date_debut` / `date_fin` | DATE | Nullable | Période du stage |
 
-```
-┌─────────────────┐         ┌─────────────────┐
-│     USER        │         │   ENTREPRISE    │
-├─────────────────┤         ├─────────────────┤
-│ PK id           │         │ PK id           │
-│ nom             │         │ nom             │
-│ prenom          │         │ description     │
-│ email           │         │ email           │
-│ password        │         │ telephone       │
-│ role            │         │ adresse         │
-│ created_at      │         │ secteur         │
-│ updated_at      │         │ created_at      │
-└─────────────────┘         │ updated_at      │
-         │                  └─────────────────┘
-         │                           │
-         │ 1                         │ 1
-         │                           │
-         N│                           │N
-         ▼                           ▼
-┌─────────────────┐         ┌─────────────────┐
-│   CANDIDATURE   │         │     OFFRE       │
-├─────────────────┤         ├─────────────────┤
-│ PK id           │         │ PK id           │
-│ FK offre_id     │◄────────│ FK entreprise_id│
-│ FK etudiant_id  │         │ titre           │
-│ lettre_motiv    │         │ description     │
-│ cv_path         │         │ competences     │
-│ statut          │         │ remuneration    │
-│ created_at      │         │ duree           │
-│ updated_at      │         │ date_debut      │
-└─────────────────┘         │ date_fin        │
-                            │ created_at      │
-                            │ updated_at      │
-                            └─────────────────┘
-                                     ▲
-                                     │N
-                            ┌────────┴────────┐
-                            │    WISHLIST     │
-                            ├─────────────────┤
-                            │ PK id           │
-                            │ FK etudiant_id  │
-                            │ FK offre_id     │
-                            │ created_at      │
-                            └─────────────────┘
+**GROUPE (`groupes`)**
+| Attribut | Type | Contraintes | Description |
+|---|---|---|---|
+| `id` | INT | Primary Key, Auto Increment | Identifiant unique |
+| `pilote_id` | INT | Foreign Key | Pilote responsable du groupe |
+| `nom` | VARCHAR(255) | Not Null | Nom de la promotion ou du groupe |
 
-┌─────────────────┐         ┌─────────────────┐
-│   EVALUATION    │         │ PILOTE_ETUDIANT │
-├─────────────────┤         ├─────────────────┤
-│ PK id           │         │ PK id           │
-│ FK entreprise_id│         │ FK pilote_id    │
-│ FK user_id      │         │ FK etudiant_id  │
-│ note            │         │ created_at      │
-│ commentaire     │         └─────────────────┘
-│ created_at      │
-└─────────────────┘
-```
+---
+
+### 2. Entités Associatives (Tables de liaison)
+
+| Entité / Table | Description des champs clés et du rôle |
+|---|---|
+| **CANDIDATURE** (`candidatures`) | Lie un `Etudiant` à une `Offre`. Stocke la `lettre_motivation`, le `cv_path` et le `statut` (`en_attente`, `acceptee`, `refusee`). *Unicité : un étudiant ne peut postuler qu'une fois à une offre.* |
+| **EVALUATION** (`evaluations`) | Lie un `Utilisateur` (étudiant/pilote) à une `Entreprise`. Stocke une `note` (1 à 5) et un `commentaire`. *Unicité : un utilisateur ne note une entreprise qu'une fois.* |
+| **MESSAGE** (`messages`) | Gère la messagerie interne. Lie deux `Utilisateurs` (`expediteur_id`, `destinataire_id`). Contient `sujet`, `contenu`, et l'état de lecture (`lu`, `lu_at`). |
+| **WISHLIST** (`wishlist`) | Système de favoris. Lie un `Etudiant` à une `Offre`. *Unicité : une offre ne peut être qu'une fois dans la liste d'un même étudiant.* |
+| **PILOTE_ETUDIANT** (`pilote_etudiant`) | Lie un `Pilote` à un `Etudiant` pour définir qui encadre qui en dehors d'une logique de groupe. |
+| **RECRUTEUR_ENTREPRISE** (`recruteur_entreprise`) | Lie un profil `Recruteur` à une ou plusieurs `Entreprises`. Permet de gérer les droits d'édition des offres. |
+| **GROUPE_ETUDIANT** (`groupe_etudiant`) | Assigne un `Etudiant` à un `Groupe`. *Unicité : un étudiant ne peut être qu'une fois dans un groupe.* |
+
+---
+
+## 🔗 Règles de gestion et Cardinalités
+
+### Gestion des Utilisateurs et Rôles
+* **Encadrement** : Un `Pilote` peut encadrer plusieurs `Étudiants` (1,N). Un `Étudiant` peut être encadré par plusieurs `Pilotes` (1,N).
+* **Groupes** : Un `Pilote` crée et gère un ou plusieurs `Groupes` (1,N). Un `Groupe` est composé de plusieurs `Étudiants` (1,N).
+* **Recrutement** : Un `Recruteur` peut être rattaché à une ou plusieurs `Entreprises` (1,N). Une `Entreprise` peut avoir plusieurs `Recruteurs` (1,N).
+
+### Offres et Candidatures
+* **Publication** : Une `Entreprise` peut publier plusieurs `Offres` (1,N). Une `Offre` appartient obligatoirement à une seule `Entreprise` (1,1).
+* **Candidature** : Un `Étudiant` peut soumettre plusieurs `Candidatures` (0,N). Une `Offre` peut recevoir plusieurs `Candidatures` (0,N). L'unicité garantit qu'un étudiant ne postule pas deux fois à la même offre.
+* **Favoris (Wishlist)** : Un `Étudiant` peut mettre plusieurs `Offres` en favoris (0,N).
+
+### Évaluations et Communication
+* **Évaluation** : Un `Utilisateur` peut évaluer plusieurs `Entreprises` (0,N). Une `Entreprise` peut recevoir plusieurs `Évaluations` (0,N).
+* **Messagerie** : Un `Utilisateur` peut envoyer (0,N) et recevoir (0,N) des messages vers/depuis d'autres `Utilisateurs`.
+
+

@@ -29,9 +29,12 @@ if ($host === 'cesi-site.local') {
 // Redirection automatique : localhost → cesi-site.local (DÉSACTIVÉ pour le développement)
 // Décommentez si vous voulez forcer l'utilisation de cesi-site.local
  if ($host !== 'cesi-site.local' && strpos($host, 'localhost') !== false) {
-     $uri = str_replace('/cesi-stages', '', $_SERVER['REQUEST_URI']);
-     header('Location: ' . $protocol . '://cesi-site.local' . $uri);
-     exit;
+    $requestUri = $_SERVER['REQUEST_URI'] ?? '/';
+    $uri = str_replace('/cesi-stages', '', $requestUri);
+    if (php_sapi_name() !== 'cli') {
+        header('Location: ' . $protocol . '://cesi-site.local' . $uri);
+        exit;
+    }
  }
 
 // Configuration spécifique pour les Virtual Hosts
