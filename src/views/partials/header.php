@@ -833,7 +833,7 @@ function isNavLinkActive($uri, $base, $path) {
         
         <!-- Brand -->
         <a href="<?= BASE_URL ?>" class="logo-container">
-            <div class="logo-icon" style="background: none; box-shadow: none;">
+            <div class="logo-icon" style="background: none; box-shadow: none; margin-left: 20px;">
                 <img 
                                 src="<?= BASE_URL ?>/assets/img/logo_black_wb.png" 
                                 alt="Logo CESI" 
