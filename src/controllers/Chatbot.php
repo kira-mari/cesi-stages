@@ -826,7 +826,7 @@ class Chatbot extends Controller
     protected function getCandidaturesForOffre(int $offreId): array
     {
         try {
-            $db = Model::getDB();
+            $db = Model::getDBStatic();
             $stmt = $db->prepare("SELECT id, titre FROM offres WHERE id = :id");
             $stmt->execute([':id' => $offreId]);
             $offre = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -1416,7 +1416,7 @@ class Chatbot extends Controller
 
     protected function storeInteraction(?int $userId, string $question, string $answer, bool $needsAdmin): void
     {
-        $db = Model::getDB();
+        $db = Model::getDBStatic();
 
         $stmt = $db->prepare(
             "INSERT INTO chatbot_interactions (user_id, question, answer, needs_admin, created_at)

@@ -26,11 +26,11 @@ if (strpos($host, 'ngrok') !== false) {
 
 // Redirection automatique : localhost → cesi-site.local (DÉSACTIVÉ pour le développement)
 // Décommentez si vous voulez forcer l'utilisation de cesi-site.local
-// if ($host !== 'cesi-site.local' && strpos($host, 'localhost') !== false) {
-//     $uri = str_replace('/cesi-stages', '', $_SERVER['REQUEST_URI']);
-//     header('Location: ' . $protocol . '://cesi-site.local' . $uri);
-//     exit;
-// }
+ if ($host !== 'cesi-site.local' && strpos($host, 'localhost') !== false) {
+     $uri = str_replace('/cesi-stages', '', $_SERVER['REQUEST_URI']);
+     header('Location: ' . $protocol . '://cesi-site.local' . $uri);
+     exit;
+ }
 
 // Configuration spécifique pour les Virtual Hosts
 if ($host === 'cesi-site.local' || strpos($host, 'ngrok') !== false) {

@@ -400,7 +400,7 @@ class Recruteur extends Controller
         }
 
         // Supprimer les associations entreprise-recruteur
-        $stmt = \Core\Model::getDB()->prepare(
+        $stmt = \Core\Model::getDBStatic()->prepare(
             "DELETE FROM recruteur_entreprise WHERE recruteur_id = :id"
         );
         $stmt->execute([':id' => $id]);
