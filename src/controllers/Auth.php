@@ -112,13 +112,20 @@ class Auth extends Controller
             exit;
         }
 
+        // Transmettre le domaine d'origine via le paramètre state de Google
+        $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+        $protocol = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? 'https' : 'http';
+        $origin = $protocol . '://' . $host;
+        $state = base64_encode(json_encode(['origin' => $origin]));
+
         $params = [
             'client_id' => GOOGLE_CLIENT_ID,
             'redirect_uri' => GOOGLE_REDIRECT,
             'response_type' => 'code',
             'scope' => 'openid email profile',
             'access_type' => 'offline',
-            'prompt' => 'select_account'
+            'prompt' => 'select_account',
+            'state' => $state
         ];
 
         $url = 'https://accounts.google.com/o/oauth2/v2/auth?' . http_build_query($params);
@@ -229,6 +236,34 @@ class Auth extends Controller
             $_SESSION['user_prenom'] = $user['prenom'];
             session_regenerate_id(true);
             $_SESSION['flash_success'] = "Connexion via Google réussie. Bienvenue, " . ($user['prenom'] ?? '') . ".";
+            
+            // Si l'utilisateur vient d'un autre domaine (ex: cesi-site.local),
+            // transférer la session via un token temporaire
+            $state = $_GET['state'] ?? null;
+            if ($state) {
+                $stateData = json_decode(base64_decode($state), true);
+                if (isset($stateData['origin']) && $stateData['origin'] !== BASE_URL) {
+                    // Générer un token temporaire unique
+                    $token = bin2hex(random_bytes(32));
+                    $tokenFile = ROOT_PATH . '/tmp/oauth_token_' . $token . '.json';
+                    
+                    // Créer le dossier tmp si nécessaire
+                    if (!is_dir(ROOT_PATH . '/tmp')) {
+                        mkdir(ROOT_PATH . '/tmp', 0755, true);
+                    }
+                    
+                    // Stocker les infos utilisateur dans le token
+                    file_put_contents($tokenFile, json_encode([
+                        'user_id' => $user['id'],
+                        'expires' => time() + 30 // Token valide 30 secondes
+                    ]));
+                    
+                    // Rediriger vers le domaine d'origine avec le token
+                    header('Location: ' . $stateData['origin'] . '/auth/token-login?token=' . $token);
+                    exit;
+                }
+            }
+            
             $this->redirect('dashboard');
         }
 
@@ -973,6 +1008,68 @@ class Auth extends Controller
             // error_log("Mail Error: {$mail->ErrorInfo}");
             return false;
         }
+    }
+
+    /**
+     * Connexion via token temporaire (transfert de session entre domaines après Google OAuth)
+     */
+    public function tokenLogin()
+    {
+        $token = $_GET['token'] ?? null;
+        if (!$token || !preg_match('/^[a-f0-9]{64}$/', $token)) {
+            $_SESSION['flash_error'] = "Token invalide.";
+            $this->redirect('login');
+            return;
+        }
+
+        $tokenFile = ROOT_PATH . '/tmp/oauth_token_' . $token . '.json';
+        
+        if (!file_exists($tokenFile)) {
+            $_SESSION['flash_error'] = "Token expiré ou invalide.";
+            $this->redirect('login');
+            return;
+        }
+
+        $data = json_decode(file_get_contents($tokenFile), true);
+        
+        // Supprimer le token immédiatement (usage unique)
+        unlink($tokenFile);
+        
+        // Vérifier l'expiration
+        if (!$data || $data['expires'] < time()) {
+            $_SESSION['flash_error'] = "Token expiré.";
+            $this->redirect('login');
+            return;
+        }
+
+        // Récupérer l'utilisateur et créer la session
+        $userModel = new User();
+        $user = $userModel->find($data['user_id']);
+        
+        if (!$user) {
+            $_SESSION['flash_error'] = "Utilisateur introuvable.";
+            $this->redirect('login');
+            return;
+        }
+
+        $_SESSION['user_id'] = $user['id'];
+        $_SESSION['user_email'] = $user['email'];
+        $_SESSION['user_role'] = $user['role'];
+        $_SESSION['user_nom'] = $user['nom'];
+        $_SESSION['user_prenom'] = $user['prenom'];
+        session_regenerate_id(true);
+        
+        // Vérifier l'approbation pour pilote/recruteur
+        if (in_array($user['role'], ['pilote', 'recruteur']) && isset($user['is_approved']) && $user['is_approved'] == 0) {
+            $_SESSION['user_role'] = 'etudiant';
+            $_SESSION['user_role_pending'] = $user['role'];
+            $_SESSION['user_is_approved'] = false;
+        } else {
+            $_SESSION['user_is_approved'] = true;
+        }
+
+        $_SESSION['flash_success'] = "Connexion via Google réussie. Bienvenue, " . ($user['prenom'] ?? '') . ".";
+        $this->redirect('dashboard');
     }
 
     /**

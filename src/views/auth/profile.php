@@ -99,6 +99,15 @@
                                 </div>
                             </div>
 
+                            <?php if ($user['role'] === 'pilote'): ?>
+                            <h5 class="text-primary border-bottom pb-2 mb-4 mt-5" style="border-color: hsl(var(--border)) !important;">
+                                <i class="fas fa-users me-2"></i>Mes groupes
+                            </h5>
+                            <a href="<?= BASE_URL ?>/groupes" class="btn btn-primary">
+                                <i class="fas fa-users me-2"></i>Gérer mes groupes
+                            </a>
+                            <?php endif; ?>
+
                             <?php if ($user['role'] === 'recruteur' && !empty($entreprises)): ?>
                             <h5 class="text-primary border-bottom pb-2 mb-4 mt-5" style="border-color: hsl(var(--border)) !important;">
                                 <i class="fas fa-building me-2"></i>Entreprises assignées
