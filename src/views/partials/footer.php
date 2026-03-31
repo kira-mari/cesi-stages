@@ -4,16 +4,31 @@
             <div class="footer-grid">
                 <!-- Brand Section -->
                 <div class="footer-brand">
-                    <a href="<?= BASE_URL ?>" class="footer-logo">
-                        <div class="logo-icon">
-                            <i class="fas fa-layer-group"></i>
+                    <div class="footer-logo-desc-align">
+                    <a href="<?= BASE_URL ?>" class="footer-logo" style="margin-bottom: 30px; display: block;">
+                        <div class="logo-icon" style="background: none; box-shadow: none; min-width: 120px;">
+                            
+                            <img 
+                                src="<?= BASE_URL ?>/assets/img/logo_black_wb.png" 
+                                alt="Logo CESI" 
+                                class="logo-theme-dark"
+                                style="width: 120px; height: auto; object-fit: contain;"
+                            />
+
+                            <img 
+                                src="<?= BASE_URL ?>/assets/img/logo_white_wb.png" 
+                                alt="Logo CESI" 
+                                class="logo-theme-light"
+                                style="width: 120px; height: auto; object-fit: contain;"
+                            />
+
                         </div>
-                        <span class="logo-text"><?= APP_NAME ?></span>
                     </a>
-                    <p class="footer-desc">
-                        Connecter les talents de demain avec les entreprises d''aujourd''hui.
+                    <p class="footer-desc" style="margin-left: 0;">
+                        Connecter les talents de demain avec les entreprises d'aujourd'hui.<br>
                         La plateforme officielle des stages CESI.
                     </p>
+                </div>
                     <div class="social-links">
                         <a href="#" class="social-link" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
                         <a href="#" class="social-link" aria-label="Twitter"><i class="fab fa-twitter"></i></a>

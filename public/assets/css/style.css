@@ -1,3 +1,26 @@
+/* Alignement logo + texte footer */
+.footer-logo-desc-align {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+}
+/* 1. ÉTAT PAR DÉFAUT (Mode Sombre, quand il n'y a rien sur <html>) */
+.logo-theme-light {
+    display: none; /* On cache le logo noir */
+}
+.logo-theme-dark {
+    display: block; /* On affiche le logo blanc */
+}
+
+/* 2. QUAND LE MODE CLAIR EST ACTIVÉ (data-theme="light" sur <html>) */
+html[data-theme="light"] .logo-theme-dark {
+    display: none; /* On cache le logo blanc */
+}
+html[data-theme="light"] .logo-theme-light {
+    display: block; /* On affiche le logo noir */
+}
+/* Plus besoin de media query, la colonne est par défaut */
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@300;400;500;600;700&display=swap");
 
 :root {
@@ -1221,16 +1244,16 @@ hr {
 }
 
 .logo-icon {
-    width: 2.5rem;
-    height: 2.5rem;
+    width: 6rem;
+    height: 6rem;
     background: hsl(var(--primary));
     color: hsl(var(--primary-foreground));
     border-radius: 0.5rem;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.25rem;
-    transform: rotate(-10deg);
+    font-size: 2rem;
+    /* Suppression de la rotation */
 }
 
 .logo-text {

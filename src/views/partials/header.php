@@ -833,8 +833,20 @@ function isNavLinkActive($uri, $base, $path) {
         
         <!-- Brand -->
         <a href="<?= BASE_URL ?>" class="logo-container">
-            <div class="logo-icon">
-                <i class="fas fa-cube"></i>
+            <div class="logo-icon" style="background: none; box-shadow: none;">
+                <img 
+                                src="<?= BASE_URL ?>/assets/img/logo_black_wb.png" 
+                                alt="Logo CESI" 
+                                class="logo-theme-dark"
+                                style="width: 70px; height: auto; object-fit: contain;"
+                            />
+
+                            <img 
+                                src="<?= BASE_URL ?>/assets/img/logo_white_wb.png" 
+                                alt="Logo CESI" 
+                                class="logo-theme-light"
+                                style="width: 70px; height: auto; object-fit: contain;"
+                            />
             </div>
             <span class="logo-text d-none d-sm-block"><?= APP_NAME ?></span>
             <span class="logo-text d-sm-none">CS</span>
