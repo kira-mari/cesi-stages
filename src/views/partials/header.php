@@ -849,7 +849,6 @@ function isNavLinkActive($uri, $base, $path) {
                             />
             </div>
             <span class="logo-text d-none d-sm-block"><?= APP_NAME ?></span>
-            <span class="logo-text d-sm-none">CS</span>
         </a>
         
         <!-- Desktop Nav -->
